@@ -1,0 +1,14 @@
+# C# files
+[**/*.cs]
+
+dotnet_diagnostic.CA1051.severity = suggestion # Do not declare visible instance fields
+dotnet_diagnostic.CA1859.severity = suggestion # Use concrete types when possible for improved performance
+dotnet_diagnostic.CA1861.severity = suggestion # Avoid constant arrays as arguments
+dotnet_diagnostic.CA2201.severity = suggestion # Do not raise reserved exception types
+dotnet_diagnostic.CS0618.severity = suggestion # 'member' is obsolete
+
+dotnet_diagnostic.CA2007.severity = none # Do not directly await a Task
+dotnet_diagnostic.CA2202.severity = none # Do Not Dispose Objects Multiple Times
+dotnet_diagnostic.CS1591.severity = none # XML-Comment warnings
+dotnet_diagnostic.CA1707.severity = none # Remove the underscore from type name
+dotnet_diagnostic.IDE0058.severity = none # Expression value is never used
