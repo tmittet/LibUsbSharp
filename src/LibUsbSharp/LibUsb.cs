@@ -100,9 +100,8 @@ public sealed class LibUsb : ILibUsb
         ushort? productId = default
     )
     {
-        const int HotPlugCapability = 0x00000004;
         const int HotPlugMatchAny = -1;
-        var supported = libusb_has_capability(HotPlugCapability) != 0;
+        var supported = libusb_has_capability((uint)LibUsbCapability.HasHotplug) != 0;
         if (!supported)
         {
             _logger.LogDebug("Hotplug not supported or unimplemented on this platform.");
