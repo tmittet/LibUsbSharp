@@ -8,8 +8,8 @@ on:
     types: [published]
 
 jobs:
-  build-win-x64:
-    runs-on: windows-latest
+  validate-code-style:
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
 
@@ -28,6 +28,47 @@ jobs:
       run: |
         dotnet csharpier check ./src
         dotnet csharpier check ./tests
+
+  build-linux-x64:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        global-json-file: ./global.json
+
+    - name: Restore dependencies
+      run: |
+        dotnet restore
+
+    - name: Install libusb 1.0 dev
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libusb-1.0-0-dev
+
+    - name: Build
+      run: |
+        dotnet build --no-restore
+
+    - name: Test
+      run: |
+        dotnet test --no-build --verbosity normal
+
+  build-win-x64:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        global-json-file: ./global.json
+
+    - name: Restore dependencies
+      run: |
+        dotnet restore
 
     - name: Build
       run: |
