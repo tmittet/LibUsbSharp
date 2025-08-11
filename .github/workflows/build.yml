@@ -8,8 +8,8 @@ on:
     types: [published]
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  build-win-x64:
+    runs-on: windows-latest
     steps:
     - uses: actions/checkout@v4
 
