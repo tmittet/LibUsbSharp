@@ -24,7 +24,7 @@ public sealed class Given_a_vendor_class_USB_device : IDisposable
         _deviceSource.SetPreferredVendorId(0x2BD9);
     }
 
-    [Fact]
+    [Fact(Skip = "No vendor class USB devices available on public GitHub runner")]
     public void Device_has_vendor_interface_with_input_and_output_endpoints()
     {
         using var device = _deviceSource.OpenAccessibleUsbDevice(UsbClass.VendorSpecific);
@@ -40,7 +40,7 @@ public sealed class Given_a_vendor_class_USB_device : IDisposable
         outputCount.Should().BeGreaterThanOrEqualTo(1);
     }
 
-    [Fact]
+    [Fact(Skip = "No vendor class USB devices available on public GitHub runner")]
     public void Device_is_able_to_claim_interface_and_get_an_input_endpoint()
     {
         using var device = _deviceSource.OpenAccessibleUsbDevice(UsbClass.VendorSpecific);
@@ -50,7 +50,7 @@ public sealed class Given_a_vendor_class_USB_device : IDisposable
         endpoint!.MaxPacketSize.Should().BePositive();
     }
 
-    [Fact]
+    [Fact(Skip = "No vendor class USB devices available on public GitHub runner")]
     public void Device_is_able_to_claim_interface_and_get_an_output_endpoint()
     {
         using var device = _deviceSource.OpenAccessibleUsbDevice(UsbClass.VendorSpecific);
