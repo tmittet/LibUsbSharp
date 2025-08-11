@@ -23,10 +23,11 @@ jobs:
         dotnet restore
         dotnet tool restore
 
-    # - name: Check formatting
-    #   shell: bash
-    #   run: |
-    #     dotnet csharpier check ./src
+    - name: Check formatting
+      shell: bash
+      run: |
+        dotnet csharpier check ./src
+        dotnet csharpier check ./tests
 
     - name: Build
       run: |

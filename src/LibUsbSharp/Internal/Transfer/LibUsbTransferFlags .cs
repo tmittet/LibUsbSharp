@@ -1,7 +1,7 @@
 ﻿namespace LibUsbSharp.Internal.Transfer;
 
 [Flags]
-internal enum LibUsbTransferFlags : byte
+internal enum LibUsbTransferFlag : byte
 {
     None = 0,
     ShortNotOk = 1 << 0,

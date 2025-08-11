@@ -22,4 +22,3 @@ public sealed class TestLoggerFactory(ITestOutputHelper _output) : ILoggerFactor
         _provider.Dispose();
     }
 }
-

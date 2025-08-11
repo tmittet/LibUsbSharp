@@ -12,4 +12,3 @@ public sealed class TestLoggerProvider(ITestOutputHelper _output) : ILoggerProvi
 
     public void Dispose() { }
 }
-
