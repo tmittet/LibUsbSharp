@@ -8,6 +8,40 @@ on:
     types: [published]
 
 jobs:
+  build-linux-x64:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        global-json-file: ./global.json
+
+    - name: Restore dependencies and tools
+      run: |
+        dotnet restore
+        dotnet tool restore
+
+    - name: Install libusb dev headers
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libusb-1.0-0-dev
+
+    - name: Check formatting
+      shell: bash
+      run: |
+        dotnet csharpier check ./src
+        dotnet csharpier check ./tests
+
+    - name: Build
+      run: |
+        dotnet build --no-restore
+
+    - name: Test
+      run: |
+        dotnet test --no-build --verbosity normal
+
   build-win-x64:
     runs-on: windows-latest
     steps:
