@@ -1,4 +1,4 @@
-﻿namespace LibUsbSharp.Internal.Hotplug;
+namespace LibUsbSharp.Internal.Hotplug;
 
 /// <summary>
 /// A callback function must return an int (0 or 1) indicating whether the callback is expecting

@@ -1,4 +1,4 @@
-﻿using System.Runtime.InteropServices;
+using System.Runtime.InteropServices;
 
 namespace LibUsbSharp.Internal.Transfer;
 
@@ -166,7 +166,7 @@ internal sealed class LibUsbTransfer : IDisposable
         /// <summary>
         /// A bitwise OR combination of libusb_transfer_flags.
         /// </summary>
-        internal LibUsbTransferFlags Flags;
+        internal LibUsbTransferFlag Flags;
 
         /// <summary>
         /// Address of the endpoint where this transfer will be sent.

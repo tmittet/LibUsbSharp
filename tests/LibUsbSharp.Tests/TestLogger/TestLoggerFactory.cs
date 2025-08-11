@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Xunit.Abstractions;
 
 namespace LibUsbSharp.Tests.TestLogger;
@@ -22,4 +22,3 @@ public sealed class TestLoggerFactory(ITestOutputHelper _output) : ILoggerFactor
         _provider.Dispose();
     }
 }
-

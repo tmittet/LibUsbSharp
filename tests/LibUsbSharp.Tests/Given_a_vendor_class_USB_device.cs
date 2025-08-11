@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using LibUsbSharp.Descriptor;
 using LibUsbSharp.Tests.TestLogger;
 using Microsoft.Extensions.Logging;

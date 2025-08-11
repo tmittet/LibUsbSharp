@@ -1,4 +1,4 @@
-﻿namespace LibUsbSharp.Internal.Hotplug;
+namespace LibUsbSharp.Internal.Hotplug;
 
 internal enum LibUsbHotplugFlag
 {

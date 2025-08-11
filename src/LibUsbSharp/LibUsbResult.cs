@@ -1,4 +1,4 @@
-﻿namespace LibUsbSharp;
+namespace LibUsbSharp;
 
 public enum LibUsbResult : int
 {

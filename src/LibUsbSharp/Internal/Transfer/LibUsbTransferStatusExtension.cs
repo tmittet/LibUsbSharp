@@ -1,4 +1,4 @@
-﻿namespace LibUsbSharp.Internal.Transfer;
+namespace LibUsbSharp.Internal.Transfer;
 
 internal static class LibUsbTransferStatusExtension
 {

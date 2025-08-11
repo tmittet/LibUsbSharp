@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
 using LibUsbSharp.Descriptor;
 using LibUsbSharp.Internal;
@@ -278,7 +278,14 @@ public sealed class LibUsb : ILibUsb
         }
         var openResult = libusb_open(descriptorPtr, out var deviceHandle);
         return openResult == 0
-            ? new UsbDevice(_loggerFactory, this, context, deviceHandle, descriptor, configDescriptor!)
+            ? new UsbDevice(
+                _loggerFactory,
+                this,
+                context,
+                deviceHandle,
+                descriptor,
+                configDescriptor!
+            )
             : throw LibUsbException.FromError(openResult, $"Failed to open device '{deviceKey}'.");
     }
 

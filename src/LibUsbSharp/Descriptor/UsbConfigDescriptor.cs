@@ -1,4 +1,4 @@
-﻿namespace LibUsbSharp.Descriptor;
+namespace LibUsbSharp.Descriptor;
 
 /// <inheritdoc/>
 public record struct UsbConfigDescriptor(
