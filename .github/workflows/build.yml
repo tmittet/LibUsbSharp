@@ -11,10 +11,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actionscheckout@v4
+    - uses: actions/checkout@v4
 
     - name: Setup .NET
-      uses: actionssetup-dotnet@v4
+      uses: actions/setup-dotnet@v4
       with:
         global-json-file: ./global.json
 
