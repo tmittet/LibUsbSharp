@@ -1,4 +1,4 @@
-﻿namespace LibUsbSharp.Descriptor;
+namespace LibUsbSharp.Descriptor;
 
 public interface IUsbEndpointDescriptor
 {

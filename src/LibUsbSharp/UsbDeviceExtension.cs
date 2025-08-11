@@ -1,4 +1,4 @@
-﻿namespace LibUsbSharp;
+namespace LibUsbSharp;
 
 public static class UsbDeviceExtension
 {

@@ -1,4 +1,4 @@
-﻿using LibUsbSharp.Descriptor;
+using LibUsbSharp.Descriptor;
 using Microsoft.Extensions.Logging;
 
 namespace LibUsbSharp;

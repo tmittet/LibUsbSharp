@@ -1,4 +1,4 @@
-﻿using LibUsbSharp.Internal.Descriptor;
+using LibUsbSharp.Internal.Descriptor;
 
 namespace LibUsbSharp.Descriptor;
 

@@ -1,4 +1,4 @@
-﻿namespace LibUsbSharp;
+namespace LibUsbSharp;
 
 /// <summary>
 /// Device and/or interface class codes. See:

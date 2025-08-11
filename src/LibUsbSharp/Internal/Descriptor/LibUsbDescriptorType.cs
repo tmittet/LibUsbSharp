@@ -1,4 +1,4 @@
-﻿namespace LibUsbSharp.Internal.Descriptor;
+namespace LibUsbSharp.Internal.Descriptor;
 
 internal enum LibUsbDescriptorType : byte
 {

@@ -1,4 +1,4 @@
-﻿namespace LibUsbSharp.Internal;
+namespace LibUsbSharp.Internal;
 
 internal enum LibUsbLogLevel
 {
