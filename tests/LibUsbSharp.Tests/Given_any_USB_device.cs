@@ -24,7 +24,7 @@ public sealed class Given_any_USB_device : IDisposable
         _deviceSource.SetPreferredVendorId(0x2BD9);
     }
 
-    [Fact]
+    [Fact(Skip = "No USB devices available on public GitHub runner")]
     public void GetDeviceList_returns_at_least_one_USB_device()
     {
         var descriptors = _libUsb.GetDeviceList();
@@ -44,7 +44,7 @@ public sealed class Given_any_USB_device : IDisposable
         }
     }
 
-    [Fact]
+    [Fact(Skip = "No USB devices available on public GitHub runner")]
     public void GetDeviceSerial_returns_serial_given_a_device_descriptor_when_device_is_not_open()
     {
         IUsbDeviceDescriptor deviceDescriptor;
@@ -56,7 +56,7 @@ public sealed class Given_any_USB_device : IDisposable
         serial.Should().NotBeNullOrWhiteSpace();
     }
 
-    [Fact]
+    [Fact(Skip = "No USB devices available on public GitHub runner")]
     public void GetDeviceSerial_succeeds_given_a_device_descriptor_when_device_is_already_open()
     {
         using var openDevice = _deviceSource.OpenAccessibleUsbDevice();
@@ -71,7 +71,7 @@ public sealed class Given_any_USB_device : IDisposable
         serial.Should().NotBeNullOrWhiteSpace();
     }
 
-    [Fact]
+    [Fact(Skip = "No USB devices available on public GitHub runner")]
     public void GetSerialNumber_returns_serial_given_an_open_device()
     {
         using var device = _deviceSource.OpenAccessibleUsbDevice();
@@ -85,7 +85,7 @@ public sealed class Given_any_USB_device : IDisposable
         serial.Should().NotBeNullOrWhiteSpace();
     }
 
-    [Fact]
+    [Fact(Skip = "No USB devices available on public GitHub runner")]
     public void GetManufacturer_returns_manufacturer_given_an_open_device()
     {
         using var device = _deviceSource.OpenAccessibleUsbDevice();
@@ -94,7 +94,7 @@ public sealed class Given_any_USB_device : IDisposable
         _ = device.GetManufacturer();
     }
 
-    [Fact]
+    [Fact(Skip = "No USB devices available on public GitHub runner")]
     public void GetProductName_returns_product_name_given_an_open_device()
     {
         using var device = _deviceSource.OpenAccessibleUsbDevice();
@@ -102,7 +102,7 @@ public sealed class Given_any_USB_device : IDisposable
         productName.Should().NotBeNullOrWhiteSpace();
     }
 
-    [Fact]
+    [Fact(Skip = "No USB devices available on public GitHub runner")]
     public void Open_devices_are_auto_disposed_when_LibUsb_is_disposed()
     {
         // Open device and leave it open

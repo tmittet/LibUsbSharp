@@ -1,0 +1,37 @@
+name: Build and Test
+on:
+  pull_request:
+    branches: ["*"]
+  push:
+    branches: [main]
+  release:
+    types: [published]
+
+jobs:
+  build-win-x64:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        global-json-file: ./global.json
+
+    - name: Restore dependencies and tools
+      run: |
+        dotnet restore
+        dotnet tool restore
+
+    # - name: Check formatting
+    #   shell: bash
+    #   run: |
+    #     dotnet csharpier check ./src
+
+    - name: Build
+      run: |
+        dotnet build --no-restore
+
+    - name: Test
+      run: |
+        dotnet test --no-build --verbosity normal
