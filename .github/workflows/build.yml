@@ -9,6 +9,7 @@ on:
 
 jobs:
   validate-code-style:
+    name: Validate Code Style
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -29,8 +30,25 @@ jobs:
         dotnet csharpier check ./src
         dotnet csharpier check ./tests
 
-  build-linux-x64:
-    runs-on: ubuntu-latest
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - os: ubuntu-latest
+            runtime-target: linux-x64
+          - os: ubuntu-24.04-arm
+            runtime-target: linux-arm64
+          - os: windows-latest
+            runtime-target: win-x64
+          - os: macos-latest
+            runtime-target: osx-x64
+#          - os: macos-latest # Use arm64 runner when available
+#            runtime-target: osx-arm64
+
+    name: Build and Test (${{ matrix.config.runtime-target }})
+    runs-on: ${{ matrix.config.os }}
+
     steps:
     - uses: actions/checkout@v4
 
@@ -43,32 +61,11 @@ jobs:
       run: |
         dotnet restore
 
-    - name: Install libusb 1.0 dev
+    - name: Install libusb 1.0 dev (for linux)
+      if: startsWith(matrix.config.runtime-target, 'linux-')
       run: |
         sudo apt-get update
         sudo apt-get install -y libusb-1.0-0-dev
-
-    - name: Build
-      run: |
-        dotnet build --no-restore
-
-    - name: Test
-      run: |
-        dotnet test --no-build --verbosity normal
-
-  build-win-x64:
-    runs-on: windows-latest
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        global-json-file: ./global.json
-
-    - name: Restore dependencies
-      run: |
-        dotnet restore
 
     - name: Build
       run: |
