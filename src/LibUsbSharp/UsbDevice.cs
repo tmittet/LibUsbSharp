@@ -210,6 +210,10 @@ public sealed class UsbDevice : IUsbDevice
         }
     }
 
+    /// <summary>
+    /// Disposes this device and associated resources. Ongoing transfers are canceled,
+    /// claimed interfaces are automatically released and allocated memory is freed.
+    /// </summary>
     public void Dispose()
     {
         _lock.EnterWriteLock();
@@ -259,6 +263,7 @@ public sealed class UsbDevice : IUsbDevice
         }
     }
 
+    // LibraryImportAttribute not available in .NET6, silence warning
 #pragma warning disable SYSLIB1054 // Use 'LibraryImportAttribute' instead of 'DllImportAttribute'
 
     /// <summary>

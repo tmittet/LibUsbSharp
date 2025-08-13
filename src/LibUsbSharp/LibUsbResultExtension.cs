@@ -14,6 +14,7 @@ public static class LibUsbResultExtension
             : $"LibUsb error code {errorCode}: {detail}.";
     }
 
+    // LibraryImportAttribute not available in .NET6, silence warning
 #pragma warning disable SYSLIB1054 // Use 'LibraryImportAttribute' instead of 'DllImportAttribute'
 
     [DllImport(LibUsb.LibraryName, CallingConvention = CallingConvention.Cdecl)]
