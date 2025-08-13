@@ -28,8 +28,8 @@ public sealed class UsbInterface : IUsbInterface
     private readonly ReaderWriterLockSlim _disposeLock = new();
     private LibUsbTransfer? _lastReadTransfer;
     private LibUsbTransfer? _lastWriteTransfer;
-    private bool _disposing;
-    private bool _disposed;
+    private volatile bool _disposing;
+    private volatile bool _disposed;
 
     /// <inheritdoc />
     public byte Number => _descriptor.InterfaceNumber;
