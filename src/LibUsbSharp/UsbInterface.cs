@@ -162,7 +162,7 @@ public sealed class UsbInterface : IUsbInterface
         try
         {
             CheckDisposed();
-            var bufferLength = Math.Min(count, ReadBufferSize);
+            var bufferLength = Math.Min(count, WriteBufferSize);
             lock (_bulkWriteLock)
             {
                 Array.Copy(buffer, _bulkWriteBuffer, bufferLength);
