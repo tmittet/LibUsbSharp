@@ -18,18 +18,21 @@ public interface IUsbDevice : IDisposable
 
     /// <summary>
     /// Reads the manufacturer from the device if required; otherwise a cached value is returned.
+    /// To read uncached call device.ReadStringDescriptor(device.Descriptor.ManufacturerIndex).
     /// </summary>
     /// <exception cref="ObjectDisposedException">Thrown when the UsbDevice is disposed.</exception>
     string GetManufacturer();
 
     /// <summary>
     /// Reads the product name from the device if required; otherwise a cached value is returned.
+    /// To read uncached, call device.ReadStringDescriptor(device.Descriptor.ProductIndex).
     /// </summary>
     /// <exception cref="ObjectDisposedException">Thrown when the UsbDevice is disposed.</exception>
-    string GetProductName();
+    string GetProduct();
 
     /// <summary>
     /// Reads the serial number from the device if required; otherwise a cached value is returned.
+    /// To read uncached, call device.ReadStringDescriptor(device.Descriptor.SerialNumberIndex).
     /// </summary>
     /// <exception cref="ObjectDisposedException">Thrown when the UsbDevice is disposed.</exception>
     string GetSerialNumber();

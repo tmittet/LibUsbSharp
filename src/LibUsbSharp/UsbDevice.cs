@@ -48,7 +48,7 @@ public sealed class UsbDevice : IUsbDevice
     public string GetManufacturer() => ReadStringDescriptorCached(_descriptor.ManufacturerIndex);
 
     /// <inheritdoc />
-    public string GetProductName() => ReadStringDescriptorCached(_descriptor.ProductIndex);
+    public string GetProduct() => ReadStringDescriptorCached(_descriptor.ProductIndex);
 
     /// <inheritdoc />
     public string GetSerialNumber() => ReadStringDescriptorCached(_descriptor.SerialNumberIndex);

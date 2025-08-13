@@ -48,6 +48,21 @@ public interface IUsbDeviceDescriptor
     ushort BcdDevice { get; }
 
     /// <summary>
+    /// The index of the manufacturer string descriptor.
+    /// </summary>
+    byte ManufacturerIndex { get; init; }
+
+    /// <summary>
+    /// The index of the product name string descriptor.
+    /// </summary>
+    byte ProductIndex { get; init; }
+
+    /// <summary>
+    /// The index of the device serial number string descriptor.
+    /// </summary>
+    byte SerialNumberIndex { get; init; }
+
+    /// <summary>
     /// The number of possible configurations.
     /// </summary>
     byte NumConfigurations { get; }

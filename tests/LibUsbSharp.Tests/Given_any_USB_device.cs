@@ -98,7 +98,7 @@ public sealed class Given_any_USB_device : IDisposable
     public void GetProductName_returns_product_name_given_an_open_device()
     {
         using var device = _deviceSource.OpenAccessibleUsbDevice();
-        var productName = device.GetProductName();
+        var productName = device.GetProduct();
         productName.Should().NotBeNullOrWhiteSpace();
     }
 
