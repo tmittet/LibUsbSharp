@@ -439,8 +439,7 @@ public sealed class LibUsb : ILibUsb
                     libusb_hotplug_deregister_callback(_context.Value, _hotplugCallbackHandle);
                 }
                 _eventLoop?.Dispose();
-                // Close any devices that remain open. Ongoing transfers are canceled, any claimed
-                // interfaces are released, ongoing transfers are canceled and buffers are freed.
+                // Close any devices, interfaces and transfers that remain open or are ongoing
                 foreach (var device in _openDevices)
                 {
                     _logger.LogDebug(
