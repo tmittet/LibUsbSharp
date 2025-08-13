@@ -28,8 +28,8 @@ public sealed class UsbInterface : IUsbInterface
     private readonly ReaderWriterLockSlim _disposeLock = new();
     private LibUsbTransfer? _lastReadTransfer;
     private LibUsbTransfer? _lastWriteTransfer;
-    private bool _disposing;
-    private bool _disposed;
+    private volatile bool _disposing;
+    private volatile bool _disposed;
 
     /// <inheritdoc />
     public byte Number => _descriptor.InterfaceNumber;
@@ -63,12 +63,16 @@ public sealed class UsbInterface : IUsbInterface
         _bulkReadBuffer = new byte[ReadBufferSize];
         _bulkReadBufferHandle = GCHandle.Alloc(_bulkReadBuffer, GCHandleType.Pinned);
         _readEndpoint = readEndpoint is null
-            ? new Lazy<IUsbEndpointDescriptor>(GetEndpoint(descriptor, UsbEndpointDirection.Input))
+            ? new Lazy<IUsbEndpointDescriptor>(() =>
+                GetEndpoint(descriptor, UsbEndpointDirection.Input)
+            )
             : new Lazy<IUsbEndpointDescriptor>(readEndpoint);
         _bulkWriteBuffer = new byte[WriteBufferSize];
         _bulkWriteBufferHandle = GCHandle.Alloc(_bulkWriteBuffer, GCHandleType.Pinned);
         _writeEndpoint = writeEndpoint is null
-            ? new Lazy<IUsbEndpointDescriptor>(GetEndpoint(descriptor, UsbEndpointDirection.Output))
+            ? new Lazy<IUsbEndpointDescriptor>(() =>
+                GetEndpoint(descriptor, UsbEndpointDirection.Output)
+            )
             : new Lazy<IUsbEndpointDescriptor>(writeEndpoint);
     }
 
@@ -102,17 +106,18 @@ public sealed class UsbInterface : IUsbInterface
         }
     }
 
-    //public LibUsbError Read(ReadOnlySpan<byte> buffer, int timeout, out int transferLength) { }
+    public LibUsbResult BulkRead(byte[] destination, out int bytesRead, int timeout) =>
+        BulkRead(destination.AsSpan(), out bytesRead, timeout);
 
     /// <inheritdoc />
-    public LibUsbResult BulkRead(byte[] buffer, out int bytesRead, int timeout = Timeout.Infinite)
+    public LibUsbResult BulkRead(Span<byte> destination, out int bytesRead, int timeout)
     {
         CheckTransferTimeout(timeout);
         _disposeLock.EnterReadLock(); // Use read lock for reads and writes, to support duplex
         try
         {
             CheckDisposed();
-            var bufferLength = Math.Min(buffer.Length, ReadBufferSize);
+            var bufferLength = Math.Min(destination.Length, ReadBufferSize);
             lock (_bulkReadLock)
             {
                 var result = Transfer(
@@ -123,7 +128,10 @@ public sealed class UsbInterface : IUsbInterface
                     out _lastReadTransfer,
                     out bytesRead
                 );
-                Array.Copy(_bulkReadBuffer, buffer, bytesRead);
+                if (bytesRead > 0)
+                {
+                    _bulkReadBuffer.AsSpan(0, bytesRead).CopyTo(destination);
+                }
                 return result;
             }
         }
@@ -144,12 +152,21 @@ public sealed class UsbInterface : IUsbInterface
         }
     }
 
-    //public LibUsbError Write(ReadOnlySpan<byte> buffer, int timeout, out int transferLength) { }
+    public LibUsbResult BulkWrite(byte[] source, int count, out int bytesWritten, int timeout) =>
+        BulkWrite(source.AsSpan(), count, out bytesWritten, timeout);
+
+    public LibUsbResult BulkWrite(ReadOnlySpan<byte> source, out int bytesWritten, int timeout) =>
+        BulkWrite(source, source.Length, out bytesWritten, timeout);
 
     /// <inheritdoc />
-    public LibUsbResult BulkWrite(byte[] buffer, int count, out int bytesWritten, int timeout)
+    public LibUsbResult BulkWrite(
+        ReadOnlySpan<byte> source,
+        int count,
+        out int bytesWritten,
+        int timeout
+    )
     {
-        if (count > buffer.Length)
+        if (count > source.Length)
         {
             throw new ArgumentOutOfRangeException(
                 nameof(count),
@@ -165,7 +182,7 @@ public sealed class UsbInterface : IUsbInterface
             var bufferLength = Math.Min(count, WriteBufferSize);
             lock (_bulkWriteLock)
             {
-                Array.Copy(buffer, _bulkWriteBuffer, bufferLength);
+                source[..bufferLength].CopyTo(_bulkWriteBuffer.AsSpan(0, bufferLength));
                 return Transfer(
                     _writeEndpoint.Value.EndpointAddress,
                     _bulkWriteBufferHandle,
@@ -210,7 +227,7 @@ public sealed class UsbInterface : IUsbInterface
         }
 
         // Create a reset event for the transfer callback
-        var transferCompleteEvent = new ManualResetEvent(false);
+        using var transferCompleteEvent = new ManualResetEvent(false);
         var transferStatus = LibUsbTransferStatus.Error;
         var transferLength = 0;
 
