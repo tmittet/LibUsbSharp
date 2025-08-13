@@ -227,7 +227,7 @@ public sealed class UsbInterface : IUsbInterface
         }
 
         // Create a reset event for the transfer callback
-        var transferCompleteEvent = new ManualResetEvent(false);
+        using var transferCompleteEvent = new ManualResetEvent(false);
         var transferStatus = LibUsbTransferStatus.Error;
         var transferLength = 0;
 
