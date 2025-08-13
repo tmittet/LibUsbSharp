@@ -50,17 +50,17 @@ public interface IUsbDeviceDescriptor
     /// <summary>
     /// The index of the manufacturer string descriptor.
     /// </summary>
-    byte ManufacturerIndex { get; init; }
+    byte ManufacturerIndex { get; }
 
     /// <summary>
     /// The index of the product name string descriptor.
     /// </summary>
-    byte ProductIndex { get; init; }
+    byte ProductIndex { get; }
 
     /// <summary>
     /// The index of the device serial number string descriptor.
     /// </summary>
-    byte SerialNumberIndex { get; init; }
+    byte SerialNumberIndex { get; }
 
     /// <summary>
     /// The number of possible configurations.
