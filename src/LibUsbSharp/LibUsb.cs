@@ -110,9 +110,15 @@ public sealed class LibUsb : ILibUsb
         lock (_lock)
         {
             CheckDisposed();
+            // We do not follow the recommended libusb init pattern: hotplug first then event loop.
+            // See: https://libusb.sourceforge.io/api-1.0/group__libusb__asyncio.html#eventthread
+            // This should not have any adverse effects as long as we register callback with the
+            // LibUsbHotplugFlag.Enumerate flag, as it will allow catching up with current devices.
             var result = libusb_hotplug_register_callback(
                 GetInitializedContextOrThrow(),
                 LibUsbHotplugEvent.DeviceArrived | LibUsbHotplugEvent.DeviceLeft,
+                // Set flag LibUsbHotplugFlag.Enumerate to immediately invoke the
+                // HotplugEventCallback method for currently attached devices on register
                 LibUsbHotplugFlag.Enumerate,
                 vendorId is null ? HotPlugMatchAny : (int)vendorId,
                 productId is null ? HotPlugMatchAny : (int)productId,
@@ -411,7 +417,8 @@ public sealed class LibUsb : ILibUsb
     }
 
     /// <summary>
-    /// Disposes this LibUsb context and closes any associated devices that remain open.
+    /// Disposes this LibUsb context and closes associated devices that remain open. Ongoing
+    /// transfers are canceled, any claimed interfaces are released and allocated memory is freed.
     /// </summary>
     public void Dispose()
     {
@@ -432,6 +439,8 @@ public sealed class LibUsb : ILibUsb
                     libusb_hotplug_deregister_callback(_context.Value, _hotplugCallbackHandle);
                 }
                 _eventLoop?.Dispose();
+                // Close any devices that remain open. Ongoing transfers are canceled, any claimed
+                // interfaces are released, ongoing transfers are canceled and buffers are freed.
                 foreach (var device in _openDevices)
                 {
                     _logger.LogDebug(

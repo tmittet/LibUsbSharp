@@ -55,6 +55,8 @@ internal sealed class LibUsbEventLoop : IDisposable
             _logger.LogDebug("HandleEventsLoop started.");
             while (!token.IsCancellationRequested)
             {
+                // Reset the _completedPtr, in case it was set by libusb. The value of _completedPtr
+                // can be modified by libusb or by the LibUsbEventLoop instance, during disposal.
                 Marshal.WriteInt32(_completedPtr, 0);
                 var result = libusb_handle_events_completed(_context, _completedPtr);
                 if (result != 0)
@@ -100,13 +102,16 @@ internal sealed class LibUsbEventLoop : IDisposable
             _disposed = true;
             if (_thread is not null)
             {
+                // Signal cancellation here to stop the HandleEventsLoop
                 _cts.Cancel();
-                // Set completed = 1 so libusb_handle_events_completed exits if currently running
+                // Set completed = 1 so libusb_handle_events_completed exits if currently blocking
                 Marshal.WriteInt32(_completedPtr, 1);
                 // Call libusb_interrupt_event_handler to unblock event handler and allow exit.
                 // This is required since we don't follow the exact pattern recommended by libusb.
                 // See: https://libusb.sourceforge.io/api-1.0/group__libusb__asyncio.html#eventthread
                 // and: https://libusb.sourceforge.io/api-1.0/group__libusb__poll.html#ga188b6c50944b49f122ccfd45b93fa9f2
+                // We deregister hotplug events, which wakes up libusb_handle_events, first then
+                // stop the event loop; hence the event handler would block forever.
                 _ = libusb_interrupt_event_handler(_context);
                 // Wait for libusb_handle_events_completed and the HandleEventsLoop to stop
                 _thread.Join();

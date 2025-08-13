@@ -306,6 +306,10 @@ public sealed class UsbInterface : IUsbInterface
         }
     }
 
+    /// <summary>
+    /// Disposes this interface and associated resources. Ongoing read and write transfers
+    /// are canceled and allocated read and write memory buffers are freed.
+    /// </summary>
     public void Dispose()
     {
         // Prevent new transfers from starting and cancel any ongoing
