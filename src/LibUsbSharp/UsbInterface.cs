@@ -63,12 +63,16 @@ public sealed class UsbInterface : IUsbInterface
         _bulkReadBuffer = new byte[ReadBufferSize];
         _bulkReadBufferHandle = GCHandle.Alloc(_bulkReadBuffer, GCHandleType.Pinned);
         _readEndpoint = readEndpoint is null
-            ? new Lazy<IUsbEndpointDescriptor>(GetEndpoint(descriptor, UsbEndpointDirection.Input))
+            ? new Lazy<IUsbEndpointDescriptor>(() =>
+                GetEndpoint(descriptor, UsbEndpointDirection.Input)
+            )
             : new Lazy<IUsbEndpointDescriptor>(readEndpoint);
         _bulkWriteBuffer = new byte[WriteBufferSize];
         _bulkWriteBufferHandle = GCHandle.Alloc(_bulkWriteBuffer, GCHandleType.Pinned);
         _writeEndpoint = writeEndpoint is null
-            ? new Lazy<IUsbEndpointDescriptor>(GetEndpoint(descriptor, UsbEndpointDirection.Output))
+            ? new Lazy<IUsbEndpointDescriptor>(() =>
+                GetEndpoint(descriptor, UsbEndpointDirection.Output)
+            )
             : new Lazy<IUsbEndpointDescriptor>(writeEndpoint);
     }
 
