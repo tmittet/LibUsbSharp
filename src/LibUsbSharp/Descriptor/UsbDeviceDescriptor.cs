@@ -32,20 +32,14 @@ public readonly struct UsbDeviceDescriptor : IUsbDeviceDescriptor
     /// <inheritdoc/>
     public ushort BcdDevice { get; init; }
 
-    /// <summary>
-    /// The index of the manufacturer string descriptor.
-    /// </summary>
-    internal byte ManufacturerIndex { get; init; }
+    /// <inheritdoc/>
+    public byte ManufacturerIndex { get; init; }
 
-    /// <summary>
-    /// The index of the product string descriptor.
-    /// </summary>
-    internal byte ProductIndex { get; init; }
+    /// <inheritdoc/>
+    public byte ProductIndex { get; init; }
 
-    /// <summary>
-    /// The index of the device serial number string descriptor.
-    /// </summary>
-    internal byte SerialNumberIndex { get; init; }
+    /// <inheritdoc/>
+    public byte SerialNumberIndex { get; init; }
 
     /// <inheritdoc/>
     public byte NumConfigurations { get; init; }
