@@ -16,6 +16,7 @@ public sealed class UsbDevice : IUsbDevice
     private readonly ConcurrentDictionary<byte, UsbInterface> _claimedInterfaces = new();
     private readonly ConcurrentDictionary<byte, string> _descriptorCache = new();
     private readonly ReaderWriterLockSlim _lock = new();
+    private readonly object _cacheLock = new();
     private bool _disposed;
 
     internal nint Handle { get; init; }
@@ -55,16 +56,23 @@ public sealed class UsbDevice : IUsbDevice
 
     private string ReadStringDescriptorCached(byte descriptorIndex)
     {
-        if (_descriptorCache.TryGetValue(descriptorIndex, out var cachedValue))
+        if (_descriptorCache.TryGetValue(descriptorIndex, out var cachedValue1))
         {
-            return cachedValue;
+            return cachedValue1;
         }
-        var value = ReadStringDescriptor(descriptorIndex);
-        if (!string.IsNullOrWhiteSpace(value))
+        lock (_cacheLock)
         {
-            _ = _descriptorCache.TryAdd(descriptorIndex, value);
+            if (_descriptorCache.TryGetValue(descriptorIndex, out var cachedValue2))
+            {
+                return cachedValue2;
+            }
+            var value = ReadStringDescriptor(descriptorIndex);
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                _ = _descriptorCache.TryAdd(descriptorIndex, value);
+            }
+            return value;
         }
-        return value;
     }
 
     /// <inheritdoc />
