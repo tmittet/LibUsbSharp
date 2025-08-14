@@ -69,7 +69,7 @@ public sealed class UsbDevice : IUsbDevice
             var value = ReadStringDescriptor(descriptorIndex);
             if (!string.IsNullOrWhiteSpace(value))
             {
-                _ = _descriptorCache.TryAdd(descriptorIndex, value);
+                _descriptorCache[descriptorIndex] = value;
             }
             return value;
         }
