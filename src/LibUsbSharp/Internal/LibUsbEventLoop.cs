@@ -18,7 +18,7 @@ internal sealed class LibUsbEventLoop : IDisposable
     private Thread? _thread;
     private bool _disposed;
 
-    public LibUsbEventLoop(ILoggerFactory loggerFactory, IntPtr context)
+    public LibUsbEventLoop(ILoggerFactory loggerFactory, nint context)
     {
         _loggerFactory = loggerFactory;
         _logger = _loggerFactory.CreateLogger<LibUsbEventLoop>();
@@ -55,11 +55,12 @@ internal sealed class LibUsbEventLoop : IDisposable
             _logger.LogDebug("HandleEventsLoop started.");
             while (!token.IsCancellationRequested)
             {
-                // Reset the _completedPtr, in case it was set by libusb. The value of _completedPtr
-                // can be modified by libusb or by the LibUsbEventLoop instance, during disposal.
-                Marshal.WriteInt32(_completedPtr, 0);
+                // libusb does not write to completed, so there is no reason to check it
+                // See: https://github.com/libusb/libusb/blob/master/libusb/io.c
                 var result = libusb_handle_events_completed(_context, _completedPtr);
-                if (result != 0)
+                // libusb_handle_events can return LibUsbResult.Interrupted transiently;
+                // do not exit the loop on LibUsbResult.Interrupted.
+                if (result != 0 && result != (int)LibUsbResult.Interrupted)
                 {
                     _logger.LogWarning(
                         "LibUsb HandleEvents failed; exiting event loop. {ErrorDetail}",
@@ -67,8 +68,8 @@ internal sealed class LibUsbEventLoop : IDisposable
                     );
                     break;
                 }
-                var completed = Marshal.ReadInt32(_completedPtr) != 0;
 #if DEBUG
+                var completed = Marshal.ReadInt32(_completedPtr) != 0;
                 _logger.LogTrace("libusb_handle_events_completed '{Completed}'.", completed);
 #endif
             }
