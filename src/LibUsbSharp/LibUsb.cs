@@ -38,7 +38,7 @@ public sealed class LibUsb : ILibUsb
     /// NOTE: Call Initialize() before enumerating or opening devices.
     /// </summary>
     /// <param name="loggerFactory">
-    /// Optional logger factory. Without this libusb logs are piped to dev/null.
+    /// Logger factory for libusb logging. If null, logging is disabled.
     /// </param>
     public LibUsb(ILoggerFactory? loggerFactory)
     {
