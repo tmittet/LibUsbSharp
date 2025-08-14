@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using LibUsbSharp.Descriptor;
 using Microsoft.Extensions.Logging;
+using Xunit;
 
 namespace LibUsbSharp.Tests;
 
@@ -19,7 +20,25 @@ public class TestDeviceSource(ILogger _logger, ILibUsb _libUsb)
         _requiredVendorId = vendorId;
     }
 
-    public IUsbDevice OpenAccessibleUsbDevice(UsbClass? withInterfaceClass = null)
+    /// <summary>
+    /// Returns an open USB device or throws an exception that results
+    /// in a "Skipped" result for the test, when no device is found.
+    /// </summary>
+    public IUsbDevice OpenUsbDeviceOrSkip(UsbClass? withInterfaceClass = null)
+    {
+        if (TryOpenUsbDevice(out var openDevice, withInterfaceClass))
+        {
+            return openDevice;
+        }
+        throw withInterfaceClass is null
+            ? new SkipException("No USB device available.")
+            : new SkipException($"No USB device with a {withInterfaceClass} interface available.");
+    }
+
+    public bool TryOpenUsbDevice(
+        [NotNullWhen(true)] out IUsbDevice? openDevice,
+        UsbClass? withInterfaceClass = null
+    )
     {
         var devices = _libUsb
             .GetDeviceList(_requiredVendorId)
@@ -27,17 +46,14 @@ public class TestDeviceSource(ILogger _logger, ILibUsb _libUsb)
 
         foreach (var deviceDescriptor in devices)
         {
-            if (TryOpenDevice(deviceDescriptor, withInterfaceClass, out var device))
+            if (TryOpenDevice(deviceDescriptor, withInterfaceClass, out openDevice))
             {
-                return device;
+                return true;
             }
         }
 
-        throw withInterfaceClass is null
-            ? new InvalidOperationException("Accessible USB device interface not found.")
-            : new InvalidOperationException(
-                $"Accessible USB device with {withInterfaceClass} interface not found."
-            );
+        openDevice = null;
+        return false;
     }
 
     public bool TryOpenDevice(
@@ -76,6 +92,7 @@ public class TestDeviceSource(ILogger _logger, ILibUsb _libUsb)
         }
         if (
             device is not null
+            && DeviceSerialIsReadable(device)
             && (withInterfaceClass is null || device.HasInterface(withInterfaceClass.Value))
         )
         {
@@ -85,5 +102,37 @@ public class TestDeviceSource(ILogger _logger, ILibUsb _libUsb)
         device?.Dispose();
         openDevice = null;
         return false;
+    }
+
+    private bool DeviceSerialIsReadable(IUsbDevice device)
+    {
+        var serialNumberIndex = device.Descriptor.SerialNumberIndex;
+        if (serialNumberIndex == 0)
+        {
+            _logger.LogInformation(
+                "Device '{DeviceKey}' serial number index is 0, aka 'no string provided'.",
+                device.Descriptor.DeviceKey
+            );
+            return false;
+        }
+        try
+        {
+            var serialNumber = device.ReadStringDescriptor(serialNumberIndex);
+            _logger.LogInformation(
+                "Device '{DeviceKey}' has serial number '{SerialNumber}'.",
+                device.Descriptor.DeviceKey,
+                serialNumber
+            );
+            return true;
+        }
+        catch (LibUsbException ex)
+        {
+            _logger.LogInformation(
+                "Device '{DeviceKey}' serial number not readable. {ErrorMessage}",
+                device.Descriptor.DeviceKey,
+                ex.Message
+            );
+            return false;
+        }
     }
 }

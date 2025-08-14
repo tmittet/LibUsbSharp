@@ -77,6 +77,15 @@ public sealed class LibUsb : ILibUsb
         {
             return;
         }
+        var callbackResult = libusb_set_option(context, LibUsbOption.LogCallback, LibUsbLogHandler);
+        if (callbackResult != 0)
+        {
+            _logger.LogWarning(
+                "Failed to set LibUsbOption.LogCallback. {ErrorDetail}",
+                ((LibUsbResult)callbackResult).GetMessage()
+            );
+            return; // Only attempt to set log level if callback registration succeeded
+        }
         var libUsbLogLevel = logLevel.ToLibUsbLogLevel();
         var levelResult = libusb_set_option(context, LibUsbOption.LogLevel, (nint)libUsbLogLevel);
         if (levelResult != 0)
@@ -84,14 +93,6 @@ public sealed class LibUsb : ILibUsb
             _logger.LogWarning(
                 "Failed to set LibUsbOption.LogLevel. {ErrorDetail}",
                 ((LibUsbResult)levelResult).GetMessage()
-            );
-        }
-        var callbackResult = libusb_set_option(context, LibUsbOption.LogCallback, LibUsbLogHandler);
-        if (callbackResult != 0)
-        {
-            _logger.LogWarning(
-                "Failed to set LibUsbOption.LogCallback. {ErrorDetail}",
-                ((LibUsbResult)callbackResult).GetMessage()
             );
         }
     }

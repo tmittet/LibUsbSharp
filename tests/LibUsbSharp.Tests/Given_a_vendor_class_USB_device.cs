@@ -7,6 +7,8 @@ using Xunit.Abstractions;
 
 namespace LibUsbSharp.Tests;
 
+[Trait("Category", "UsbDevice")]
+[Trait("Category", "UsbVendorClassDevice")]
 public sealed class Given_a_vendor_class_USB_device : IDisposable
 {
     private readonly ILoggerFactory _loggerFactory;
@@ -24,10 +26,10 @@ public sealed class Given_a_vendor_class_USB_device : IDisposable
         _deviceSource.SetPreferredVendorId(0x2BD9);
     }
 
-    [Fact(Skip = "No vendor class USB devices available on public GitHub runner")]
+    [SkippableFact]
     public void Device_has_vendor_interface_with_input_and_output_endpoints()
     {
-        using var device = _deviceSource.OpenAccessibleUsbDevice(UsbClass.VendorSpecific);
+        using var device = _deviceSource.OpenUsbDeviceOrSkip(UsbClass.VendorSpecific);
         device
             .ConfigDescriptor.Interfaces.Should()
             .ContainSingle(i => i.InterfaceClass == UsbClass.VendorSpecific);
@@ -40,20 +42,20 @@ public sealed class Given_a_vendor_class_USB_device : IDisposable
         outputCount.Should().BeGreaterThanOrEqualTo(1);
     }
 
-    [Fact(Skip = "No vendor class USB devices available on public GitHub runner")]
+    [SkippableFact]
     public void Device_is_able_to_claim_interface_and_get_an_input_endpoint()
     {
-        using var device = _deviceSource.OpenAccessibleUsbDevice(UsbClass.VendorSpecific);
+        using var device = _deviceSource.OpenUsbDeviceOrSkip(UsbClass.VendorSpecific);
         using var usbInterface = device.ClaimInterface(UsbClass.VendorSpecific);
         var endpointFound = usbInterface.TryGetInputEndpoint(out var endpoint);
         endpointFound.Should().BeTrue();
         endpoint!.MaxPacketSize.Should().BePositive();
     }
 
-    [Fact(Skip = "No vendor class USB devices available on public GitHub runner")]
+    [SkippableFact]
     public void Device_is_able_to_claim_interface_and_get_an_output_endpoint()
     {
-        using var device = _deviceSource.OpenAccessibleUsbDevice(UsbClass.VendorSpecific);
+        using var device = _deviceSource.OpenUsbDeviceOrSkip(UsbClass.VendorSpecific);
         using var usbInterface = device.ClaimInterface(UsbClass.VendorSpecific);
         var endpointFound = usbInterface.TryGetOutputEndpoint(out var endpoint);
         endpointFound.Should().BeTrue();
