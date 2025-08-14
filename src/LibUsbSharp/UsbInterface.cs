@@ -26,9 +26,7 @@ public sealed class UsbInterface : IUsbInterface
     private readonly Lazy<IUsbEndpointDescriptor> _writeEndpoint;
     private readonly ReaderWriterLockSlim _bulkWriteLock = new();
     private readonly ReaderWriterLockSlim _disposeLock = new();
-    private LibUsbTransfer? _lastReadTransfer;
-    private LibUsbTransfer? _lastWriteTransfer;
-    private volatile bool _disposing;
+    private readonly CancellationTokenSource _disposeCts;
     private volatile bool _disposed;
 
     /// <inheritdoc />
@@ -74,6 +72,7 @@ public sealed class UsbInterface : IUsbInterface
                 GetEndpoint(descriptor, UsbEndpointDirection.Output)
             )
             : new Lazy<IUsbEndpointDescriptor>(writeEndpoint);
+        _disposeCts = new CancellationTokenSource();
     }
 
     /// <inheritdoc />
@@ -120,13 +119,14 @@ public sealed class UsbInterface : IUsbInterface
             var bufferLength = Math.Min(destination.Length, ReadBufferSize);
             lock (_bulkReadLock)
             {
-                var result = Transfer(
+                var result = ExecuteSyncTransferUnlocked(
+                    LibUsbTransferType.Bulk,
                     _readEndpoint.Value.EndpointAddress,
                     _bulkReadBufferHandle,
                     bufferLength,
                     timeout > 0 ? (uint)timeout : 0,
-                    out _lastReadTransfer,
-                    out bytesRead
+                    out bytesRead,
+                    _disposeCts.Token
                 );
                 if (bytesRead > 0)
                 {
@@ -183,13 +183,14 @@ public sealed class UsbInterface : IUsbInterface
             lock (_bulkWriteLock)
             {
                 source[..bufferLength].CopyTo(_bulkWriteBuffer.AsSpan(0, bufferLength));
-                return Transfer(
+                return ExecuteSyncTransferUnlocked(
+                    LibUsbTransferType.Bulk,
                     _writeEndpoint.Value.EndpointAddress,
                     _bulkWriteBufferHandle,
                     bufferLength,
                     timeout > 0 ? (uint)timeout : 0,
-                    out _lastWriteTransfer,
-                    out bytesWritten
+                    out bytesWritten,
+                    _disposeCts.Token
                 );
             }
         }
@@ -210,18 +211,21 @@ public sealed class UsbInterface : IUsbInterface
         }
     }
 
-    private LibUsbResult Transfer(
+    /// <summary>
+    /// It's expected that locking is handled outside of this method.
+    /// </summary>
+    private LibUsbResult ExecuteSyncTransferUnlocked(
+        LibUsbTransferType transferType,
         byte endpointAddress,
         GCHandle bufferHandle,
         int bufferLength,
         uint timeout,
-        out LibUsbTransfer submittedTransfer,
         out int bytesTransferred,
-        LibUsbTransferType transferType = LibUsbTransferType.Bulk
+        CancellationToken ct
     )
     {
         // Do not start any new transfers after interface dispose has been called
-        if (_disposing)
+        if (_disposeCts.IsCancellationRequested)
         {
             throw new ObjectDisposedException(nameof(UsbInterface), " USB interface is disposing.");
         }
@@ -256,8 +260,6 @@ public sealed class UsbInterface : IUsbInterface
             }
         );
 
-        // Store the submittedTransfer to allow cancellation on dispose; then submit
-        submittedTransfer = transfer;
         var transferResult = transfer.Submit();
         if (transferResult is not LibUsbResult.Success)
         {
@@ -265,10 +267,16 @@ public sealed class UsbInterface : IUsbInterface
             return transferResult;
         }
 
-        // We should not dispose the transfer if there is still a chance that
-        // the callback is triggered, doing so may cause writes to freed memory.
-        // Hence, we wait indefinitely for completion or cancellation.
-        _ = transferCompleteEvent.WaitOne();
+        // Wait for transfer complete or cancellation, if transfer complete is not signaled we
+        // need to tell libusb to cancel the transfer and wait for the cancellation to complete.
+        if (WaitHandle.WaitAny(new[] { transferCompleteEvent, ct.WaitHandle }) != 0)
+        {
+            transfer.Cancel();
+            // We should not dispose the transfer if there is still a chance that
+            // the callback is triggered, doing so may cause writes to freed memory.
+            // Hence, we wait indefinitely for completion or cancellation.
+            _ = transferCompleteEvent.WaitOne();
+        }
 
         // The transfer is complete, cancelled or failed; return result
         bytesTransferred = transferLength;
@@ -329,21 +337,28 @@ public sealed class UsbInterface : IUsbInterface
     /// </summary>
     public void Dispose()
     {
-        // Prevent new transfers from starting and cancel any ongoing
-        _disposing = true;
-        _ = _lastReadTransfer?.Cancel();
-        _ = _lastWriteTransfer?.Cancel();
+        try
+        {
+            // Prevent new transfers from starting and cancel any ongoing
+            _disposeCts.Cancel();
+        }
+        catch (ObjectDisposedException)
+        {
+            _logger.LogDebug("USB interface {UsbInterface} already disposed.", this);
+            return;
+        }
         _disposeLock.EnterWriteLock();
         try
         {
             if (_disposed)
             {
-                _logger.LogDebug("USB interface {UsbInterface} already disposed.", ToString());
+                _logger.LogDebug("USB interface {UsbInterface} already disposed.", this);
                 return;
             }
             _bulkReadBufferHandle.Free();
             _bulkWriteBufferHandle.Free();
             _disposed = true;
+            _disposeCts.Dispose();
         }
         finally
         {
