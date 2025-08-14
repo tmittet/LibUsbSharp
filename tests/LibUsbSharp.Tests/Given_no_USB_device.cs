@@ -9,12 +9,10 @@ namespace LibUsbSharp.Tests;
 public sealed class Given_no_USB_device : IDisposable
 {
     private readonly ILoggerFactory _loggerFactory;
-    private readonly ILogger<Given_no_USB_device> _logger;
 
     public Given_no_USB_device(ITestOutputHelper output)
     {
         _loggerFactory = new TestLoggerFactory(output);
-        _logger = _loggerFactory.CreateLogger<Given_no_USB_device>();
     }
 
     [Fact]
@@ -27,7 +25,7 @@ public sealed class Given_no_USB_device : IDisposable
     [Fact]
     public void GetDeviceList_throws_when_called_without_Initialize()
     {
-        using var libUsb = new LibUsb();
+        using var libUsb = new LibUsb(_loggerFactory);
         var act = () => libUsb.GetDeviceList();
         act.Should().Throw<InvalidOperationException>();
     }
@@ -35,7 +33,7 @@ public sealed class Given_no_USB_device : IDisposable
     [Fact]
     public void GetDeviceList_throws_when_called_after_Dispose()
     {
-        using var libUsb = new LibUsb();
+        using var libUsb = new LibUsb(_loggerFactory);
         libUsb.Initialize(LogLevel.Information);
         libUsb.Dispose();
         var act = () => libUsb.GetDeviceList();
@@ -49,7 +47,7 @@ public sealed class Given_no_USB_device : IDisposable
         {
             return;
         }
-        using var libUsb = new LibUsb();
+        using var libUsb = new LibUsb(_loggerFactory);
         var act = () => libUsb.RegisterHotplug(vendorId: 0x2BD9);
         act.Should().Throw<InvalidOperationException>();
     }
@@ -61,7 +59,7 @@ public sealed class Given_no_USB_device : IDisposable
         {
             return;
         }
-        using var libUsb = new LibUsb();
+        using var libUsb = new LibUsb(_loggerFactory);
         libUsb.Initialize(LogLevel.Information);
         var success = libUsb.RegisterHotplug(vendorId: 0x2BD9);
         success.Should().BeTrue();
@@ -74,7 +72,7 @@ public sealed class Given_no_USB_device : IDisposable
         {
             return;
         }
-        using var libUsb = new LibUsb();
+        using var libUsb = new LibUsb(_loggerFactory);
         libUsb.Initialize(LogLevel.Information);
         var success = libUsb.RegisterHotplug(vendorId: 0x2BD9);
         success.Should().BeFalse();
