@@ -37,7 +37,10 @@ public sealed class LibUsb : ILibUsb
     /// Creates the LibUsb wrapper.
     /// NOTE: Call Initialize() before enumerating or opening devices.
     /// </summary>
-    public LibUsb(ILoggerFactory? loggerFactory = default)
+    /// <param name="loggerFactory">
+    /// Logger factory for libusb logging. If null, logging is disabled.
+    /// </param>
+    public LibUsb(ILoggerFactory? loggerFactory)
     {
         _loggerFactory = loggerFactory ?? new NullLoggerFactory();
         _logger = _loggerFactory.CreateLogger<LibUsb>();
