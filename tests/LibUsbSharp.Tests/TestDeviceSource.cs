@@ -92,6 +92,7 @@ public class TestDeviceSource(ILogger _logger, ILibUsb _libUsb)
         }
         if (
             device is not null
+            && DeviceSerialIsReadable(device)
             && (withInterfaceClass is null || device.HasInterface(withInterfaceClass.Value))
         )
         {
@@ -101,5 +102,37 @@ public class TestDeviceSource(ILogger _logger, ILibUsb _libUsb)
         device?.Dispose();
         openDevice = null;
         return false;
+    }
+
+    private bool DeviceSerialIsReadable(IUsbDevice device)
+    {
+        var serialNumberIndex = device.Descriptor.SerialNumberIndex;
+        if (serialNumberIndex == 0)
+        {
+            _logger.LogInformation(
+                "Device '{DeviceKey}' serial number index is 0, aka 'no string provided'.",
+                device.Descriptor.DeviceKey
+            );
+            return false;
+        }
+        try
+        {
+            var serialNumber = device.ReadStringDescriptor(serialNumberIndex);
+            _logger.LogInformation(
+                "Device '{DeviceKey}' has serial number '{SerialNumber}'.",
+                device.Descriptor.DeviceKey,
+                serialNumber
+            );
+            return true;
+        }
+        catch (LibUsbException ex)
+        {
+            _logger.LogInformation(
+                "Device '{DeviceKey}' serial number not readable. {ErrorMessage}",
+                device.Descriptor.DeviceKey,
+                ex.Message
+            );
+            return false;
+        }
     }
 }
