@@ -113,7 +113,7 @@ public sealed class UsbDevice : IUsbDevice
             }
             var usbInterface = new UsbInterface(_loggerFactory, Handle, descriptor);
             // No need to check if already added, checked in TryGetValue above
-            _ = _claimedInterfaces.TryAdd(descriptor.InterfaceNumber, usbInterface);
+            _claimedInterfaces[descriptor.InterfaceNumber] = usbInterface;
             _logger.LogDebug("USB interface {UsbInterface} claimed.", usbInterface);
             return usbInterface;
         }
