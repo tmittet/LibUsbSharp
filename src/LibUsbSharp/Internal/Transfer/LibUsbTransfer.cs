@@ -121,17 +121,6 @@ internal sealed class LibUsbTransfer : IDisposable
         }
     }
 
-    /// <summary>
-    /// Throw ObjectDisposedException when LibUsbTransfer is disposed.
-    /// </summary>
-    private void CheckDisposed()
-    {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(nameof(LibUsbTransfer));
-        }
-    }
-
     public void Dispose()
     {
         lock (_disposeLock)
@@ -154,73 +143,6 @@ internal sealed class LibUsbTransfer : IDisposable
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     internal delegate void LibUsbTransferCallback(nint transferPtr);
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct LibUsbTransferTemplate
-    {
-        /// <summary>
-        /// Handle of the device that this transfer will be submitted to.
-        /// </summary>
-        internal nint DeviceHandle;
-
-        /// <summary>
-        /// A bitwise OR combination of libusb_transfer_flags.
-        /// </summary>
-        internal LibUsbTransferFlag Flags;
-
-        /// <summary>
-        /// Address of the endpoint where this transfer will be sent.
-        /// </summary>
-        internal byte Endpoint;
-
-        /// <summary>
-        /// Type of the transfer from libusb_transfer_type.
-        /// </summary>
-        internal LibUsbTransferType Type;
-
-        /// <summary>
-        /// Timeout for this transfer in milliseconds.
-        /// </summary>
-        internal uint Timeout;
-
-        /// <summary>
-        /// The status of the transfer.
-        /// </summary>
-        internal LibUsbTransferStatus Status;
-
-        /// <summary>
-        /// Length of the data buffer.
-        /// </summary>
-        internal int Length;
-
-        /// <summary>
-        /// Actual length of data that was transferred.
-        /// </summary>
-        internal int ActualLength;
-
-        /// <summary>
-        /// Callback function.
-        /// </summary>
-        internal LibUsbTransferCallback Callback;
-
-        /// <summary>
-        /// User context data.
-        /// </summary>
-        internal nint UserData;
-
-        /// <summary>
-        /// Data buffer.
-        /// </summary>
-        internal nint Buffer;
-
-        /// <summary>
-        /// Number of isochronous packets.
-        /// </summary>
-        internal int NumIsoPackets;
-
-        // Isochronous packet descriptors, for isochronous transfers only.
-        // IsoPacketDesc
-    }
 
     // LibraryImportAttribute not available in .NET6, silence warning
 #pragma warning disable SYSLIB1054 // Use 'LibraryImportAttribute' instead of 'DllImportAttribute'
