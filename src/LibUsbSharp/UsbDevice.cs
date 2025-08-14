@@ -112,25 +112,10 @@ public sealed class UsbDevice : IUsbDevice
                 );
             }
             var usbInterface = new UsbInterface(_loggerFactory, Handle, descriptor);
-            if (_claimedInterfaces.TryAdd(descriptor.InterfaceNumber, usbInterface))
-            {
-                _logger.LogDebug("USB interface {UsbInterface} claimed.", usbInterface);
-                return usbInterface;
-            }
-            // If add claimed interface fails, release the interface immediately
-            var releaseResult = libusb_release_interface(Handle, descriptor.InterfaceNumber);
-            if (releaseResult != 0)
-            {
-                _logger.LogError(
-                    "Failed to release USB interface {UsbInterface}. {ErrorMessage}",
-                    descriptor,
-                    ((LibUsbResult)releaseResult).GetMessage()
-                );
-            }
-            throw new LibUsbException(
-                "Failed to add claimed USB interface to list of claimed interfaces.",
-                LibUsbResult.ManagedError
-            );
+            // No need to check if already added, checked in TryGetValue above
+            _ = _claimedInterfaces.TryAdd(descriptor.InterfaceNumber, usbInterface);
+            _logger.LogDebug("USB interface {UsbInterface} claimed.", usbInterface);
+            return usbInterface;
         }
         finally
         {
