@@ -332,32 +332,27 @@ public sealed class UsbInterface : IUsbInterface
     /// </summary>
     public void Dispose()
     {
-        try
-        {
-            // Prevent new transfers from starting and cancel any ongoing
-            _disposeCts.Cancel();
-        }
-        catch (ObjectDisposedException)
-        {
-            _logger.LogDebug("USB interface {UsbInterface} already disposed.", this);
-            return;
-        }
-        _disposeLock.EnterWriteLock();
-        try
+        lock (_disposeCts)
         {
             if (_disposed)
             {
                 _logger.LogDebug("USB interface {UsbInterface} already disposed.", this);
                 return;
             }
-            _bulkReadBufferHandle.Free();
-            _bulkWriteBufferHandle.Free();
-            _disposed = true;
-            _disposeCts.Dispose();
-        }
-        finally
-        {
-            _disposeLock.ExitWriteLock();
+            // Prevent new transfers from starting and cancel any ongoing
+            _disposeCts.Cancel();
+            _disposeLock.EnterWriteLock();
+            try
+            {
+                _bulkReadBufferHandle.Free();
+                _bulkWriteBufferHandle.Free();
+                _disposeCts.Dispose();
+                _disposed = true;
+            }
+            finally
+            {
+                _disposeLock.ExitWriteLock();
+            }
         }
     }
 }
