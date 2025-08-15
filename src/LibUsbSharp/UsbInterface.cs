@@ -115,7 +115,10 @@ public sealed class UsbInterface : IUsbInterface
         _disposeLock.EnterReadLock(); // Use read lock for reads and writes, to support duplex
         try
         {
-            CheckDisposed();
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(nameof(UsbInterface));
+            }
             var bufferLength = Math.Min(destination.Length, ReadBufferSize);
             lock (_bulkReadLock)
             {
@@ -178,7 +181,10 @@ public sealed class UsbInterface : IUsbInterface
         _disposeLock.EnterReadLock(); // Use read lock for reads and writes, to support duplex
         try
         {
-            CheckDisposed();
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(nameof(UsbInterface));
+            }
             var bufferLength = Math.Min(count, WriteBufferSize);
             lock (_bulkWriteLock)
             {
@@ -317,17 +323,6 @@ public sealed class UsbInterface : IUsbInterface
                 timeout,
                 "Invalid timeout; must be greater than zero or -1 (infinite)."
             );
-        }
-    }
-
-    /// <summary>
-    /// Throw ObjectDisposedException when UsbDevice is disposed.
-    /// </summary>
-    private void CheckDisposed()
-    {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(nameof(UsbInterface));
         }
     }
 
