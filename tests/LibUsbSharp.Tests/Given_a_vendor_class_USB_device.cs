@@ -7,7 +7,6 @@ using Xunit.Abstractions;
 
 namespace LibUsbSharp.Tests;
 
-[Trait("Category", "UsbDevice")]
 [Trait("Category", "UsbVendorClassDevice")]
 public sealed class Given_a_vendor_class_USB_device : IDisposable
 {
