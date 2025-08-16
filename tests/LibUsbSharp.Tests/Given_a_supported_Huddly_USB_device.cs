@@ -80,7 +80,6 @@ public sealed class Given_a_supported_Huddly_USB_device : IDisposable
         using var device = _deviceSource.OpenUsbDeviceOrSkip(UsbClass.VendorSpecific);
         var manufacturer = device.GetManufacturer();
         manufacturer.Should().Be("Huddly");
-        _ = device.GetManufacturer();
     }
 
     [SkippableFact]
