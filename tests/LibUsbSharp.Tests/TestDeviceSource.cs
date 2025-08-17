@@ -119,7 +119,7 @@ public class TestDeviceSource(ILogger _logger, ILibUsb _libUsb)
             }
             catch
             {
-                // Ignore
+                // Interface claim failed - device is not accessible
             }
         }
         return false;
