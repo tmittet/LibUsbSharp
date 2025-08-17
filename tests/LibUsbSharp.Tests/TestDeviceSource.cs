@@ -93,7 +93,10 @@ public class TestDeviceSource(ILogger _logger, ILibUsb _libUsb)
         if (
             device is not null
             && DeviceSerialIsReadable(device)
-            && (withInterfaceClass is null || device.HasInterface(withInterfaceClass.Value))
+            && (
+                withInterfaceClass is null
+                || DeviceInterfaceIsAccessible(device, withInterfaceClass.Value)
+            )
         )
         {
             openDevice = device;
@@ -101,6 +104,24 @@ public class TestDeviceSource(ILogger _logger, ILibUsb _libUsb)
         }
         device?.Dispose();
         openDevice = null;
+        return false;
+    }
+
+    private static bool DeviceInterfaceIsAccessible(IUsbDevice device, UsbClass interfaceClass)
+    {
+        if (device.HasInterface(interfaceClass))
+        {
+            try
+            {
+                using var usbInterface = device.ClaimInterface(interfaceClass);
+                return usbInterface.TryGetInputEndpoint(out _)
+                    && usbInterface.TryGetOutputEndpoint(out _);
+            }
+            catch
+            {
+                // Ignore
+            }
+        }
         return false;
     }
 
