@@ -16,10 +16,11 @@ public sealed class Given_no_USB_device : IDisposable
     }
 
     [Fact]
-    public void GetVersion_returns_a_valid_version_above_1_0()
+    public void GetVersion_returns_a_valid_version_of_at_least_1_0_27()
     {
         var version = LibUsb.GetVersion();
-        version.Should().BeGreaterThan(new Version(1, 0));
+        // Log callback requires v1.0.27 or above
+        version.Should().BeGreaterThanOrEqualTo(new Version(1, 0, 27));
     }
 
     [Fact]
