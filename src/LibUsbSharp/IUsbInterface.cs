@@ -43,7 +43,7 @@ public interface IUsbInterface : IDisposable
     /// ResourceBusy = Halt condition detected (endpoint stalled) or control request not supported.<br />
     /// Timeout = The read operation timed out.<br />
     /// Overflow = The device sent more data than requested.<br />
-    /// Interrupted = The read operation was cancelled.<br />
+    /// Interrupted = The read operation was canceled.<br />
     /// </returns>
     LibUsbResult BulkRead(byte[] destination, out int bytesRead, int timeout = Timeout.Infinite);
 
@@ -77,7 +77,7 @@ public interface IUsbInterface : IDisposable
     /// ResourceBusy = Halt condition detected (endpoint stalled) or control request not supported.<br />
     /// Timeout = The write operation timed out.<br />
     /// Overflow = The host sent more data than expected.<br />
-    /// Interrupted = The write operation was cancelled.<br />
+    /// Interrupted = The write operation was canceled.<br />
     /// NotSupported = The transfer flags are not supported by the operating system.<br />
     /// </returns>
     LibUsbResult BulkWrite(
