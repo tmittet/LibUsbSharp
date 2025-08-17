@@ -34,17 +34,21 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # Visit github-hosted-runners page for reference:
+        # https://docs.github.com/en/actions/reference/runners/github-hosted-runners
         config:
-          - os: ubuntu-latest
-            runtime-target: linux-x64
           - os: ubuntu-24.04-arm
             runtime-target: linux-arm64
+          - os: ubuntu-latest
+            runtime-target: linux-x64
+          - os: macos-latest
+            runtime-target: osx-arm64
+          - os: macos-13
+            runtime-target: osx-x64
+          # - os: windows-11-arm
+          #   runtime-target: win-arm64
           - os: windows-latest
             runtime-target: win-x64
-          - os: macos-latest
-            runtime-target: osx-x64
-#          - os: macos-latest # Use arm64 runner when available
-#            runtime-target: osx-arm64
 
     name: Build and Test (${{ matrix.config.runtime-target }})
     runs-on: ${{ matrix.config.os }}
