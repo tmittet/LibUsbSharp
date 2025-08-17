@@ -1,11 +1,35 @@
 using System.Runtime.InteropServices;
-using static LibUsbSharp.Internal.Transfer.LibUsbTransfer;
 
 namespace LibUsbSharp.Internal.Transfer;
+
+[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+internal delegate void LibUsbTransferCallback(nint transferPtr);
 
 [StructLayout(LayoutKind.Sequential)]
 internal struct LibUsbTransferTemplate
 {
+    public static LibUsbTransferTemplate Create(
+        nint deviceHandle,
+        byte endpoint,
+        GCHandle bufferHandle,
+        int bufferLength,
+        LibUsbTransferType type,
+        uint timeout,
+        LibUsbTransferCallback callback
+    )
+    {
+        return new LibUsbTransferTemplate
+        {
+            DeviceHandle = deviceHandle,
+            Endpoint = endpoint,
+            Type = type,
+            Timeout = timeout,
+            Length = bufferLength,
+            Callback = callback,
+            Buffer = bufferHandle.AddrOfPinnedObject(),
+        };
+    }
+
     /// <summary>
     /// Handle of the device that this transfer will be submitted to.
     /// </summary>
