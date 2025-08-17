@@ -1,0 +1,171 @@
+name: Build libusb (macOS & Catalyst)
+
+on:
+  workflow_dispatch:
+    inputs:
+      libusb_ref:
+        description: "git ref for libusb (tag/branch/commit)"
+        default: "v1.0.29"
+        required: true
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        # Visit github-hosted-runners page for reference:
+        # https://docs.github.com/en/actions/reference/runners/github-hosted-runners
+        include:
+          # macOS native
+          - name: macOS arm64
+            runner: macos-latest
+            platform: macos
+            arch: arm64
+            macos_deployment: "11.0"
+          - name: macOS x64
+            runner: macos-13
+            platform: macos
+            arch: x86_64
+            macos_deployment: "11.0"
+
+          # Mac Catalyst (macabi)
+          - name: Catalyst arm64 (macabi)
+            runner: macos-latest
+            platform: catalyst
+            arch: arm64
+            ios_target: "15.0"
+          - name: Catalyst x64 (macabi)
+            runner: macos-13
+            platform: catalyst
+            arch: x86_64
+            ios_target: "15.0"
+
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.runner }}
+
+    env:
+      LIBUSB_REF: ${{ github.event.inputs.libusb_ref }}
+      BUILD_DIR: ${{ github.workspace }}/build
+      STAGE_DIR: ${{ github.workspace }}/stage
+      SRC_DIR:   ${{ github.workspace }}/libusb
+
+    steps:
+      - name: Checkout (this repo)
+        uses: actions/checkout@v4
+
+      - name: Fetch libusb source
+        run: |
+          git clone --depth 1 --branch "$LIBUSB_REF" https://github.com/libusb/libusb.git "$SRC_DIR"
+          echo "libusb ref:"; (cd "$SRC_DIR" && git rev-parse --short HEAD)
+
+      - name: Print tool versions
+        run: |
+          uname -a
+          xcodebuild -version
+          clang --version
+
+      - name: Install build deps (autotools, libtool, pkg-config)
+        run: |
+          brew update --preinstall
+          brew install autoconf automake libtool pkg-config || true
+
+      - name: Prepare folders
+        run: |
+          rm -rf "$BUILD_DIR" "$STAGE_DIR"
+          mkdir -p "$BUILD_DIR" "$STAGE_DIR"
+
+      # ---------- macOS (Autotools -> dynamic .dylib) ----------
+      - name: Build libusb macOS (${{ matrix.arch }})
+        if: matrix.platform == 'macos'
+        working-directory: ${{ env.SRC_DIR }}
+        shell: bash
+        env:
+          MACOSX_DEPLOYMENT_TARGET: ${{ matrix.macos_deployment }}
+        run: |
+          set -euxo pipefail
+          ./autogen.sh
+          export CC="clang -arch ${{ matrix.arch }}"
+          export CFLAGS="-O2 -pipe"
+          export LDFLAGS="-Wl,-headerpad_max_install_names -Wl,-install_name,@rpath/libusb-1.0.dylib"
+          ./configure --disable-dependency-tracking --prefix="$STAGE_DIR/macos-${{ matrix.arch }}"
+          make -j"$(sysctl -n hw.ncpu)"
+          make install
+
+          # Package headers + dynamic lib (and static if produced)
+          tar -czf "$BUILD_DIR/libusb-macos-${{ matrix.arch }}.tar.gz" -C "$STAGE_DIR" "macos-${{ matrix.arch }}"
+
+      # ---------- Mac Catalyst (macabi -> dynamic .dylib + XCFramework) ----------
+      - name: Build libusb Catalyst (${{ matrix.arch }}) dynamic
+        if: matrix.platform == 'catalyst'
+        shell: bash
+        run: |
+          set -euxo pipefail
+          SDK="$(xcrun --sdk macosx --show-sdk-path)"
+          SRC="${SRC_DIR}/libusb"
+          OUT="${BUILD_DIR}/macabi-${{ matrix.arch }}"
+          mkdir -p "$OUT"
+
+          # Minimal config header (bypassing autotools for macabi)
+          cat > "${SRC}/config.h" <<'CONF'
+          #define OS_DARWIN 1
+          #define DEFAULT_LOG_LEVEL 3
+          #define THREADS_POSIX 1
+          #define HAVE_MACH_ABSOLUTE_TIME 1
+          #define HAVE_CLOCK_GETTIME 1
+          #define HAVE_POLL 1
+          CONF
+
+          COMMON="-isysroot ${SDK} -target ${{ matrix.arch }}-apple-ios${{ matrix.ios_target }}-macabi -I${SRC_DIR}/libusb -O2 -fPIC -DHAVE_CONFIG_H"
+
+          CORE_SRCS=(
+            "${SRC}/core.c" "${SRC}/descriptor.c" "${SRC}/hotplug.c"
+            "${SRC}/io.c"   "${SRC}/strerror.c"   "${SRC}/sync.c"
+            "${SRC}/os/poll_posix.c" "${SRC}/os/threads_posix.c" "${SRC}/os/events_posix.c"
+          )
+          DARWIN_SRCS=("${SRC}/os/darwin_usb.c")
+
+          OBJ=()
+          for f in "${CORE_SRCS[@]}" "${DARWIN_SRCS[@]}"; do
+            o="${OUT}/$(basename "${f%.c}").o"
+            clang $COMMON -c "$f" -o "$o"
+            OBJ+=("$o")
+          done
+
+          # Build dynamic lib for macabi
+          # Note: use @rpath so the app can embed and load it from its Frameworks/ or a custom path
+          clang -dynamiclib "${OBJ[@]}" \
+            -isysroot "${SDK}" -target ${{ matrix.arch }}-apple-ios${{ matrix.ios_target }}-macabi \
+            -current_version 1.0 -compatibility_version 1.0 \
+            -Wl,-install_name,@rpath/libusb-1.0.dylib \
+            -framework IOKit -framework CoreFoundation \
+            -o "${OUT}/libusb-1.0.dylib"
+
+          # Stage headers + dylib
+          STAGE="$STAGE_DIR/catalyst-${{ matrix.arch }}"
+          mkdir -p "$STAGE/include/libusb-1.0" "$STAGE/lib"
+          cp -R "${SRC_DIR}/libusb/libusb.h" "$STAGE/include/libusb-1.0/"
+          cp "${OUT}/libusb-1.0.dylib" "$STAGE/lib/"
+
+          # Create an XCFramework with the dynamic library (per-arch)
+          xcodebuild -create-xcframework \
+            -library "$STAGE/lib/libusb-1.0.dylib" -headers "$STAGE/include" \
+            -output "$BUILD_DIR/libusb-macabi-${{ matrix.arch }}.xcframework"
+
+          # Tar the staged slice (for debugging/inspection)
+          tar -czf "$BUILD_DIR/libusb-macabi-${{ matrix.arch }}.tar.gz" -C "$STAGE_DIR" "catalyst-${{ matrix.arch }}"
+
+      - name: Upload artifact (macOS)
+        if: matrix.platform == 'macos'
+        uses: actions/upload-artifact@v4
+        with:
+          name: libusb-macos-${{ matrix.arch }}-dylib
+          path: ${{ env.BUILD_DIR }}/libusb-macos-${{ matrix.arch }}.tar.gz
+          if-no-files-found: error
+
+      - name: Upload artifact (Catalyst)
+        if: matrix.platform == 'catalyst'
+        uses: actions/upload-artifact@v4
+        with:
+          name: libusb-macabi-${{ matrix.arch }}-xcframework
+          path: ${{ env.BUILD_DIR }}/libusb-macabi-${{ matrix.arch }}.xcframework
+          if-no-files-found: error
