@@ -72,10 +72,12 @@ internal static class LibUsbTransfer
             // we tell libusb to cancel the transfer and wait for the cancellation to complete.
             if (WaitHandle.WaitAny(new[] { transferCompleteEvent, ct.WaitHandle }) != 0)
             {
-                // We should not dispose the transfer if there is still a chance that
-                // the callback is triggered, doing so may cause writes to freed memory.
-                // Hence, we wait indefinitely for completion or cancellation.
+                // Tell libusb to cancel the transfer and discard the returned cancel status,
+                // the final transfer status is received through the LibUsbTransferCallback.
                 _ = libusb_cancel_transfer(transferPtr);
+                // We should not free the transfer or handle if there is still a chance
+                // that the callback is triggered, doing so may result in use-after-free.
+                // To avoid this, we wait indefinitely for completion or cancellation.
                 _ = transferCompleteEvent.WaitOne();
             }
 
