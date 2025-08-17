@@ -33,6 +33,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{FE4CADDB-7F7D-4F33-97C9-0A26FB877D18}"
 	ProjectSection(SolutionItems) = preProject
 		.github\workflows\build.yml = .github\workflows\build.yml
+		.github\workflows\build_libusb_mac.yml = .github\workflows\build_libusb_mac.yml
 	EndProjectSection
 EndProject
 Global
