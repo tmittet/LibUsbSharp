@@ -38,19 +38,19 @@ jobs:
         # https://docs.github.com/en/actions/reference/runners/github-hosted-runners
         config:
           - os: ubuntu-24.04-arm
-            runtime-target: linux-arm64
+            runtime: linux-arm64
           - os: ubuntu-latest
-            runtime-target: linux-x64
+            runtime: linux-x64
           - os: macos-latest
-            runtime-target: osx-arm64
+            runtime: osx-arm64
           - os: macos-13
-            runtime-target: osx-x64
+            runtime: osx-x64
           - os: windows-11-arm
-            runtime-target: win-arm64
+            runtime: win-arm64
           - os: windows-latest
-            runtime-target: win-x64
+            runtime: win-x64
 
-    name: Build and Test (${{ matrix.config.runtime-target }})
+    name: Build and Test (${{ matrix.config.runtime }})
     runs-on: ${{ matrix.config.os }}
 
     steps:
@@ -63,18 +63,32 @@ jobs:
 
     - name: Restore dependencies
       run: |
-        dotnet restore
+        dotnet restore --runtime ${{ matrix.config.runtime }}
+
+    - name: Build LibUsbSharp
+      shell: bash
+      run: |
+        dotnet build src/LibUsbSharp/LibUsbSharp.csproj \
+          --no-restore \
+          --runtime ${{ matrix.config.runtime }}
+
+    - name: Build LibUsbSharp.Tests
+      shell: bash
+      run: |
+        dotnet build tests/LibUsbSharp.Tests/LibUsbSharp.Tests.csproj \
+          --no-restore \
+          --runtime ${{ matrix.config.runtime }}
 
     - name: Install libusb 1.0 dev (for linux)
-      if: startsWith(matrix.config.runtime-target, 'linux-')
+      if: startsWith(matrix.config.runtime, 'linux-')
       run: |
         sudo apt-get update
         sudo apt-get install -y libusb-1.0-0-dev
 
-    - name: Build
+    - name: Run LibUsbSharp.Tests
+      shell: bash
       run: |
-        dotnet build --no-restore
-
-    - name: Test
-      run: |
-        dotnet test --no-build --verbosity normal
+        dotnet test tests/LibUsbSharp.Tests/LibUsbSharp.Tests.csproj \
+          --no-build \
+          --runtime ${{ matrix.config.runtime }} \
+          --verbosity normal
