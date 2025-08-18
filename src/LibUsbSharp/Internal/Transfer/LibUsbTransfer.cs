@@ -32,7 +32,7 @@ internal sealed class LibUsbTransfer : IDisposable
     /// <param name="type"></param>
     /// <param name="timeout">
     /// A timeout of 0 means no timeout. The transfer will wait
-    /// indefinitely until it completes, fails, or is cancelled.
+    /// indefinitely until it completes, fails, or is canceled.
     /// </param>
     /// <param name="completedHandler">Called on transfer completion.</param>
     internal LibUsbTransfer(
@@ -108,8 +108,8 @@ internal sealed class LibUsbTransfer : IDisposable
     }
 
     /// <summary>
-    /// Attempts to cancel a transfer. Returns NotFound when attempting to cancel
-    /// an unsubmitted transfer or cancelling a disposed LibUsbTransfer object.
+    /// Attempts to cancel a transfer. Returns NotFound when attempting to cancel an
+    /// unsubmitted, already complete, already canceled or disposed LibUsbTransfer.
     /// </summary>
     public LibUsbResult Cancel()
     {

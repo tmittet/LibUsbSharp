@@ -8,7 +8,7 @@ internal static class LibUsbTransferStatusExtension
             LibUsbTransferStatus.Completed => LibUsbResult.Success,
             LibUsbTransferStatus.Error => LibUsbResult.IoError,
             LibUsbTransferStatus.TimedOut => LibUsbResult.Timeout,
-            LibUsbTransferStatus.Cancelled => LibUsbResult.Interrupted,
+            LibUsbTransferStatus.Canceled => LibUsbResult.Interrupted,
             LibUsbTransferStatus.Stall => LibUsbResult.ResourceBusy,
             LibUsbTransferStatus.NoDevice => LibUsbResult.NoDevice,
             LibUsbTransferStatus.Overflow => LibUsbResult.Overflow,

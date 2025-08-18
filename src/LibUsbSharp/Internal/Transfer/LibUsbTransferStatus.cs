@@ -9,7 +9,7 @@ internal enum LibUsbTransferStatus : int
     Completed = 0,
     Error,
     TimedOut,
-    Cancelled,
+    Canceled,
 
     /// <summary>
     /// For bulk/interrupt endpoints: halt condition detected (endpoint stalled).
