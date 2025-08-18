@@ -1,8 +1,9 @@
 using LibUsbSharp.Descriptor;
+using LibUsbSharp.Internal;
 
 namespace LibUsbSharp;
 
-public interface IUsbDevice : IDisposable
+public interface IUsbDevice : IDisposable, IRundownGuard
 {
     /// <summary>
     /// A device descriptor that includes device class, vendor ID, product ID, bus address and more.
