@@ -45,8 +45,8 @@ jobs:
             runtime-target: osx-arm64
           - os: macos-13
             runtime-target: osx-x64
-          # - os: windows-11-arm
-          #   runtime-target: win-arm64
+          - os: windows-11-arm
+            runtime-target: win-arm64
           - os: windows-latest
             runtime-target: win-x64
 
