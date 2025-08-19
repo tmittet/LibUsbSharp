@@ -7,6 +7,11 @@ on:
   release:
     types: [published]
 
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
 jobs:
   validate-code-style:
     name: Validate Code Style
@@ -91,4 +96,14 @@ jobs:
         dotnet test tests/LibUsbSharp.Tests/LibUsbSharp.Tests.csproj \
           --no-build \
           --runtime ${{ matrix.config.runtime }} \
+          --logger junit \
           --verbosity normal
+
+    - name: Publish Test Results
+      uses: EnricoMi/publish-unit-test-result-action@v2
+      id: test-results
+      if: always() && startsWith(matrix.config.runtime, 'linux-x64')
+      with:
+        comment_mode: off
+        files: |
+          tests/**/TestResults/*.xml
