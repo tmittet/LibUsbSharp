@@ -3,7 +3,7 @@ using LibUsbSharp.Descriptor;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
-namespace LibUsbSharp.Tests;
+namespace LibUsbSharp.Tests.Infrastructure;
 
 public class TestDeviceSource(ILogger _logger, ILibUsb _libUsb)
 {
@@ -27,9 +27,7 @@ public class TestDeviceSource(ILogger _logger, ILibUsb _libUsb)
     public IUsbDevice OpenUsbDeviceOrSkip(UsbClass? withInterfaceClass = null)
     {
         if (TryOpenUsbDevice(out var openDevice, withInterfaceClass))
-        {
             return openDevice;
-        }
         throw withInterfaceClass is null
             ? new SkipException("No USB device available.")
             : new SkipException($"No USB device with a {withInterfaceClass} interface available.");
@@ -47,9 +45,7 @@ public class TestDeviceSource(ILogger _logger, ILibUsb _libUsb)
         foreach (var deviceDescriptor in devices)
         {
             if (TryOpenDevice(deviceDescriptor, withInterfaceClass, out openDevice))
-            {
                 return true;
-            }
         }
 
         openDevice = null;
@@ -78,9 +74,7 @@ public class TestDeviceSource(ILogger _logger, ILibUsb _libUsb)
                 )
             {
                 if (i > 0)
-                {
                     Thread.Sleep(10);
-                }
                 _logger.LogInformation(
                     "Device '{DeviceKey}' not accessible on attempt #{Attempt}. {ErrorCode}: {ErrorMessage}",
                     deviceDescriptor.DeviceKey,
