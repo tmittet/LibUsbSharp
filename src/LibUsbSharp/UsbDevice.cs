@@ -119,7 +119,7 @@ public sealed class UsbDevice : IUsbDevice
                     $"Failed to claim USB interface {descriptor}."
                 );
             }
-            var usbInterface = new UsbInterface(_loggerFactory, Handle, descriptor);
+            var usbInterface = new UsbInterface(_loggerFactory, this, descriptor);
             // No need to check if already added, checked in TryGetValue above
             _claimedInterfaces[descriptor.InterfaceNumber] = usbInterface;
             _logger.LogDebug("USB interface {UsbInterface} claimed.", usbInterface);
@@ -131,8 +131,19 @@ public sealed class UsbDevice : IUsbDevice
         }
     }
 
-    /// <inheritdoc />
-    public void ReleaseInterface(byte interfaceNumber)
+    /// <summary>
+    /// Release a USB interface. NOTE: Only used internally, called from UsbInterface.Dispose().
+    /// </summary>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when the USB interface is not claimed.
+    /// </exception>
+    /// <exception cref="LibUsbException">
+    /// Thrown when the USB interface release operation fails.
+    /// </exception>
+    /// <exception cref="ObjectDisposedException">
+    /// Thrown when the UsbDevice is disposed.
+    /// </exception>
+    internal void ReleaseInterface(byte interfaceNumber)
     {
         _lock.EnterWriteLock();
         try
@@ -140,11 +151,10 @@ public sealed class UsbDevice : IUsbDevice
             CheckDisposed();
             if (!_claimedInterfaces.TryGetValue(interfaceNumber, out var usbInterface))
             {
-                throw new ArgumentException(
+                throw new InvalidOperationException(
                     $"USB interface #{interfaceNumber} not found in list of claimed interfaces."
                 );
             }
-            usbInterface.Dispose();
             var releaseResult = libusb_release_interface(Handle, interfaceNumber);
             if (releaseResult != 0)
             {
@@ -222,17 +232,6 @@ public sealed class UsbDevice : IUsbDevice
             foreach (var usbInterface in _claimedInterfaces.Values)
             {
                 usbInterface.Dispose();
-                var releaseResult = libusb_release_interface(Handle, usbInterface.Number);
-                if (releaseResult == 0)
-                {
-                    _logger.LogDebug("USB interface {UsbInterface} released.", usbInterface);
-                    continue;
-                }
-                _logger.LogError(
-                    "Failed to release USB interface {UsbInterface}. {ErrorMessage}",
-                    usbInterface,
-                    ((LibUsbResult)releaseResult).GetMessage()
-                );
             }
             _claimedInterfaces.Clear();
 
