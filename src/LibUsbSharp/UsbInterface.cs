@@ -122,7 +122,8 @@ public sealed class UsbInterface : IUsbInterface
             var bufferLength = Math.Min(destination.Length, ReadBufferSize);
             lock (_bulkReadLock)
             {
-                var result = ExecuteSyncTransferUnlocked(
+                var result = LibUsbTransfer.ExecuteSync(
+                    _device.Handle,
                     LibUsbTransferType.Bulk,
                     _readEndpoint.Value.EndpointAddress,
                     _bulkReadBufferHandle,
@@ -189,7 +190,8 @@ public sealed class UsbInterface : IUsbInterface
             lock (_bulkWriteLock)
             {
                 source[..bufferLength].CopyTo(_bulkWriteBuffer.AsSpan(0, bufferLength));
-                return ExecuteSyncTransferUnlocked(
+                return LibUsbTransfer.ExecuteSync(
+                    _device.Handle,
                     LibUsbTransferType.Bulk,
                     _writeEndpoint.Value.EndpointAddress,
                     _bulkWriteBufferHandle,
@@ -215,78 +217,6 @@ public sealed class UsbInterface : IUsbInterface
         {
             _disposeLock.ExitReadLock();
         }
-    }
-
-    /// <summary>
-    /// It's expected that locking is handled outside of this method.
-    /// </summary>
-    private LibUsbResult ExecuteSyncTransferUnlocked(
-        LibUsbTransferType transferType,
-        byte endpointAddress,
-        GCHandle bufferHandle,
-        int bufferLength,
-        uint timeout,
-        out int bytesTransferred,
-        CancellationToken ct
-    )
-    {
-        // Do not start any new transfers after interface dispose has been called
-        if (_disposeCts.IsCancellationRequested)
-        {
-            throw new ObjectDisposedException(nameof(UsbInterface), " USB interface is disposing.");
-        }
-
-        // Create a reset event for the transfer callback
-        using var transferCompleteEvent = new ManualResetEvent(false);
-        var transferStatus = LibUsbTransferStatus.Error;
-        var transferLength = 0;
-
-        // Create a transfer with a completion handler
-        using var transfer = new LibUsbTransfer(
-            _device.Handle,
-            endpointAddress,
-            bufferHandle,
-            bufferLength,
-            transferType,
-            timeout,
-            (transfer, status, length) =>
-            {
-                transferStatus = status;
-                transferLength = length;
-#if DEBUG
-                _logger.LogTrace(
-                    "Transfer '{TransferStatus}' after {TransferLength} of {BufferLength} bytes.",
-                    transferStatus,
-                    transferLength,
-                    bufferLength
-                );
-#endif
-                // Signal transfer completion
-                _ = transferCompleteEvent.Set();
-            }
-        );
-
-        var transferResult = transfer.Submit();
-        if (transferResult is not LibUsbResult.Success)
-        {
-            bytesTransferred = 0;
-            return transferResult;
-        }
-
-        // Wait for transfer complete or cancellation, if transfer complete is not signaled we
-        // need to tell libusb to cancel the transfer and wait for the cancellation to complete.
-        if (WaitHandle.WaitAny(new[] { transferCompleteEvent, ct.WaitHandle }) != 0)
-        {
-            transfer.Cancel();
-            // We should not dispose the transfer if there is still a chance that
-            // the callback is triggered, doing so may cause writes to freed memory.
-            // Hence, we wait indefinitely for completion or cancellation.
-            _ = transferCompleteEvent.WaitOne();
-        }
-
-        // The transfer is complete, canceled or failed; return result
-        bytesTransferred = transferLength;
-        return transferStatus.ToLibUsbError();
     }
 
     public override string ToString() =>

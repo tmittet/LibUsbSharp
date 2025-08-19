@@ -18,6 +18,71 @@ internal sealed class LibUsbTransfer : IDisposable
     private readonly TransferCompletedHandler _onTransferComplete;
 
     /// <summary>
+    /// Syncronously create, submit and wait for a transfer to complete, be canceled or fail.
+    /// </summary>
+    public static LibUsbResult ExecuteSync(
+        nint deviceHandle,
+        LibUsbTransferType transferType,
+        byte endpointAddress,
+        GCHandle bufferHandle,
+        int bufferLength,
+        uint timeout,
+        out int bytesTransferred,
+        CancellationToken ct
+    )
+    {
+        if (ct.IsCancellationRequested)
+        {
+            bytesTransferred = 0;
+            return LibUsbResult.Interrupted;
+        }
+
+        // Create a reset event for the transfer callback
+        using var transferCompleteEvent = new ManualResetEvent(false);
+        var transferStatus = LibUsbTransferStatus.Error;
+        var transferLength = 0;
+
+        // Create a transfer with a completion handler
+        using var transfer = new LibUsbTransfer(
+            deviceHandle,
+            endpointAddress,
+            bufferHandle,
+            bufferLength,
+            transferType,
+            timeout,
+            (transfer, status, length) =>
+            {
+                transferStatus = status;
+                transferLength = length;
+                // Signal transfer completion
+                _ = transferCompleteEvent.Set();
+            }
+        );
+
+        var transferResult = transfer.Submit();
+        if (transferResult is not LibUsbResult.Success)
+        {
+            bytesTransferred = 0;
+            return transferResult;
+        }
+
+        // Wait for transfer complete or cancellation, if transfer complete is not signaled we
+        // need to tell libusb to cancel the transfer and wait for the cancellation to complete.
+        if (WaitHandle.WaitAny(new[] { transferCompleteEvent, ct.WaitHandle }) != 0)
+        {
+            _ = transfer.Cancel();
+            // We should not dispose the transfer if there is still a chance that
+            // the callback is triggered, doing so may cause writes to freed memory.
+            // Hence, we wait indefinitely for completion or cancellation.
+            _ = transferCompleteEvent.WaitOne();
+        }
+
+        // The transfer is complete, canceled or failed; return result
+        bytesTransferred = transferLength;
+        return transferStatus.ToLibUsbError();
+    }
+
+    /// <summary>
     /// Creates a LibUsb transfer that can be submitted to LibUsb. After the transfer has completed,
     /// the LibUsb library populates the transfer with the results and passes it back to the user.
     /// </summary>
