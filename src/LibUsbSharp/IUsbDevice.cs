@@ -58,21 +58,6 @@ public interface IUsbDevice : IDisposable
     IUsbInterface ClaimInterface(IUsbInterfaceDescriptor descriptor);
 
     /// <summary>
-    /// Optionally release a USB interface. If not released by calling this method,
-    /// the interface will be automatically released when the device is disposed.
-    /// </summary>
-    /// <exception cref="ArgumentException">
-    /// Thrown when the USB interface is not claimed.
-    /// </exception>
-    /// <exception cref="LibUsbException">
-    /// Thrown when the USB interface release operation fails.
-    /// </exception>
-    /// <exception cref="ObjectDisposedException">
-    /// Thrown when the UsbDevice is disposed.
-    /// </exception>
-    void ReleaseInterface(byte interfaceNumber);
-
-    /// <summary>
     /// WARNING: Use very carefully! Performs a USB port reset to reconnect/reinitialize the device.
     /// The system will attempt to restore the previous configuration and alternate settings after
     /// the reset has completed. If the reset fails, the descriptors change, or the previous state

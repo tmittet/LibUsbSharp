@@ -15,7 +15,7 @@ public sealed class UsbInterface : IUsbInterface
 
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger<UsbInterface> _logger;
-    private readonly nint _deviceHandle;
+    private readonly UsbDevice _device;
     private readonly IUsbInterfaceDescriptor _descriptor;
     private readonly byte[] _bulkReadBuffer;
     private readonly GCHandle _bulkReadBufferHandle;
@@ -36,7 +36,7 @@ public sealed class UsbInterface : IUsbInterface
     /// A type representing a claimed USB interface.
     /// </summary>
     /// <param name="loggerFactory">An optional logger factory.</param>
-    /// <param name="deviceHandle">The parent USB device handle.</param>
+    /// <param name="device">The parent USB device.</param>
     /// <param name="descriptor">The USB interface descriptor.</param>
     /// <param name="readEndpoint">
     /// Optional read endpoint. When nothing is specified and a read operation is attempted,
@@ -48,7 +48,7 @@ public sealed class UsbInterface : IUsbInterface
     /// </param>
     public UsbInterface(
         ILoggerFactory loggerFactory,
-        nint deviceHandle,
+        UsbDevice device,
         IUsbInterfaceDescriptor descriptor,
         IUsbEndpointDescriptor? readEndpoint = default,
         IUsbEndpointDescriptor? writeEndpoint = default
@@ -56,7 +56,7 @@ public sealed class UsbInterface : IUsbInterface
     {
         _loggerFactory = loggerFactory;
         _logger = _loggerFactory.CreateLogger<UsbInterface>();
-        _deviceHandle = deviceHandle;
+        _device = device;
         _descriptor = descriptor;
         _bulkReadBuffer = new byte[ReadBufferSize];
         _bulkReadBufferHandle = GCHandle.Alloc(_bulkReadBuffer, GCHandleType.Pinned);
@@ -243,7 +243,7 @@ public sealed class UsbInterface : IUsbInterface
 
         // Create a transfer with a completion handler
         using var transfer = new LibUsbTransfer(
-            _deviceHandle,
+            _device.Handle,
             endpointAddress,
             bufferHandle,
             bufferLength,
@@ -344,6 +344,9 @@ public sealed class UsbInterface : IUsbInterface
             _disposeLock.EnterWriteLock();
             try
             {
+                // Ask UsbDevice to close interface and remove it from list of open interfaces
+                _device.ReleaseInterface(_descriptor.InterfaceNumber);
+                // Free read and write buffers
                 _bulkReadBufferHandle.Free();
                 _bulkWriteBufferHandle.Free();
                 _disposeCts.Dispose();

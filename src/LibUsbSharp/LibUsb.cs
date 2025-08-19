@@ -300,8 +300,7 @@ public sealed class LibUsb : ILibUsb
     }
 
     /// <summary>
-    /// Optionally, close the USB device. If a device is not closed by calling
-    /// this method it will be automatically closed when LibUsb is disposed.
+    /// Close a USB device. NOTE: Only used internally, called from UsbDevice.Dispose().
     /// </summary>
     internal void CloseDevice(string key, nint handle)
     {
