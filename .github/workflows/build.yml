@@ -107,4 +107,3 @@ jobs:
         comment_mode: off
         files: |
           tests/**/TestResults/*.xml
-          tests/**/TestResults/*.trx
