@@ -71,7 +71,7 @@ namespace LibUsbSharp.Internal;
 /// }
 /// ]]></code>
 /// </example>
-public class RundownGuard : IRundownGuard
+public class RundownGuard
 {
     // Maximum number of concurrent shared holders allowed.
     private readonly int _maxSharedCount;
