@@ -376,7 +376,7 @@ public class RundownGuard : IRundownGuard
     /// </summary>
     public sealed class ProtectionToken : IDisposable
     {
-        private RundownGuard? _owner;
+        private RundownGuard _owner;
 
         internal ProtectionToken(RundownGuard owner)
         {
@@ -385,11 +385,7 @@ public class RundownGuard : IRundownGuard
 
         public void Dispose()
         {
-            if (_owner != null)
-            {
-                _owner.ReleaseShared();
-                _owner = null;
-            }
+            _owner.ReleaseShared();
         }
     }
 
