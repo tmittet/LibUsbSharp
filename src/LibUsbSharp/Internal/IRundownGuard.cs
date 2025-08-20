@@ -4,11 +4,11 @@ namespace LibUsbSharp.Internal;
 
 public interface IRundownGuard
 {
-    ProtectionToken AcquireSharedToken(TimeSpan? timeout = null);
-    void AcquireShared(TimeSpan? timeout = null);
+    IDisposable? AcquireSharedToken(TimeSpan? timeout = null);
+    bool AcquireShared(TimeSpan? timeout = null);
 
-    ExclusiveToken AcquireExclusiveToken(TimeSpan? timeout = null);
-    void AcquireExclusive(TimeSpan? timeout = null);
+    IDisposable? AcquireExclusiveToken(TimeSpan? timeout = null);
+    bool AcquireExclusive(TimeSpan? timeout = null);
 
     void ReleaseShared();
     void ReleaseExclusive();

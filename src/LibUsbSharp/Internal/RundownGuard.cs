@@ -26,16 +26,14 @@ public class RundownGuard : IRundownGuard
         _maxSharedCount = maxSharedCount;
     }
 
-    public ProtectionToken AcquireSharedToken(TimeSpan? timeout = null)
+    public IDisposable? AcquireSharedToken(TimeSpan? timeout = null)
     {
-        AcquireShared(timeout);
-        return new ProtectionToken(this);
+        return !AcquireShared(timeout) ? null : (IDisposable)new ProtectionToken(this);
     }
 
-    //public void AcquireShared(TimeSpan? timeout = null, Func<int>? func = null)
-    public void AcquireShared(TimeSpan? timeout = null)
+    public bool AcquireShared(TimeSpan? timeout = null)
     {
-        DateTime? deadline = (DateTime?)(timeout != null ? DateTime.UtcNow + timeout! : null);
+        var deadline = timeout is null ? null : DateTime.UtcNow + timeout;
 
         lock (_lock)
         {
@@ -43,39 +41,28 @@ public class RundownGuard : IRundownGuard
             {
                 if (_isShuttingDown)
                 {
-                    throw new RundownException("Rundown initiated");
+                    return false;
                 }
-                if (_exclusiveHeld || _exclusiveWaiters > 0 || _activeCount >= _maxSharedCount)
+
+                if (!_exclusiveHeld && _exclusiveWaiters == 0 && _activeCount < _maxSharedCount)
                 {
-                    if (deadline is not null)
-                    {
-                        var remaining = (TimeSpan)(deadline! - DateTime.UtcNow);
-                        if (remaining <= TimeSpan.Zero || !Monitor.Wait(_lock, remaining))
-                            throw new TimeoutException();
-                    }
-                    else
-                    {
-                        _ = Monitor.Wait(_lock);
-                    }
-
-                    continue;
+                    _activeCount++;
+                    return true;
                 }
 
-                _activeCount++;
-                return;
+                AquireLock(deadline);
             }
         }
     }
 
-    public ExclusiveToken AcquireExclusiveToken(TimeSpan? timeout = null)
+    public IDisposable? AcquireExclusiveToken(TimeSpan? timeout = null)
     {
-        AcquireExclusive(timeout);
-        return new ExclusiveToken(this);
+        return !AcquireExclusive(timeout) ? null : (IDisposable)new ExclusiveToken(this);
     }
 
-    public void AcquireExclusive(TimeSpan? timeout = null)
+    public bool AcquireExclusive(TimeSpan? timeout = null)
     {
-        DateTime? deadline = (DateTime?)(timeout != null ? DateTime.UtcNow + timeout! : null);
+        var deadline = timeout is null ? null : DateTime.UtcNow + timeout;
 
         lock (_lock)
         {
@@ -87,31 +74,36 @@ public class RundownGuard : IRundownGuard
                 {
                     if (_isShuttingDown)
                     {
-                        throw new RundownException("Rundown initiated");
+                        return false;
                     }
 
-                    if (_exclusiveHeld || _activeCount > 0)
+                    if (!_exclusiveHeld && _activeCount == 0)
                     {
-                        if (deadline is not null)
-                        {
-                            var remaining = (TimeSpan)(deadline! - DateTime.UtcNow);
-                            if (remaining <= TimeSpan.Zero || !Monitor.Wait(_lock, remaining))
-                                throw new TimeoutException();
-                        }
-                        else
-                        {
-                            _ = Monitor.Wait(_lock);
-                        }
-                        continue;
+                        _exclusiveHeld = true;
+                        return true;
                     }
-                    _exclusiveHeld = true;
-                    return;
+
+                    AquireLock(deadline);
                 }
             }
             finally
             {
                 _exclusiveWaiters--;
             }
+        }
+    }
+
+    private void AquireLock(DateTime? deadline)
+    {
+        if (deadline is null)
+        {
+            _ = Monitor.Wait(_lock);
+        }
+        else
+        {
+            var remaining = deadline.Value.Subtract(DateTime.UtcNow);
+            if (remaining <= TimeSpan.Zero || !Monitor.Wait(_lock, remaining))
+                throw new TimeoutException();
         }
     }
 
@@ -150,7 +142,7 @@ public class RundownGuard : IRundownGuard
             {
                 while (!_rundownCompleted)
                 {
-                    Monitor.Wait(_lock);
+                    _ = Monitor.Wait(_lock);
                 }
                 return null;
             }
@@ -160,7 +152,7 @@ public class RundownGuard : IRundownGuard
 
             while (_activeCount > 0 || _exclusiveHeld)
             {
-                Monitor.Wait(_lock);
+                _ = Monitor.Wait(_lock);
             }
 
             return new RundownToken(this);
