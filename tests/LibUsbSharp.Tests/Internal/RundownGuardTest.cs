@@ -4,74 +4,106 @@ using Xunit;
 
 namespace LibUsbSharp.Tests.Internal;
 
-public class RundownGuardTest : RundownGuard
+public class RundownGuardTest
 {
     [Fact]
     public void AcquireShared_returns_immediately_when_no_other_guards_are_held()
     {
-        var act = () => AcquireSharedToken(TimeSpan.FromMilliseconds(1));
+        var guard = new RundownGuard();
+        var act = () => guard.AcquireSharedToken(TimeSpan.FromMilliseconds(1));
         act.Should().NotThrow();
-        ReleaseShared();
+        guard.ReleaseShared();
     }
 
     [Fact]
     public void AcquireShared_waits_for_release_when_ExclusiveGuard_is_held()
     {
-        var exclusive = AcquireExclusiveToken()!;
-        var act = () => AcquireSharedToken(TimeSpan.FromMilliseconds(1));
+        var guard = new RundownGuard();
+        var exclusive = guard.AcquireExclusiveToken()!;
+        var act = () => guard.AcquireSharedToken(TimeSpan.FromMilliseconds(1));
         act.Should().Throw<TimeoutException>().WithMessage("The operation has timed out.");
         exclusive.Dispose();
         act.Should().NotThrow();
-        ReleaseShared();
+        guard.ReleaseShared();
     }
 
     [Fact]
     public void AcquireShared_throws_TimeoutException_when_wait_timeout_is_reached()
     {
-        var exclusive = AcquireExclusiveToken()!;
-        var act = () => AcquireSharedToken(TimeSpan.FromMilliseconds(1));
+        var guard = new RundownGuard();
+        var exclusive = guard.AcquireExclusiveToken()!;
+        var act = () => guard.AcquireSharedToken(TimeSpan.FromMilliseconds(1));
         act.Should().Throw<TimeoutException>().WithMessage("The operation has timed out.");
         exclusive.Dispose();
     }
 
     [Fact]
+    public void AcquireShared_returns_immediately_when_maxSharedCount_is_not_reached()
+    {
+        var guard = new RundownGuard(2);
+        guard.AcquireSharedToken();
+        var act = () => guard.AcquireSharedToken(TimeSpan.FromMilliseconds(1));
+        act.Should().NotThrow();
+        guard.ReleaseShared();
+        guard.ReleaseShared();
+    }
+
+    [Fact]
+    public void AcquireShared_waits_for_release_when_maxSharedCount_is_reached()
+    {
+        var guard = new RundownGuard(2);
+        var shared = guard.AcquireSharedToken()!;
+        _ = guard.AcquireSharedToken();
+        var act = () => guard.AcquireSharedToken(TimeSpan.FromMilliseconds(1));
+        act.Should().Throw<TimeoutException>().WithMessage("The operation has timed out.");
+        shared.Dispose();
+        act.Should().NotThrow();
+        guard.ReleaseShared();
+    }
+
+    [Fact]
     public void AcquireShared_returns_null_when_rundown_is_triggered()
     {
-        TriggerRundown();
-        AcquireSharedToken(TimeSpan.FromMilliseconds(1)).Should().BeNull();
+        var guard = new RundownGuard();
+        guard.TriggerRundown();
+        guard.AcquireSharedToken(TimeSpan.FromMilliseconds(1)).Should().BeNull();
     }
 
     [Fact]
     public void Calling_ReleaseShared_when_no_guard_is_aquired_should_throw()
     {
-        var act = () => ReleaseShared();
+        var guard = new RundownGuard();
+        var act = () => guard.ReleaseShared();
         act.Should().Throw<InvalidOperationException>().WithMessage("No shared guards held");
     }
 
     [Fact]
     public void AcquireExclusive_returns_immediately_when_no_other_guards_are_held()
     {
-        var act = () => AcquireExclusiveToken(TimeSpan.FromMilliseconds(1));
+        var guard = new RundownGuard();
+        var act = () => guard.AcquireExclusiveToken(TimeSpan.FromMilliseconds(1));
         act.Should().NotThrow();
-        ReleaseExclusive();
+        guard.ReleaseExclusive();
     }
 
     [Fact]
     public void AcquireExclusive_waits_for_all_other_guards_to_release()
     {
-        var exclusive = AcquireExclusiveToken()!;
-        var act = () => AcquireExclusiveToken(TimeSpan.FromMilliseconds(1));
+        var guard = new RundownGuard();
+        var exclusive = guard.AcquireExclusiveToken()!;
+        var act = () => guard.AcquireExclusiveToken(TimeSpan.FromMilliseconds(1));
         act.Should().Throw<TimeoutException>().WithMessage("The operation has timed out.");
         exclusive.Dispose();
         act.Should().NotThrow();
-        ReleaseExclusive();
+        guard.ReleaseExclusive();
     }
 
     [Fact]
     public void AcquireExclusive_throws_TimeoutException_when_wait_timeout_is_reached()
     {
-        var exclusive = AcquireExclusiveToken()!;
-        var act = () => AcquireExclusiveToken(TimeSpan.FromMilliseconds(1));
+        var guard = new RundownGuard();
+        var exclusive = guard.AcquireExclusiveToken()!;
+        var act = () => guard.AcquireExclusiveToken(TimeSpan.FromMilliseconds(1));
         act.Should().Throw<TimeoutException>().WithMessage("The operation has timed out.");
         exclusive.Dispose();
     }
@@ -79,49 +111,53 @@ public class RundownGuardTest : RundownGuard
     [Fact]
     public void AcquireExclusive_returns_null_when_rundown_is_triggered()
     {
-        TriggerRundown();
-        AcquireExclusiveToken(TimeSpan.FromMilliseconds(1)).Should().BeNull();
+        var guard = new RundownGuard();
+        guard.TriggerRundown();
+        guard.AcquireExclusiveToken(TimeSpan.FromMilliseconds(1)).Should().BeNull();
     }
 
     [Fact]
     public void Calling_ReleaseExclusive_when_no_guard_is_aquired_should_throw()
     {
-        var act = () => ReleaseExclusive();
+        var guard = new RundownGuard();
+        var act = () => guard.ReleaseExclusive();
         act.Should().Throw<InvalidOperationException>().WithMessage("No exclusive guard held");
     }
 
     [Fact]
     public void WaitForRundown_triggers_rundown()
     {
-        var exclusive = AcquireExclusiveToken()!;
-        var worker = new Thread(() => WaitForRundown());
+        var guard = new RundownGuard();
+        var exclusive = guard.AcquireExclusiveToken()!;
+        var worker = new Thread(() => guard.WaitForRundown());
         worker.Start();
         exclusive.Dispose();
         worker.Join();
-        AcquireExclusiveToken(TimeSpan.FromMilliseconds(1)).Should().BeNull();
+        guard.AcquireExclusiveToken(TimeSpan.FromMilliseconds(1)).Should().BeNull();
     }
 
     /*
     [Fact]
     public void WaitForRundown_waits_for_all_guards_to_release()
     {
-        var exclusive = AcquireExclusiveToken()!;
+        var guard = new RundownGuard();
+        var exclusive = guard.AcquireExclusiveToken()!;
         var worker1 = new Thread(
             () =>
             {
-                AcquireSharedToken().Should().NotBeNull();
-                ReleaseShared();
+                guard.AcquireSharedToken().Should().NotBeNull();
+                guard.ReleaseShared();
             }
         );
         worker1.Start();
         worker1.Join();
 
-        var worker2 = new Thread(() => WaitForRundown());
+        var worker2 = new Thread(() => guard.WaitForRundown());
         worker2.Start();
         worker2.Join();
 
         exclusive.Dispose();
-        AcquireExclusiveToken(TimeSpan.FromMilliseconds(1)).Should().BeNull();
+        guard.AcquireExclusiveToken(TimeSpan.FromMilliseconds(1)).Should().BeNull();
         worker1.Join();
         worker2.Join();
     }
