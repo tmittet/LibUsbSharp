@@ -26,10 +26,7 @@
 // - Always dispose returned tokens to release the corresponding hold.
 //
 
-using System;
 using System.Diagnostics;
-using System.Threading;
-using static LibUsbSharp.Internal.RundownGuard;
 
 namespace LibUsbSharp.Internal;
 
@@ -90,7 +87,7 @@ public class RundownGuard
 
     // Rundown state flags: started and completed.
     private bool _rundownStarted;
-    private bool _rundownCompleted ;
+    private bool _rundownCompleted;
 
     // Intrinsic lock for all condition changes.
     private readonly object _lock = new();
