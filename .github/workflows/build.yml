@@ -1,11 +1,12 @@
 name: Build and Test
-on:
+on:   
   pull_request:
     branches: ["*"]
   push:
     branches: [main]
   release:
     types: [published]
+  workflow_dispatch: 
 
 permissions:
   contents: read
