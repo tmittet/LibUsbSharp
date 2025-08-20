@@ -77,20 +77,20 @@ public class RundownGuard : IRundownGuard
     private readonly int _maxSharedCount;
 
     // Number of currently active shared holders.
-    private int _activeCount = 0;
+    private int _activeCount;
 
     // Indicates shutdown intent; once true, no new acquisitions are allowed.
-    private bool _isShuttingDown = false;
+    private bool _isShuttingDown;
 
     // True while an exclusive token is held.
-    private bool _exclusiveHeld = false;
+    private bool _exclusiveHeld;
 
     // Number of threads currently waiting for exclusive access.
-    private int _exclusiveWaiters = 0;
+    private int _exclusiveWaiters;
 
     // Rundown state flags: started and completed.
-    private bool _rundownStarted = false;
-    private bool _rundownCompleted = false;
+    private bool _rundownStarted;
+    private bool _rundownCompleted ;
 
     // Intrinsic lock for all condition changes.
     private readonly object _lock = new();
@@ -105,10 +105,12 @@ public class RundownGuard : IRundownGuard
     public RundownGuard(int maxSharedCount = int.MaxValue)
     {
         if (maxSharedCount <= 0)
+        {
             throw new ArgumentOutOfRangeException(
                 nameof(maxSharedCount),
                 "Must be positive or int.MaxValue for unlimited."
             );
+        }
 
         _maxSharedCount = maxSharedCount;
     }
@@ -130,7 +132,7 @@ public class RundownGuard : IRundownGuard
     /// </example>
     public IDisposable? AcquireSharedToken(TimeSpan? timeout = null)
     {
-        return !AcquireShared(timeout) ? null : (IDisposable)new ProtectionToken(this);
+        return AcquireShared(timeout) ? (IDisposable)new ProtectionToken(this) : null;
     }
 
     /// <summary>
@@ -142,7 +144,7 @@ public class RundownGuard : IRundownGuard
     public bool AcquireShared(TimeSpan? timeout = null)
     {
         // Start a stopwatch once so we can compute remaining time without DateTime.
-        Stopwatch? sw = timeout is null ? null : Stopwatch.StartNew();
+        var sw = timeout is null ? null : Stopwatch.StartNew();
 
         lock (_lock)
         {
@@ -187,7 +189,7 @@ public class RundownGuard : IRundownGuard
     /// </example>
     public IDisposable? AcquireExclusiveToken(TimeSpan? timeout = null)
     {
-        return !AcquireExclusive(timeout) ? null : (IDisposable)new ExclusiveToken(this);
+        return AcquireExclusive(timeout) ? (IDisposable)new ExclusiveToken(this) : null;
     }
 
     /// <summary>
@@ -199,7 +201,7 @@ public class RundownGuard : IRundownGuard
     public bool AcquireExclusive(TimeSpan? timeout = null)
     {
         // Start a stopwatch once so we can compute remaining time without DateTime.
-        Stopwatch? sw = timeout is null ? null : Stopwatch.StartNew();
+        var sw = timeout is null ? null : Stopwatch.StartNew();
 
         lock (_lock)
         {
@@ -377,9 +379,9 @@ public class RundownGuard : IRundownGuard
     /// <summary>
     /// Token returned by <see cref="AcquireSharedToken"/>; disposing it releases the shared hold.
     /// </summary>
-    public sealed class ProtectionToken : IDisposable
+    private sealed class ProtectionToken : IDisposable
     {
-        private RundownGuard _owner;
+        private readonly RundownGuard _owner;
 
         internal ProtectionToken(RundownGuard owner)
         {
@@ -395,9 +397,9 @@ public class RundownGuard : IRundownGuard
     /// <summary>
     /// Token returned by <see cref="AcquireExclusiveToken"/>; disposing it releases the exclusive hold.
     /// </summary>
-    public sealed class ExclusiveToken : IDisposable
+    private sealed class ExclusiveToken : IDisposable
     {
-        private RundownGuard _owner;
+        private readonly RundownGuard _owner;
 
         internal ExclusiveToken(RundownGuard owner)
         {
@@ -414,9 +416,9 @@ public class RundownGuard : IRundownGuard
     /// Token returned by <see cref="WaitForRundown"/> when this caller owns the rundown.
     /// Disposing it marks rundown as completed and wakes waiters.
     /// </summary>
-    public sealed class RundownToken : IDisposable
+    private sealed class RundownToken : IDisposable
     {
-        private RundownGuard _owner;
+        private readonly RundownGuard _owner;
 
         internal RundownToken(RundownGuard owner)
         {
@@ -427,15 +429,5 @@ public class RundownGuard : IRundownGuard
         {
             _owner.RundownComplete();
         }
-    }
-
-    /// <summary>
-    /// Convenience exception type for consumers that wish to signal rundown/shutdown state to callers.
-    /// Not thrown by <see cref="RundownGuard"/> itself.
-    /// </summary>
-    public class RundownException : ObjectDisposedException
-    {
-        public RundownException(string message)
-            : base(message) { }
     }
 }
