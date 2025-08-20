@@ -27,6 +27,7 @@
 //
 
 using System;
+using System.Diagnostics;
 using System.Threading;
 using static LibUsbSharp.Internal.RundownGuard;
 
@@ -140,7 +141,8 @@ public class RundownGuard : IRundownGuard
     /// <exception cref="TimeoutException">Thrown if the wait exceeds <paramref name="timeout"/>.</exception>
     public bool AcquireShared(TimeSpan? timeout = null)
     {
-        var deadline = timeout is null ? null : DateTime.UtcNow + timeout;
+        // Start a stopwatch once so we can compute remaining time without DateTime.
+        Stopwatch? sw = timeout is null ? null : Stopwatch.StartNew();
 
         lock (_lock)
         {
@@ -163,7 +165,7 @@ public class RundownGuard : IRundownGuard
                 }
 
                 // Otherwise, wait until a state change occurs or timeout elapses.
-                AquireLock(deadline);
+                AquireLock(sw, timeout);
             }
         }
     }
@@ -196,7 +198,8 @@ public class RundownGuard : IRundownGuard
     /// <exception cref="TimeoutException">Thrown if the wait exceeds <paramref name="timeout"/>.</exception>
     public bool AcquireExclusive(TimeSpan? timeout = null)
     {
-        var deadline = timeout is null ? null : DateTime.UtcNow + timeout;
+        // Start a stopwatch once so we can compute remaining time without DateTime.
+        Stopwatch? sw = timeout is null ? null : Stopwatch.StartNew();
 
         lock (_lock)
         {
@@ -221,7 +224,7 @@ public class RundownGuard : IRundownGuard
                     }
 
                     // Otherwise, wait for a state change or timeout.
-                    AquireLock(deadline);
+                    AquireLock(sw, timeout);
                 }
             }
             finally
@@ -231,16 +234,16 @@ public class RundownGuard : IRundownGuard
         }
     }
 
-    // Wait on the lock with an optional deadline. Throws TimeoutException if the deadline elapses.
-    private void AquireLock(DateTime? deadline)
+    // Wait on the lock with an optional timeout based on Stopwatch. Throws TimeoutException if the timeout elapses.
+    private void AquireLock(Stopwatch? stopwatch, TimeSpan? timeout)
     {
-        if (deadline is null)
+        if (timeout is null)
         {
             _ = Monitor.Wait(_lock);
         }
         else
         {
-            var remaining = deadline.Value.Subtract(DateTime.UtcNow);
+            var remaining = timeout.Value - stopwatch!.Elapsed;
             if (remaining <= TimeSpan.Zero || !Monitor.Wait(_lock, remaining))
                 throw new TimeoutException();
         }
