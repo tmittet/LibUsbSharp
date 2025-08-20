@@ -1,5 +1,4 @@
 using LibUsbSharp.Descriptor;
-using LibUsbSharp.Internal;
 
 namespace LibUsbSharp;
 

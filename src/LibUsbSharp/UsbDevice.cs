@@ -56,7 +56,11 @@ public sealed class UsbDevice : IUsbDevice
 
     private string ReadStringDescriptorCached(byte descriptorIndex)
     {
-        using var _ = _rundownGuard.AcquireSharedToken();
+        using var token = _rundownGuard.AcquireSharedToken();
+        if (token is null)
+        {
+            throw new ObjectDisposedException("UsbDevice disposed.");
+        }
 
         if (_descriptorCache.TryGetValue(descriptorIndex, out var cachedValue1))
         {
@@ -80,7 +84,11 @@ public sealed class UsbDevice : IUsbDevice
     /// <inheritdoc />
     public string ReadStringDescriptor(byte descriptorIndex)
     {
-        using var _ = _rundownGuard.AcquireSharedToken();
+        using var token = _rundownGuard.AcquireSharedToken();
+        if (token is null)
+        {
+            throw new ObjectDisposedException("UsbDevice disposed.");
+        }
 
         var buffer = new byte[256];
         var result = libusb_get_string_descriptor_ascii(
@@ -97,7 +105,11 @@ public sealed class UsbDevice : IUsbDevice
     /// <inheritdoc />
     public IUsbInterface ClaimInterface(IUsbInterfaceDescriptor descriptor)
     {
-        using var _ = _rundownGuard.AcquireExclusiveToken();
+        using var token = _rundownGuard.AcquireExclusiveToken();
+        if (token is null)
+        {
+            throw new ObjectDisposedException("UsbDevice disposed.");
+        }
 
         if (_claimedInterfaces.TryGetValue(descriptor.InterfaceNumber, out var existing))
         {
@@ -133,7 +145,11 @@ public sealed class UsbDevice : IUsbDevice
     /// </exception>
     internal void ReleaseInterface(byte interfaceNumber)
     {
-        using var _ = _rundownGuard.AcquireExclusiveToken();
+        using var token = _rundownGuard.AcquireExclusiveToken();
+        if (token is null)
+        {
+            throw new ObjectDisposedException("UsbDevice disposed.");
+        }
 
         if (!_claimedInterfaces.TryGetValue(interfaceNumber, out var usbInterface))
         {
@@ -166,7 +182,11 @@ public sealed class UsbDevice : IUsbDevice
     /// <inheritdoc />
     public void Reset()
     {
-        using var _ = _rundownGuard.AcquireExclusiveToken();
+        using var token = _rundownGuard.AcquireExclusiveToken();
+        if (token is null)
+        {
+            throw new ObjectDisposedException("UsbDevice disposed.");
+        }
 
         var resetResult = libusb_reset_device(Handle);
         if (resetResult != 0)
