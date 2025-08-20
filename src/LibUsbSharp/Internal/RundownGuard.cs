@@ -343,6 +343,10 @@ public class RundownGuard : IRundownGuard
     {
         lock (_lock)
         {
+            if (_activeCount <= 0)
+            {
+                throw new InvalidOperationException("No shared guards held");
+            }
             _activeCount--;
             // Wake up threads that might be waiting for capacity or for all shared to drain.
             Monitor.PulseAll(_lock);
@@ -356,6 +360,11 @@ public class RundownGuard : IRundownGuard
     {
         lock (_lock)
         {
+            if (_exclusiveHeld == false)
+            {
+                throw new InvalidOperationException("No exclusive guard held");
+            }
+
             _exclusiveHeld = false;
             // Wake up threads waiting for exclusivity or rundown progress.
             Monitor.PulseAll(_lock);
