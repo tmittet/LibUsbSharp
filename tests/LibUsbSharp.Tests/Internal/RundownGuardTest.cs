@@ -17,7 +17,7 @@ public class RundownGuardTest : RundownGuard
     [Fact]
     public void AcquireShared_waits_for_release_when_ExclusiveGuard_is_held()
     {
-        var exclusive = AcquireExclusiveToken();
+        var exclusive = AcquireExclusiveToken()!;
         var act = () => AcquireSharedToken(TimeSpan.FromMilliseconds(1));
         act.Should().Throw<TimeoutException>().WithMessage("The operation has timed out.");
         exclusive.Dispose();
@@ -28,18 +28,17 @@ public class RundownGuardTest : RundownGuard
     [Fact]
     public void AcquireShared_throws_TimeoutException_when_wait_timeout_is_reached()
     {
-        var exclusive = AcquireExclusiveToken();
+        var exclusive = AcquireExclusiveToken()!;
         var act = () => AcquireSharedToken(TimeSpan.FromMilliseconds(1));
         act.Should().Throw<TimeoutException>().WithMessage("The operation has timed out.");
         exclusive.Dispose();
     }
 
     [Fact]
-    public void AcquireShared_throws_RundownException_when_rundown_is_triggered()
+    public void AcquireShared_returns_null_when_rundown_is_triggered()
     {
         TriggerRundown();
-        var act = () => AcquireSharedToken(TimeSpan.FromMilliseconds(1));
-        act.Should().Throw<RundownException>().WithMessage("Rundown initiated.");
+        AcquireSharedToken(TimeSpan.FromMilliseconds(1)).Should().BeNull();
     }
 
     [Fact]
@@ -60,7 +59,7 @@ public class RundownGuardTest : RundownGuard
     [Fact]
     public void AcquireExclusive_waits_for_all_other_guards_to_release()
     {
-        var exclusive = AcquireExclusiveToken();
+        var exclusive = AcquireExclusiveToken()!;
         var act = () => AcquireExclusiveToken(TimeSpan.FromMilliseconds(1));
         act.Should().Throw<TimeoutException>().WithMessage("The operation has timed out.");
         exclusive.Dispose();
@@ -71,18 +70,17 @@ public class RundownGuardTest : RundownGuard
     [Fact]
     public void AcquireExclusive_throws_TimeoutException_when_wait_timeout_is_reached()
     {
-        var exclusive = AcquireExclusiveToken();
+        var exclusive = AcquireExclusiveToken()!;
         var act = () => AcquireExclusiveToken(TimeSpan.FromMilliseconds(1));
         act.Should().Throw<TimeoutException>().WithMessage("The operation has timed out.");
         exclusive.Dispose();
     }
 
     [Fact]
-    public void AcquireExclusive_throws_RundownException_when_rundown_is_triggered()
+    public void AcquireExclusive_returns_null_when_rundown_is_triggered()
     {
         TriggerRundown();
-        var act = () => AcquireExclusiveToken(TimeSpan.FromMilliseconds(1));
-        act.Should().Throw<RundownException>().WithMessage("Rundown initiated.");
+        AcquireExclusiveToken(TimeSpan.FromMilliseconds(1)).Should().BeNull();
     }
 
     [Fact]
@@ -95,19 +93,19 @@ public class RundownGuardTest : RundownGuard
     [Fact]
     public void WaitForRundown_triggers_rundown()
     {
-        var exclusive = AcquireExclusiveToken();
+        var exclusive = AcquireExclusiveToken()!;
         var worker = new Thread(new ThreadStart(() => WaitForRundown()));
         worker.Start();
+        worker.Join(1);
         exclusive.Dispose();
-        var act = () => AcquireExclusiveToken(TimeSpan.FromMilliseconds(1));
-        act.Should().Throw<RundownException>();
+        AcquireExclusiveToken(TimeSpan.FromMilliseconds(1)).Should().BeNull();
         worker.Join();
     }
 
     [Fact]
     public void WaitForRundown_waits_for_all_guards_to_release()
     {
-        var exclusive = AcquireExclusiveToken();
+        var exclusive = AcquireExclusiveToken()!;
         var worker1 = new Thread(
             new ThreadStart(() =>
             {
@@ -116,12 +114,14 @@ public class RundownGuardTest : RundownGuard
             })
         );
         worker1.Start();
-        Thread.Sleep(1);
+ 
         var worker2 = new Thread(new ThreadStart(() => WaitForRundown()));
         worker2.Start();
+        worker1.Join(1);
+        worker2.Join(1);
+
         exclusive.Dispose();
-        var act = () => AcquireExclusiveToken(TimeSpan.FromMilliseconds(1));
-        act.Should().Throw<RundownException>();
+        AcquireExclusiveToken(TimeSpan.FromMilliseconds(1)).Should().BeNull();
         worker1.Join();
         worker2.Join();
     }

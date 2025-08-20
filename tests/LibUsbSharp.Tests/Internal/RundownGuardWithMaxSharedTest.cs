@@ -22,7 +22,7 @@ public class RundownGuardWithMaxSharedTest : RundownGuard
     [Fact]
     public void AcquireShared_waits_for_release_when_maxSharedCount_is_reached()
     {
-        var shared = AcquireSharedToken();
+        var shared = AcquireSharedToken()!;
         _ = AcquireSharedToken();
         var act = () => AcquireSharedToken(TimeSpan.FromMilliseconds(1));
         act.Should().Throw<TimeoutException>().WithMessage("The operation has timed out.");
