@@ -1,20 +1,106 @@
-﻿using System;
+﻿//
+// RundownGuard
+//
+// Purpose
+// - Coordinates concurrent work (shared access) and critical operations (exclusive access).
+// - Enables a cooperative "rundown" phase that:
+//   1) Prevents new work from starting,
+//   2) Waits for in-flight work to finish,
+//   3) Allows exactly one thread to perform final teardown,
+//   4) Lets all other threads block until rundown is completed.
+//
+// When to use
+// - Managing lifecycle-sensitive resources where you must stop accepting new work,
+//   wait for current work to drain, then perform an exclusive teardown (e.g., device/handle
+//   teardown, I/O pipeline shutdown, background processing stop).
+//
+// Key concepts
+// - Shared: Many concurrent holders (up to maxSharedCount) when no exclusive holder exists.
+// - Exclusive: Single holder with no concurrent shared holders.
+// - Rundown: A one-time shutdown gate; once started, new acquisitions fail, and one thread
+//   is given a rundown token to perform teardown while others wait for completion.
+//
+// Notes
+// - Acquire* methods can take an optional timeout; if it elapses, a TimeoutException is thrown.
+// - If shutdown has started, Acquire* methods fail (return false/null).
+// - Always dispose returned tokens to release the corresponding hold.
+//
+
+using System;
 using System.Threading;
 using static LibUsbSharp.Internal.RundownGuard;
 
 namespace LibUsbSharp.Internal;
 
+/// <summary>
+/// Coordinates shared and exclusive access and provides a one-time "rundown" (shutdown) mechanism.
+/// </summary>
+/// <remarks>
+/// Typical usage:
+/// - Normal operation: acquire shared tokens for work, occasionally exclusive tokens for critical updates.
+/// - Shutdown: call <see cref="TriggerRundown"/> (optional), then call <see cref="WaitForRundown"/>.
+///   The first caller to <see cref="WaitForRundown"/> becomes the teardown owner and receives a
+///   <see cref="RundownToken"/>. All other callers block until rundown completes and then return null.
+/// </remarks>
+/// <example>
+/// <code language="csharp"><![CDATA[
+/// // Normal usage (shared work)
+/// var guard = new RundownGuard();
+/// using (guard.AcquireSharedToken()!)
+/// {
+///     // Do concurrent work protected by the guard
+/// }
+///
+/// // Exclusive usage (no shared holders present)
+/// using (guard.AcquireExclusiveToken()!)
+/// {
+///     // Perform critical operation that must not overlap with shared work
+/// }
+///
+/// // Shutdown / Rundown
+/// guard.TriggerRundown(); // Optional: proactively prevent new acquisitions
+/// using (var token = guard.WaitForRundown())
+/// {
+///     if (token != null)
+///     {
+///         // This thread owns rundown; at this point no shared or exclusive holders exist.
+///         // Perform teardown here (dispose handles, stop threads, etc.)
+///     }
+///     // If token is null, either rundown already completed, or another thread is performing it.
+/// }
+/// ]]></code>
+/// </example>
 public class RundownGuard : IRundownGuard
 {
+    // Maximum number of concurrent shared holders allowed.
     private readonly int _maxSharedCount;
+
+    // Number of currently active shared holders.
     private int _activeCount = 0;
+
+    // Indicates shutdown intent; once true, no new acquisitions are allowed.
     private bool _isShuttingDown = false;
+
+    // True while an exclusive token is held.
     private bool _exclusiveHeld = false;
+
+    // Number of threads currently waiting for exclusive access.
     private int _exclusiveWaiters = 0;
+
+    // Rundown state flags: started and completed.
     private bool _rundownStarted = false;
     private bool _rundownCompleted = false;
+
+    // Intrinsic lock for all condition changes.
     private readonly object _lock = new();
 
+    /// <summary>
+    /// Creates a new <see cref="RundownGuard"/>.
+    /// </summary>
+    /// <param name="maxSharedCount">
+    /// Maximum number of concurrent shared holders allowed; use <see cref="int.MaxValue"/> for unlimited.
+    /// </param>
+    /// <exception cref="ArgumentOutOfRangeException">If <paramref name="maxSharedCount"/> is not positive.</exception>
     public RundownGuard(int maxSharedCount = int.MaxValue)
     {
         if (maxSharedCount <= 0)
@@ -26,11 +112,32 @@ public class RundownGuard : IRundownGuard
         _maxSharedCount = maxSharedCount;
     }
 
+    /// <summary>
+    /// Attempts to acquire a shared token. Returns null if shutdown has started.
+    /// </summary>
+    /// <param name="timeout">Optional timeout. If expired, a <see cref="TimeoutException"/> is thrown.</param>
+    /// <returns>An <see cref="IDisposable"/> token that must be disposed to release the shared hold; null if shutting down.</returns>
+    /// <exception cref="TimeoutException">Thrown if the wait exceeds <paramref name="timeout"/>.</exception>
+    /// <example>
+    /// <code language="csharp"><![CDATA[
+    /// using var token = guard.AcquireSharedToken(TimeSpan.FromSeconds(1));
+    /// if (token is null)
+    ///     return; // Shutting down
+    ///
+    /// // Do work under shared protection
+    /// ]]></code>
+    /// </example>
     public IDisposable? AcquireSharedToken(TimeSpan? timeout = null)
     {
         return !AcquireShared(timeout) ? null : (IDisposable)new ProtectionToken(this);
     }
 
+    /// <summary>
+    /// Attempts to acquire shared access. Returns false if shutdown has started.
+    /// </summary>
+    /// <param name="timeout">Optional timeout. If expired, a <see cref="TimeoutException"/> is thrown.</param>
+    /// <returns>True if acquired; false if shutting down.</returns>
+    /// <exception cref="TimeoutException">Thrown if the wait exceeds <paramref name="timeout"/>.</exception>
     public bool AcquireShared(TimeSpan? timeout = null)
     {
         var deadline = timeout is null ? null : DateTime.UtcNow + timeout;
@@ -39,50 +146,81 @@ public class RundownGuard : IRundownGuard
         {
             while (true)
             {
+                // If rundown/shutdown is in progress, reject new shared acquisitions.
                 if (_isShuttingDown)
                 {
                     return false;
                 }
 
+                // Allow shared acquisition only when:
+                // - No exclusive holder is present,
+                // - No exclusive waiter exists (to avoid starvation),
+                // - Shared count has not reached the limit.
                 if (!_exclusiveHeld && _exclusiveWaiters == 0 && _activeCount < _maxSharedCount)
                 {
                     _activeCount++;
                     return true;
                 }
 
+                // Otherwise, wait until a state change occurs or timeout elapses.
                 AquireLock(deadline);
             }
         }
     }
 
+    /// <summary>
+    /// Attempts to acquire an exclusive token. Returns null if shutdown has started.
+    /// </summary>
+    /// <param name="timeout">Optional timeout. If expired, a <see cref="TimeoutException"/> is thrown.</param>
+    /// <returns>An <see cref="IDisposable"/> token that must be disposed to release the exclusive hold; null if shutting down.</returns>
+    /// <exception cref="TimeoutException">Thrown if the wait exceeds <paramref name="timeout"/>.</exception>
+    /// <example>
+    /// <code language="csharp"><![CDATA[
+    /// using var token = guard.AcquireExclusiveToken(TimeSpan.FromSeconds(5));
+    /// if (token is null)
+    ///     return; // Shutting down
+    ///
+    /// // Perform critical operation under exclusive protection
+    /// ]]></code>
+    /// </example>
     public IDisposable? AcquireExclusiveToken(TimeSpan? timeout = null)
     {
         return !AcquireExclusive(timeout) ? null : (IDisposable)new ExclusiveToken(this);
     }
 
+    /// <summary>
+    /// Attempts to acquire exclusive access. Returns false if shutdown has started.
+    /// </summary>
+    /// <param name="timeout">Optional timeout. If expired, a <see cref="TimeoutException"/> is thrown.</param>
+    /// <returns>True if acquired; false if shutting down.</returns>
+    /// <exception cref="TimeoutException">Thrown if the wait exceeds <paramref name="timeout"/>.</exception>
     public bool AcquireExclusive(TimeSpan? timeout = null)
     {
         var deadline = timeout is null ? null : DateTime.UtcNow + timeout;
 
         lock (_lock)
         {
+            // Register that we're waiting for exclusivity so shared acquisitions don't starve us.
             _exclusiveWaiters++;
 
             try
             {
                 while (true)
                 {
+                    // If rundown/shutdown is in progress, reject new acquisitions.
                     if (_isShuttingDown)
                     {
                         return false;
                     }
 
+                    // Acquire exclusivity only when no shared holders are active and no exclusive holder exists.
                     if (!_exclusiveHeld && _activeCount == 0)
                     {
                         _exclusiveHeld = true;
                         return true;
                     }
 
+                    // Otherwise, wait for a state change or timeout.
                     AquireLock(deadline);
                 }
             }
@@ -93,6 +231,7 @@ public class RundownGuard : IRundownGuard
         }
     }
 
+    // Wait on the lock with an optional deadline. Throws TimeoutException if the deadline elapses.
     private void AquireLock(DateTime? deadline)
     {
         if (deadline is null)
@@ -108,36 +247,71 @@ public class RundownGuard : IRundownGuard
     }
 
     /// <summary>
-    /// Initiates rundown. Only one thread performs rundown and receives a token.
-    /// Other threads block until rundown completes, then throw RundownException.
+    /// Signals that shutdown should begin by preventing new acquisitions.
+    /// Does not block. For teardown, call <see cref="WaitForRundown"/>.
     /// </summary>
+    /// <remarks>
+    /// This is optional; calling <see cref="WaitForRundown"/> will also initiate shutdown the first time.
+    /// </remarks>
     public void TriggerRundown()
     {
         lock (_lock)
         {
             _isShuttingDown = true;
+            // Wake any waiters so they can observe the shutdown state.
+            Monitor.PulseAll(_lock);
         }
     }
 
+    // Marks rundown completed and wakes any threads waiting for completion.
     private void RundownComplete()
     {
         lock (_lock)
         {
             _rundownCompleted = true;
+            // Wake threads blocked in WaitForRundown() waiting for completion.
+            Monitor.PulseAll(_lock);
         }
     }
 
     /// <summary>
-    /// Initiates rundown. Only one thread performs rundown and receives a token.
-    /// Other threads block until rundown completes, then throw RundownException.
+    /// Waits for rundown to start or completes it.
     /// </summary>
+    /// <returns>
+    /// A <see cref="RundownToken"/> if this caller owns rundown and should perform teardown; otherwise null
+    /// (either rundown is already in progress and this caller will block until completion, or rundown already completed).
+    /// </returns>
+    /// <remarks>
+    /// - The first caller that observes rundown not yet started becomes the owner:
+    ///   it sets shutdown, waits for all holders to drain, and receives a token for teardown.
+    /// - All subsequent callers block until rundown is completed, then return null.
+    /// - Dispose the returned token to signal completion and release waiters.
+    /// </remarks>
+    /// <example>
+    /// <code language="csharp"><![CDATA[
+    /// // Initiate rundown (optional)
+    /// guard.TriggerRundown();
+    ///
+    /// using (var rd = guard.WaitForRundown())
+    /// {
+    ///     if (rd != null)
+    ///     {
+    ///         // This thread performs the teardown exclusively
+    ///         // ... dispose resources, stop I/O, etc.
+    ///     }
+    ///     // If rd is null, another thread is handling teardown; this call blocks until completion.
+    /// }
+    /// ]]></code>
+    /// </example>
     public IDisposable? WaitForRundown()
     {
         lock (_lock)
         {
+            // If already completed, nothing to do.
             if (_rundownCompleted)
                 return null;
 
+            // If another thread is handling rundown, wait until it completes, then return null.
             if (_rundownStarted)
             {
                 while (!_rundownCompleted)
@@ -147,36 +321,50 @@ public class RundownGuard : IRundownGuard
                 return null;
             }
 
+            // Become the rundown owner.
             _rundownStarted = true;
             _isShuttingDown = true;
 
+            // Wait for all shared and exclusive holders to release.
             while (_activeCount > 0 || _exclusiveHeld)
             {
                 _ = Monitor.Wait(_lock);
             }
 
+            // Return a token; disposing it marks rundown complete and wakes other waiters.
             return new RundownToken(this);
         }
     }
 
+    /// <summary>
+    /// Releases a shared acquisition and wakes waiters.
+    /// </summary>
     public void ReleaseShared()
     {
         lock (_lock)
         {
             _activeCount--;
+            // Wake up threads that might be waiting for capacity or for all shared to drain.
             Monitor.PulseAll(_lock);
         }
     }
 
+    /// <summary>
+    /// Releases an exclusive acquisition and wakes waiters.
+    /// </summary>
     public void ReleaseExclusive()
     {
         lock (_lock)
         {
             _exclusiveHeld = false;
+            // Wake up threads waiting for exclusivity or rundown progress.
             Monitor.PulseAll(_lock);
         }
     }
 
+    /// <summary>
+    /// Token returned by <see cref="AcquireSharedToken"/>; disposing it releases the shared hold.
+    /// </summary>
     public sealed class ProtectionToken : IDisposable
     {
         private RundownGuard? _owner;
@@ -196,6 +384,9 @@ public class RundownGuard : IRundownGuard
         }
     }
 
+    /// <summary>
+    /// Token returned by <see cref="AcquireExclusiveToken"/>; disposing it releases the exclusive hold.
+    /// </summary>
     public sealed class ExclusiveToken : IDisposable
     {
         private RundownGuard _owner;
@@ -211,6 +402,10 @@ public class RundownGuard : IRundownGuard
         }
     }
 
+    /// <summary>
+    /// Token returned by <see cref="WaitForRundown"/> when this caller owns the rundown.
+    /// Disposing it marks rundown as completed and wakes waiters.
+    /// </summary>
     public sealed class RundownToken : IDisposable
     {
         private RundownGuard _owner;
@@ -226,6 +421,10 @@ public class RundownGuard : IRundownGuard
         }
     }
 
+    /// <summary>
+    /// Convenience exception type for consumers that wish to signal rundown/shutdown state to callers.
+    /// Not thrown by <see cref="RundownGuard"/> itself.
+    /// </summary>
     public class RundownException : ObjectDisposedException
     {
         public RundownException(string message)
