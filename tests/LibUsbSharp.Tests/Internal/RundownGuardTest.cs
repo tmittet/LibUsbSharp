@@ -75,7 +75,7 @@ public class RundownGuardTest
     {
         var guard = new RundownGuard();
         var act = () => guard.ReleaseShared();
-        act.Should().Throw<InvalidOperationException>().WithMessage("No shared guards held");
+        act.Should().Throw<InvalidOperationException>().WithMessage("No shared guards held.");
     }
 
     [Fact]
@@ -123,7 +123,7 @@ public class RundownGuardTest
     {
         var guard = new RundownGuard();
         var act = () => guard.ReleaseExclusive();
-        act.Should().Throw<InvalidOperationException>().WithMessage("No exclusive guard held");
+        act.Should().Throw<InvalidOperationException>().WithMessage("No exclusive guard held.");
     }
 
     [Fact]
