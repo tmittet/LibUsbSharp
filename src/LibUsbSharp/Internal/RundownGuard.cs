@@ -68,25 +68,39 @@ namespace LibUsbSharp.Internal;
 /// </example>
 public class RundownGuard : IDisposable
 {
-    // Maximum number of concurrent shared holders allowed.
+    /// <summary>
+    /// Maximum number of concurrent shared holders allowed.
+    /// </summary>
     private readonly int _maxSharedCount;
 
-    // Number of currently active shared holders.
+    /// <summary>
+    /// Number of currently active shared holders.
+    /// </summary>
     private int _activeCount;
 
-    // Indicates shutdown intent; once true, no new acquisitions are allowed.
+    /// <summary>
+    /// Indicates shutdown intent; once true, no new acquisitions are allowed.
+    /// </summary>
     private bool _isShuttingDown;
 
-    // True while an exclusive token is held.
+    /// <summary>
+    /// True while an exclusive token is held.
+    /// </summary>
     private bool _exclusiveHeld;
 
-    // Number of threads currently waiting for exclusive access.
+    /// <summary>
+    /// Number of threads currently waiting for exclusive access.
+    /// </summary>
     private int _exclusiveWaiters;
 
-    // Rundown state flag: set once rundown begins (Dispose or TriggerRundown + drain).
+    /// <summary>
+    /// Rundown state flag: set once rundown begins (Dispose or TriggerRundown + drain).
+    /// </summary>
     private bool _rundownStarted;
 
-    // Intrinsic lock guarding state and used as the monitor for wait/pulse.
+    /// <summary>
+    /// Intrinsic lock guarding state and used as the monitor for wait/pulse.
+    /// </summary>
     private readonly object _lock = new();
 
     /// <summary>
@@ -125,7 +139,7 @@ public class RundownGuard : IDisposable
     public IDisposable? AcquireSharedToken(TimeSpan? timeout = null)
     {
         AcquireShared(timeout);
-        return (IDisposable)new ProtectionToken(this);
+        return new ProtectionToken(this);
     }
 
     /// <summary>
@@ -147,7 +161,7 @@ public class RundownGuard : IDisposable
                 if (_isShuttingDown)
                 {
                     throw new ObjectDisposedException(
-                        "RundownGuard",
+                        nameof(RundownGuard),
                         "Rundown has started, no new shared acquisitions allowed."
                     );
                 }
@@ -184,7 +198,7 @@ public class RundownGuard : IDisposable
     public IDisposable? AcquireExclusiveToken(TimeSpan? timeout = null)
     {
         AcquireExclusive(timeout);
-        return (IDisposable)new ExclusiveToken(this);
+        return new ExclusiveToken(this);
     }
 
     /// <summary>
@@ -211,7 +225,7 @@ public class RundownGuard : IDisposable
                     if (_isShuttingDown)
                     {
                         throw new ObjectDisposedException(
-                            "RundownGuard",
+                            nameof(RundownGuard),
                             "Rundown has started, no new exclusive acquisitions allowed."
                         );
                     }
@@ -234,8 +248,10 @@ public class RundownGuard : IDisposable
         }
     }
 
-    // Wait on the condition variable with an optional Stopwatch-based timeout.
-    // Throws TimeoutException if the timeout elapses.
+    /// <summary>
+    /// Wait on the condition variable with an optional Stopwatch-based timeout.
+    /// Throws TimeoutException if the timeout elapses.
+    /// </summary>
     private void AquireLock(Stopwatch? stopwatch, TimeSpan? timeout)
     {
         if (timeout is null)
@@ -285,7 +301,7 @@ public class RundownGuard : IDisposable
             if (_rundownStarted)
             {
                 throw new ObjectDisposedException(
-                    "RundownGuard",
+                    nameof(RundownGuard),
                     "Rundown has started, no new exclusive acquisitions allowed."
                 );
             }
@@ -314,7 +330,7 @@ public class RundownGuard : IDisposable
         {
             if (_activeCount <= 0)
             {
-                throw new InvalidOperationException("No shared guards held");
+                throw new InvalidOperationException("No shared guards held.");
             }
             _activeCount--;
             // Wake up threads that might be waiting for capacity or for all shared to drain.
@@ -332,7 +348,7 @@ public class RundownGuard : IDisposable
         {
             if (_exclusiveHeld == false)
             {
-                throw new InvalidOperationException("No exclusive guard held");
+                throw new InvalidOperationException("No exclusive guard held.");
             }
 
             _exclusiveHeld = false;
