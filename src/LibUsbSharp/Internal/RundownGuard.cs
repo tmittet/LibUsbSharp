@@ -177,7 +177,7 @@ public class RundownGuard : IDisposable
                 }
 
                 // Otherwise, wait until a state change occurs or timeout elapses.
-                AquireLock(sw, timeout);
+                AcquireLock(sw, timeout);
             }
         }
     }
@@ -238,7 +238,7 @@ public class RundownGuard : IDisposable
                     }
 
                     // Otherwise, wait for a state change or timeout.
-                    AquireLock(sw, timeout);
+                    AcquireLock(sw, timeout);
                 }
             }
             finally
@@ -252,7 +252,7 @@ public class RundownGuard : IDisposable
     /// Wait on the condition variable with an optional Stopwatch-based timeout.
     /// Throws TimeoutException if the timeout elapses.
     /// </summary>
-    private void AquireLock(Stopwatch? stopwatch, TimeSpan? timeout)
+    private void AcquireLock(Stopwatch? stopwatch, TimeSpan? timeout)
     {
         if (timeout is null)
         {
