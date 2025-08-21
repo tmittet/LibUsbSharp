@@ -67,7 +67,7 @@ public class RundownGuardTest
         var guard = new RundownGuard();
         guard.TriggerRundown();
         var act = () => guard.AcquireSharedToken(TimeSpan.FromMilliseconds(1));
-        act.Should().Throw<RundownException>();
+        act.Should().Throw<ObjectDisposedException>();
     }
 
     [Fact]
@@ -115,7 +115,7 @@ public class RundownGuardTest
         var guard = new RundownGuard();
         guard.TriggerRundown();
         var act = () => guard.AcquireExclusiveToken(TimeSpan.FromMilliseconds(1));
-        act.Should().Throw<RundownException>();
+        act.Should().Throw<ObjectDisposedException>();
     }
 
     [Fact]
@@ -137,7 +137,7 @@ public class RundownGuardTest
         worker.Join();
 
         var act = () => guard.AcquireExclusiveToken(TimeSpan.FromMilliseconds(1));
-        act.Should().Throw<RundownException>();
+        act.Should().Throw<ObjectDisposedException>();
     }
 
     /*

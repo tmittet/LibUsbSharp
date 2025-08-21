@@ -60,7 +60,7 @@ public sealed class UsbDevice : IUsbDevice
         {
             using var token = _rundownGuard.AcquireSharedToken();
         }
-        catch (RundownException ex)
+        catch (ObjectDisposedException ex)
         {
             throw new ObjectDisposedException("UsbDevice", ex);
         }
@@ -93,7 +93,7 @@ public sealed class UsbDevice : IUsbDevice
         {
             using var token = _rundownGuard.AcquireSharedToken();
         }
-        catch (RundownException ex)
+        catch (ObjectDisposedException ex)
         {
             throw new ObjectDisposedException("UsbDevice", ex);
         }
@@ -117,7 +117,7 @@ public sealed class UsbDevice : IUsbDevice
         {
             using var token = _rundownGuard.AcquireExclusiveToken();
         }
-        catch (RundownException ex)
+        catch (ObjectDisposedException ex)
         {
             throw new ObjectDisposedException("UsbDevice", ex);
         }
@@ -162,7 +162,7 @@ public sealed class UsbDevice : IUsbDevice
         {
             using var token = _rundownGuard.AcquireExclusiveToken();
         }
-        catch (RundownException ex)
+        catch (ObjectDisposedException ex)
         {
             throw new ObjectDisposedException("UsbDevice", ex);
         }
@@ -203,7 +203,7 @@ public sealed class UsbDevice : IUsbDevice
         {
             using var token = _rundownGuard.AcquireExclusiveToken();
         }
-        catch (RundownException ex)
+        catch (ObjectDisposedException ex)
         {
             throw new ObjectDisposedException("UsbDevice", ex);
         }
@@ -227,7 +227,7 @@ public sealed class UsbDevice : IUsbDevice
         {
             _rundownGuard.Dispose();
         }
-        catch (RundownException ex)
+        catch (ObjectDisposedException ex)
         {
             throw new ObjectDisposedException("UsbDevice", ex);
         }

@@ -113,7 +113,7 @@ public class RundownGuard : IDisposable
     /// </summary>
     /// <param name="timeout">Optional timeout. If expired, a <see cref="TimeoutException"/> is thrown.</param>
     /// <returns>An <see cref="IDisposable"/> token that must be disposed to release the shared hold.</returns>
-    /// <exception cref="RundownException">Thrown if shutdown has started.</exception>
+    /// <exception cref="ObjectDisposedException">Thrown if shutdown has started.</exception>
     /// <exception cref="TimeoutException">Thrown if the wait exceeds <paramref name="timeout"/>.</exception>
     /// <example>
     /// <code language="csharp"><![CDATA[
@@ -131,7 +131,7 @@ public class RundownGuard : IDisposable
     /// Acquires shared access (throws on shutdown or timeout).
     /// </summary>
     /// <param name="timeout">Optional timeout. If expired, a <see cref="TimeoutException"/> is thrown.</param>
-    /// <exception cref="RundownException">Thrown if shutdown has started.</exception>
+    /// <exception cref="ObjectDisposedException">Thrown if shutdown has started.</exception>
     /// <exception cref="TimeoutException">Thrown if the wait exceeds <paramref name="timeout"/>.</exception>
     public void AcquireShared(TimeSpan? timeout = null)
     {
@@ -145,7 +145,8 @@ public class RundownGuard : IDisposable
                 // If rundown/shutdown is in progress, reject new shared acquisitions.
                 if (_isShuttingDown)
                 {
-                    throw new RundownException(
+                    throw new ObjectDisposedException(
+                        "RundownGuard",
                         "Rundown has started, no new shared acquisitions allowed."
                     );
                 }
@@ -171,7 +172,7 @@ public class RundownGuard : IDisposable
     /// </summary>
     /// <param name="timeout">Optional timeout. If expired, a <see cref="TimeoutException"/> is thrown.</param>
     /// <returns>An <see cref="IDisposable"/> token that must be disposed to release the exclusive hold.</returns>
-    /// <exception cref="RundownException">Thrown if shutdown has started.</exception>
+    /// <exception cref="ObjectDisposedException">Thrown if shutdown has started.</exception>
     /// <exception cref="TimeoutException">Thrown if the wait exceeds <paramref name="timeout"/>.</exception>
     /// <example>
     /// <code language="csharp"><![CDATA[
@@ -189,7 +190,7 @@ public class RundownGuard : IDisposable
     /// Acquires exclusive access (throws on shutdown or timeout).
     /// </summary>
     /// <param name="timeout">Optional timeout. If expired, a <see cref="TimeoutException"/> is thrown.</param>
-    /// <exception cref="RundownException">Thrown if shutdown has started.</exception>
+    /// <exception cref="ObjectDisposedException">Thrown if shutdown has started.</exception>
     /// <exception cref="TimeoutException">Thrown if the wait exceeds <paramref name="timeout"/>.</exception>
     public void AcquireExclusive(TimeSpan? timeout = null)
     {
@@ -208,7 +209,8 @@ public class RundownGuard : IDisposable
                     // If rundown/shutdown is in progress, reject new acquisitions.
                     if (_isShuttingDown)
                     {
-                        throw new RundownException(
+                        throw new ObjectDisposedException(
+                            "RundownGuard",
                             "Rundown has started, no new exclusive acquisitions allowed."
                         );
                     }
@@ -281,7 +283,10 @@ public class RundownGuard : IDisposable
             // If already started/completed, this instance is considered disposed.
             if (_rundownStarted)
             {
-                throw new ObjectDisposedException("RundownGuard");
+                throw new ObjectDisposedException(
+                    "RundownGuard",
+                    "Rundown has started, no new exclusive acquisitions allowed."
+                );
             }
 
             // Become the rundown owner: prevent new acquisitions.
@@ -370,13 +375,4 @@ public class RundownGuard : IDisposable
             _owner.ReleaseExclusive();
         }
     }
-}
-
-public class RundownException : InvalidOperationException
-{
-    /// <summary>
-    /// Exception thrown when an acquisition is attempted after rundown has started.
-    /// </summary>
-    public RundownException(string msg)
-        : base(msg) { }
 }
