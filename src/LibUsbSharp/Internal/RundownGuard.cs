@@ -68,7 +68,7 @@ namespace LibUsbSharp.Internal;
 /// }
 /// ]]></code>
 /// </example>
-public class RundownGuard
+public class RundownGuard : IDisposable
 {
     // Maximum number of concurrent shared holders allowed.
     private readonly int _maxSharedCount;
@@ -129,7 +129,8 @@ public class RundownGuard
     /// </example>
     public IDisposable? AcquireSharedToken(TimeSpan? timeout = null)
     {
-        return AcquireShared(timeout) ? (IDisposable)new ProtectionToken(this) : null;
+        AcquireShared(timeout);
+        return (IDisposable)new ProtectionToken(this);
     }
 
     /// <summary>
@@ -138,7 +139,7 @@ public class RundownGuard
     /// <param name="timeout">Optional timeout. If expired, a <see cref="TimeoutException"/> is thrown.</param>
     /// <returns>True if acquired; false if shutting down.</returns>
     /// <exception cref="TimeoutException">Thrown if the wait exceeds <paramref name="timeout"/>.</exception>
-    public bool AcquireShared(TimeSpan? timeout = null)
+    public void AcquireShared(TimeSpan? timeout = null)
     {
         // Start a stopwatch once so we can compute remaining time without DateTime.
         var sw = timeout is null ? null : Stopwatch.StartNew();
@@ -150,7 +151,9 @@ public class RundownGuard
                 // If rundown/shutdown is in progress, reject new shared acquisitions.
                 if (_isShuttingDown)
                 {
-                    return false;
+                    throw new RundownException(
+                        "Rundown has started, no new shared acquisitions allowed."
+                    );
                 }
 
                 // Allow shared acquisition only when:
@@ -160,7 +163,7 @@ public class RundownGuard
                 if (!_exclusiveHeld && _exclusiveWaiters == 0 && _activeCount < _maxSharedCount)
                 {
                     _activeCount++;
-                    return true;
+                    return;
                 }
 
                 // Otherwise, wait until a state change occurs or timeout elapses.
@@ -186,7 +189,8 @@ public class RundownGuard
     /// </example>
     public IDisposable? AcquireExclusiveToken(TimeSpan? timeout = null)
     {
-        return AcquireExclusive(timeout) ? (IDisposable)new ExclusiveToken(this) : null;
+        AcquireExclusive(timeout);
+        return (IDisposable)new ExclusiveToken(this);
     }
 
     /// <summary>
@@ -195,7 +199,7 @@ public class RundownGuard
     /// <param name="timeout">Optional timeout. If expired, a <see cref="TimeoutException"/> is thrown.</param>
     /// <returns>True if acquired; false if shutting down.</returns>
     /// <exception cref="TimeoutException">Thrown if the wait exceeds <paramref name="timeout"/>.</exception>
-    public bool AcquireExclusive(TimeSpan? timeout = null)
+    public void AcquireExclusive(TimeSpan? timeout = null)
     {
         // Start a stopwatch once so we can compute remaining time without DateTime.
         var sw = timeout is null ? null : Stopwatch.StartNew();
@@ -212,14 +216,16 @@ public class RundownGuard
                     // If rundown/shutdown is in progress, reject new acquisitions.
                     if (_isShuttingDown)
                     {
-                        return false;
+                        throw new RundownException(
+                            "Rundown has started, no new exclusive acquisitions allowed."
+                        );
                     }
 
                     // Acquire exclusivity only when no shared holders are active and no exclusive holder exists.
                     if (!_exclusiveHeld && _activeCount == 0)
                     {
                         _exclusiveHeld = true;
-                        return true;
+                        return;
                     }
 
                     // Otherwise, wait for a state change or timeout.
@@ -305,22 +311,14 @@ public class RundownGuard
     /// }
     /// ]]></code>
     /// </example>
-    public IDisposable? WaitForRundown()
+    public void Dispose()
     {
         lock (_lock)
         {
             // If already completed, nothing to do.
-            if (_rundownCompleted)
-                return null;
-
-            // If another thread is handling rundown, wait until it completes, then return null.
-            if (_rundownStarted)
+            if (_rundownCompleted || _rundownStarted)
             {
-                while (!_rundownCompleted)
-                {
-                    _ = Monitor.Wait(_lock);
-                }
-                return null;
+                throw new RundownDisposedException();
             }
 
             // Become the rundown owner.
@@ -332,10 +330,9 @@ public class RundownGuard
             {
                 _ = Monitor.Wait(_lock);
             }
-
-            // Return a token; disposing it marks rundown complete and wakes other waiters.
-            return new RundownToken(this);
         }
+
+        GC.SuppressFinalize(this);
     }
 
     /// <summary>
@@ -408,23 +405,19 @@ public class RundownGuard
             _owner.ReleaseExclusive();
         }
     }
+}
 
-    /// <summary>
-    /// Token returned by <see cref="WaitForRundown"/> when this caller owns the rundown.
-    /// Disposing it marks rundown as completed and wakes waiters.
-    /// </summary>
-    private sealed class RundownToken : IDisposable
+public class RundownException : InvalidOperationException
+{
+    public RundownException(string msg)
+        : base(msg)
     {
-        private readonly RundownGuard _owner;
-
-        internal RundownToken(RundownGuard owner)
-        {
-            _owner = owner;
-        }
-
-        public void Dispose()
-        {
-            _owner.RundownComplete();
-        }
     }
 }
+
+public class RundownDisposedException : RundownException
+{
+    public RundownDisposedException()
+        : base("Rundown has already been completed.") { }
+}
+

@@ -125,15 +125,16 @@ public class RundownGuardTest
     }
 
     [Fact]
-    public void WaitForRundown_triggers_rundown()
+    public void Dispose_triggers_rundown()
     {
         var guard = new RundownGuard();
         var exclusive = guard.AcquireExclusiveToken()!;
-        var worker = new Thread(() => guard.WaitForRundown());
+        var worker = new Thread(() => guard.Dispose());
         worker.Start();
         exclusive.Dispose();
         worker.Join();
-        guard.AcquireExclusiveToken(TimeSpan.FromMilliseconds(1)).Should().BeNull();
+        var act = () => guard.AcquireExclusiveToken(TimeSpan.FromMilliseconds(1));
+        act.Should().Throw<RundownDisposedException>().WithMessage("The operation has timed out.");
     }
 
     /*

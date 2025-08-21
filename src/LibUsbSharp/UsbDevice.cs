@@ -203,13 +203,7 @@ public sealed class UsbDevice : IUsbDevice
     /// </summary>
     public void Dispose()
     {
-        using var rundown = _rundownGuard.WaitForRundown();
-
-        if (rundown == null)
-        {
-            _logger.LogDebug("Device '{DeviceKey}' already disposed.", Descriptor.DeviceKey);
-            return;
-        }
+        _rundownGuard.Dispose();
 
         try
         {
