@@ -62,7 +62,7 @@ public class RundownGuardTest
     }
 
     [Fact]
-    public void AcquireShared_throws_RundownException_when_rundown_is_triggered()
+    public void AcquireShared_throws_ObjectDisposedException_when_rundown_is_triggered()
     {
         var guard = new RundownGuard();
         guard.TriggerRundown();
@@ -110,7 +110,7 @@ public class RundownGuardTest
     }
 
     [Fact]
-    public void AcquireExclusive_throws_RundownException_when_rundown_is_triggered()
+    public void AcquireExclusive_throws_ObjectDisposedException_when_rundown_is_triggered()
     {
         var guard = new RundownGuard();
         guard.TriggerRundown();
@@ -163,9 +163,9 @@ public class RundownGuardTest
         // worker2.Join();
 
         exclusive.Dispose();
-        // After rundown, acquisitions throw RundownException rather than returning null.
+        // After rundown, acquisitions throw ObjectDisposedException rather than returning null.
         var act = () => guard.AcquireExclusiveToken(TimeSpan.FromMilliseconds(1));
-        act.Should().Throw<RundownException>();
+        act.Should().Throw<ObjectDisposedException>();
 
         worker1.Join();
     }
