@@ -61,6 +61,17 @@ public sealed class Given_a_vendor_class_USB_device : IDisposable
         endpoint!.MaxPacketSize.Should().BePositive();
     }
 
+    [SkippableFact]
+    public void Open_interfaces_are_auto_disposed_when_UsbDevice_is_disposed()
+    {
+        // Open device and leave it open
+        var device = _deviceSource.OpenUsbDeviceOrSkip();
+        // Claim interface without disposing it
+        _ = device.ClaimInterface(UsbClass.VendorSpecific);
+        // Dispose device
+        device.Dispose();
+    }
+
     public void Dispose()
     {
         _libUsb.Dispose();
