@@ -302,7 +302,7 @@ public class RundownGuard : IDisposable
             {
                 throw new ObjectDisposedException(
                     nameof(RundownGuard),
-                    "Rundown has started, no new exclusive acquisitions allowed."
+                    "Dispose/rundown completed, no additional Dispose calls allowed."
                 );
             }
 
