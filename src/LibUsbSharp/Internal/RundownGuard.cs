@@ -84,7 +84,6 @@ public class RundownGuard : IDisposable
 
     // Rundown state flags.
     private bool _rundownStarted;
-    private bool _rundownCompleted;
 
     // Intrinsic lock for all condition changes and condition variable waits.
     private readonly object _lock = new();
@@ -265,25 +264,14 @@ public class RundownGuard : IDisposable
         }
     }
 
-    // Marks rundown completed and wakes any threads waiting for completion.
-    // Note: internal helper reserved for a potential future completion signal.
-    private void RundownComplete()
-    {
-        lock (_lock)
-        {
-            _rundownCompleted = true;
-            Monitor.PulseAll(_lock);
-        }
-    }
-
     /// <summary>
     /// Initiates rundown and waits for in-flight holders to drain.
     /// </summary>
     /// <remarks>
     /// - First call: sets shutdown, waits until all shared and exclusive holders release, then returns.
-    /// - Subsequent calls: throw <see cref="RundownDisposedException"/>.
+    /// - Subsequent calls: throw <see cref="ObjectDisposedException"/>.
     /// </remarks>
-    /// <exception cref="RundownDisposedException">
+    /// <exception cref="ObjectDisposedException">
     /// Thrown if rundown has already started or completed.
     /// </exception>
     public void Dispose()
@@ -291,9 +279,9 @@ public class RundownGuard : IDisposable
         lock (_lock)
         {
             // If already started/completed, this instance is considered disposed.
-            if (_rundownCompleted || _rundownStarted)
+            if (_rundownStarted)
             {
-                throw new RundownDisposedException();
+                throw new ObjectDisposedException("RundownGuard");
             }
 
             // Become the rundown owner: prevent new acquisitions.
@@ -391,13 +379,4 @@ public class RundownException : InvalidOperationException
     /// </summary>
     public RundownException(string msg)
         : base(msg) { }
-}
-
-public class RundownDisposedException : RundownException
-{
-    /// <summary>
-    /// Exception thrown when <see cref="RundownGuard.Dispose"/> is called after rundown has already started or completed.
-    /// </summary>
-    public RundownDisposedException()
-        : base("Rundown has already been completed.") { }
 }
