@@ -3,27 +3,27 @@
 //
 // Purpose
 // - Coordinates concurrent work (shared access) and critical operations (exclusive access).
-// - Enables a cooperative "rundown" phase that:
-//   1) Prevents new work from starting,
-//   2) Waits for in-flight work to finish,
-//   3) Allows exactly one thread to perform final teardown,
-//   4) Lets all other threads block until rundown is completed.
+// - Provides a cooperative "rundown" phase to stop new work and drain in-flight work.
+// - Supports low-overhead, monotonic timeouts via Stopwatch.
 //
 // When to use
-// - Managing lifecycle-sensitive resources where you must stop accepting new work,
-//   wait for current work to drain, then perform an exclusive teardown (e.g., device/handle
-//   teardown, I/O pipeline shutdown, background processing stop).
+// - Lifecycle-sensitive resources that must:
+//   1) Stop accepting new work,
+//   2) Wait for current work to finish,
+//   3) Then perform teardown (e.g., device/handle teardown, I/O pipeline shutdown).
 //
 // Key concepts
-// - Shared: Many concurrent holders (up to maxSharedCount) when no exclusive holder exists.
+// - Shared: Multiple concurrent holders (bounded by maxSharedCount) when no exclusive holder exists.
 // - Exclusive: Single holder with no concurrent shared holders.
-// - Rundown: A one-time shutdown gate; once started, new acquisitions fail, and one thread
-//   is given a rundown token to perform teardown while others wait for completion.
+// - Rundown: Once started, new acquisitions are rejected.
+//   - TriggerRundown() prevents new acquisitions immediately.
+//   - Dispose() begins rundown and blocks until all holders release.
 //
 // Notes
-// - Acquire* methods can take an optional timeout; if it elapses, a TimeoutException is thrown.
-// - If shutdown has started, Acquire* methods fail (return false/null).
-// - Always dispose returned tokens to release the corresponding hold.
+// - Acquire* methods use Stopwatch-based timeout accounting (no DateTime).
+// - AcquireShared/AcquireExclusive throw RundownException if shutdown has started, and TimeoutException on wait expiry.
+// - Dispose() initiates rundown and blocks until all holders are released; subsequent Dispose calls throw RundownDisposedException.
+// - Always dispose the returned acquisition tokens to release holds.
 //
 
 using System.Diagnostics;
@@ -31,41 +31,38 @@ using System.Diagnostics;
 namespace LibUsbSharp.Internal;
 
 /// <summary>
-/// Coordinates shared and exclusive access and provides a one-time "rundown" (shutdown) mechanism.
+/// Coordinates shared and exclusive access and provides a cooperative "rundown" (shutdown) mechanism.
+/// Uses Stopwatch-based timeout tracking for monotonic, low-overhead waits.
 /// </summary>
 /// <remarks>
 /// Typical usage:
-/// - Normal operation: acquire shared tokens for work, occasionally exclusive tokens for critical updates.
-/// - Shutdown: call <see cref="TriggerRundown"/> (optional), then call <see cref="WaitForRundown"/>.
-///   The first caller to <see cref="WaitForRundown"/> becomes the teardown owner and receives a
-///   <see cref="RundownToken"/>. All other callers block until rundown completes and then return null.
+/// - Normal operation: acquire shared tokens for work; acquire exclusive tokens for critical mutations.
+/// - Shutdown:
+///   - Call <see cref="TriggerRundown"/> to immediately reject new acquisitions, or
+///   - Call <see cref="Dispose"/> to both reject new acquisitions and block until all active holders drain.
+/// Fairness: when there are exclusive waiters, new shared acquisitions are held back to avoid starving exclusives.
 /// </remarks>
 /// <example>
 /// <code language="csharp"><![CDATA[
-/// // Normal usage (shared work)
 /// var guard = new RundownGuard();
-/// using (guard.AcquireSharedToken()!)
+///
+/// // Shared usage
+/// using (guard.AcquireSharedToken(TimeSpan.FromSeconds(1)))
 /// {
-///     // Do concurrent work protected by the guard
+///     // Do concurrent work
 /// }
 ///
-/// // Exclusive usage (no shared holders present)
-/// using (guard.AcquireExclusiveToken()!)
+/// // Exclusive usage
+/// using (guard.AcquireExclusiveToken(TimeSpan.FromSeconds(5)))
 /// {
 ///     // Perform critical operation that must not overlap with shared work
 /// }
 ///
-/// // Shutdown / Rundown
-/// guard.TriggerRundown(); // Optional: proactively prevent new acquisitions
-/// using (var token = guard.WaitForRundown())
-/// {
-///     if (token != null)
-///     {
-///         // This thread owns rundown; at this point no shared or exclusive holders exist.
-///         // Perform teardown here (dispose handles, stop threads, etc.)
-///     }
-///     // If token is null, either rundown already completed, or another thread is performing it.
-/// }
+/// // Initiate shutdown (option A): prevent new acquisitions, existing work continues until released.
+/// guard.TriggerRundown();
+///
+/// // Initiate shutdown (option B): block until all holders are released, then return.
+/// guard.Dispose();
 /// ]]></code>
 /// </example>
 public class RundownGuard : IDisposable
@@ -85,11 +82,11 @@ public class RundownGuard : IDisposable
     // Number of threads currently waiting for exclusive access.
     private int _exclusiveWaiters;
 
-    // Rundown state flags: started and completed.
+    // Rundown state flags.
     private bool _rundownStarted;
     private bool _rundownCompleted;
 
-    // Intrinsic lock for all condition changes.
+    // Intrinsic lock for all condition changes and condition variable waits.
     private readonly object _lock = new();
 
     /// <summary>
@@ -113,17 +110,15 @@ public class RundownGuard : IDisposable
     }
 
     /// <summary>
-    /// Attempts to acquire a shared token. Returns null if shutdown has started.
+    /// Acquires a shared token (throws on shutdown or timeout).
     /// </summary>
     /// <param name="timeout">Optional timeout. If expired, a <see cref="TimeoutException"/> is thrown.</param>
-    /// <returns>An <see cref="IDisposable"/> token that must be disposed to release the shared hold; null if shutting down.</returns>
+    /// <returns>An <see cref="IDisposable"/> token that must be disposed to release the shared hold.</returns>
+    /// <exception cref="RundownException">Thrown if shutdown has started.</exception>
     /// <exception cref="TimeoutException">Thrown if the wait exceeds <paramref name="timeout"/>.</exception>
     /// <example>
     /// <code language="csharp"><![CDATA[
     /// using var token = guard.AcquireSharedToken(TimeSpan.FromSeconds(1));
-    /// if (token is null)
-    ///     return; // Shutting down
-    ///
     /// // Do work under shared protection
     /// ]]></code>
     /// </example>
@@ -134,14 +129,14 @@ public class RundownGuard : IDisposable
     }
 
     /// <summary>
-    /// Attempts to acquire shared access. Returns false if shutdown has started.
+    /// Acquires shared access (throws on shutdown or timeout).
     /// </summary>
     /// <param name="timeout">Optional timeout. If expired, a <see cref="TimeoutException"/> is thrown.</param>
-    /// <returns>True if acquired; false if shutting down.</returns>
+    /// <exception cref="RundownException">Thrown if shutdown has started.</exception>
     /// <exception cref="TimeoutException">Thrown if the wait exceeds <paramref name="timeout"/>.</exception>
     public void AcquireShared(TimeSpan? timeout = null)
     {
-        // Start a stopwatch once so we can compute remaining time without DateTime.
+        // Create a Stopwatch once to compute remaining time on each wait.
         var sw = timeout is null ? null : Stopwatch.StartNew();
 
         lock (_lock)
@@ -173,17 +168,15 @@ public class RundownGuard : IDisposable
     }
 
     /// <summary>
-    /// Attempts to acquire an exclusive token. Returns null if shutdown has started.
+    /// Acquires an exclusive token (throws on shutdown or timeout).
     /// </summary>
     /// <param name="timeout">Optional timeout. If expired, a <see cref="TimeoutException"/> is thrown.</param>
-    /// <returns>An <see cref="IDisposable"/> token that must be disposed to release the exclusive hold; null if shutting down.</returns>
+    /// <returns>An <see cref="IDisposable"/> token that must be disposed to release the exclusive hold.</returns>
+    /// <exception cref="RundownException">Thrown if shutdown has started.</exception>
     /// <exception cref="TimeoutException">Thrown if the wait exceeds <paramref name="timeout"/>.</exception>
     /// <example>
     /// <code language="csharp"><![CDATA[
     /// using var token = guard.AcquireExclusiveToken(TimeSpan.FromSeconds(5));
-    /// if (token is null)
-    ///     return; // Shutting down
-    ///
     /// // Perform critical operation under exclusive protection
     /// ]]></code>
     /// </example>
@@ -194,14 +187,14 @@ public class RundownGuard : IDisposable
     }
 
     /// <summary>
-    /// Attempts to acquire exclusive access. Returns false if shutdown has started.
+    /// Acquires exclusive access (throws on shutdown or timeout).
     /// </summary>
     /// <param name="timeout">Optional timeout. If expired, a <see cref="TimeoutException"/> is thrown.</param>
-    /// <returns>True if acquired; false if shutting down.</returns>
+    /// <exception cref="RundownException">Thrown if shutdown has started.</exception>
     /// <exception cref="TimeoutException">Thrown if the wait exceeds <paramref name="timeout"/>.</exception>
     public void AcquireExclusive(TimeSpan? timeout = null)
     {
-        // Start a stopwatch once so we can compute remaining time without DateTime.
+        // Create a Stopwatch once to compute remaining time on each wait.
         var sw = timeout is null ? null : Stopwatch.StartNew();
 
         lock (_lock)
@@ -239,7 +232,8 @@ public class RundownGuard : IDisposable
         }
     }
 
-    // Wait on the lock with an optional timeout based on Stopwatch. Throws TimeoutException if the timeout elapses.
+    // Wait on the condition variable with an optional Stopwatch-based timeout.
+    // Throws TimeoutException if the timeout elapses.
     private void AquireLock(Stopwatch? stopwatch, TimeSpan? timeout)
     {
         if (timeout is null)
@@ -256,10 +250,10 @@ public class RundownGuard : IDisposable
 
     /// <summary>
     /// Signals that shutdown should begin by preventing new acquisitions.
-    /// Does not block. For teardown, call <see cref="WaitForRundown"/>.
+    /// Does not block; existing holders continue until they release.
     /// </summary>
     /// <remarks>
-    /// This is optional; calling <see cref="WaitForRundown"/> will also initiate shutdown the first time.
+    /// Optional; calling <see cref="Dispose"/> will also initiate shutdown (and will block until drain).
     /// </remarks>
     public void TriggerRundown()
     {
@@ -272,56 +266,37 @@ public class RundownGuard : IDisposable
     }
 
     // Marks rundown completed and wakes any threads waiting for completion.
+    // Note: internal helper reserved for a potential future completion signal.
     private void RundownComplete()
     {
         lock (_lock)
         {
             _rundownCompleted = true;
-            // Wake threads blocked in WaitForRundown() waiting for completion.
             Monitor.PulseAll(_lock);
         }
     }
 
     /// <summary>
-    /// Waits for rundown to start or completes it.
+    /// Initiates rundown and waits for in-flight holders to drain.
     /// </summary>
-    /// <returns>
-    /// A <see cref="RundownToken"/> if this caller owns rundown and should perform teardown; otherwise null
-    /// (either rundown is already in progress and this caller will block until completion, or rundown already completed).
-    /// </returns>
     /// <remarks>
-    /// - The first caller that observes rundown not yet started becomes the owner:
-    ///   it sets shutdown, waits for all holders to drain, and receives a token for teardown.
-    /// - All subsequent callers block until rundown is completed, then return null.
-    /// - Dispose the returned token to signal completion and release waiters.
+    /// - First call: sets shutdown, waits until all shared and exclusive holders release, then returns.
+    /// - Subsequent calls: throw <see cref="RundownDisposedException"/>.
     /// </remarks>
-    /// <example>
-    /// <code language="csharp"><![CDATA[
-    /// // Initiate rundown (optional)
-    /// guard.TriggerRundown();
-    ///
-    /// using (var rd = guard.WaitForRundown())
-    /// {
-    ///     if (rd != null)
-    ///     {
-    ///         // This thread performs the teardown exclusively
-    ///         // ... dispose resources, stop I/O, etc.
-    ///     }
-    ///     // If rd is null, another thread is handling teardown; this call blocks until completion.
-    /// }
-    /// ]]></code>
-    /// </example>
+    /// <exception cref="RundownDisposedException">
+    /// Thrown if rundown has already started or completed.
+    /// </exception>
     public void Dispose()
     {
         lock (_lock)
         {
-            // If already completed, nothing to do.
+            // If already started/completed, this instance is considered disposed.
             if (_rundownCompleted || _rundownStarted)
             {
                 throw new RundownDisposedException();
             }
 
-            // Become the rundown owner.
+            // Become the rundown owner: prevent new acquisitions.
             _rundownStarted = true;
             _isShuttingDown = true;
 
@@ -338,6 +313,7 @@ public class RundownGuard : IDisposable
     /// <summary>
     /// Releases a shared acquisition and wakes waiters.
     /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown if no shared guards are currently held.</exception>
     public void ReleaseShared()
     {
         lock (_lock)
@@ -355,6 +331,7 @@ public class RundownGuard : IDisposable
     /// <summary>
     /// Releases an exclusive acquisition and wakes waiters.
     /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown if no exclusive guard is currently held.</exception>
     public void ReleaseExclusive()
     {
         lock (_lock)
@@ -371,7 +348,7 @@ public class RundownGuard : IDisposable
     }
 
     /// <summary>
-    /// Token returned by <see cref="AcquireSharedToken"/>; disposing it releases the shared hold.
+    /// Opaque token returned by <see cref="AcquireSharedToken"/>; disposing it releases the shared hold.
     /// </summary>
     private sealed class ProtectionToken : IDisposable
     {
@@ -389,7 +366,7 @@ public class RundownGuard : IDisposable
     }
 
     /// <summary>
-    /// Token returned by <see cref="AcquireExclusiveToken"/>; disposing it releases the exclusive hold.
+    /// Opaque token returned by <see cref="AcquireExclusiveToken"/>; disposing it releases the exclusive hold.
     /// </summary>
     private sealed class ExclusiveToken : IDisposable
     {
@@ -409,6 +386,9 @@ public class RundownGuard : IDisposable
 
 public class RundownException : InvalidOperationException
 {
+    /// <summary>
+    /// Exception thrown when an acquisition is attempted after rundown has started.
+    /// </summary>
     public RundownException(string msg)
         : base(msg)
     {
@@ -417,7 +397,9 @@ public class RundownException : InvalidOperationException
 
 public class RundownDisposedException : RundownException
 {
+    /// <summary>
+    /// Exception thrown when <see cref="RundownGuard.Dispose"/> is called after rundown has already started or completed.
+    /// </summary>
     public RundownDisposedException()
         : base("Rundown has already been completed.") { }
 }
-
