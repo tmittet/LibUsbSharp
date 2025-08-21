@@ -2,28 +2,29 @@
 // RundownGuard
 //
 // Purpose
-// - Coordinates concurrent work (shared access) and critical operations (exclusive access).
-// - Provides a cooperative "rundown" phase to stop new work and drain in-flight work.
-// - Supports low-overhead, monotonic timeouts via Stopwatch.
+// - Coordinates concurrent (shared) work and critical (exclusive) operations.
+// - Provides a cooperative "rundown" phase that stops accepting new work and waits
+//   for all in-flight holders to drain during Dispose().
+// - Uses Stopwatch-based, monotonic timeout accounting for low overhead.
 //
 // When to use
-// - Lifecycle-sensitive resources that must:
+// - Lifecycle-sensitive components (e.g., device access, I/O pipelines) that must:
 //   1) Stop accepting new work,
 //   2) Wait for current work to finish,
-//   3) Then perform teardown (e.g., device/handle teardown, I/O pipeline shutdown).
+//   3) Perform teardown safely.
 //
 // Key concepts
 // - Shared: Multiple concurrent holders (bounded by maxSharedCount) when no exclusive holder exists.
-// - Exclusive: Single holder with no concurrent shared holders.
-// - Rundown: Once started, new acquisitions are rejected.
-//   - TriggerRundown() prevents new acquisitions immediately.
-//   - Dispose() begins rundown and blocks until all holders release.
+// - Exclusive: Single holder; no concurrent shared holders.
+// - Rundown: Once started (TriggerRundown or Dispose), new acquisitions are rejected.
 //
 // Notes
-// - Acquire* methods use Stopwatch-based timeout accounting (no DateTime).
-// - AcquireShared/AcquireExclusive throw RundownException if shutdown has started, and TimeoutException on wait expiry.
-// - Dispose() initiates rundown and blocks until all holders are released; subsequent Dispose calls throw RundownDisposedException.
-// - Always dispose the returned acquisition tokens to release holds.
+// - AcquireShared/AcquireExclusive throw ObjectDisposedException once shutdown has started,
+//   and TimeoutException if an explicit timeout elapses while waiting.
+// - TriggerRundown() prevents new acquisitions and wakes waiters (does not block).
+// - Dispose() prevents new acquisitions and blocks until all holders have released, then returns.
+//   Calling Dispose() again throws ObjectDisposedException.
+// - Always dispose returned tokens to release the corresponding hold.
 //
 
 using System.Diagnostics;
@@ -31,15 +32,15 @@ using System.Diagnostics;
 namespace LibUsbSharp.Internal;
 
 /// <summary>
-/// Coordinates shared and exclusive access and provides a cooperative "rundown" (shutdown) mechanism.
+/// Coordinates shared and exclusive access and provides a cooperative rundown (shutdown) mechanism.
 /// Uses Stopwatch-based timeout tracking for monotonic, low-overhead waits.
 /// </summary>
 /// <remarks>
 /// Typical usage:
-/// - Normal operation: acquire shared tokens for work; acquire exclusive tokens for critical mutations.
+/// - Normal operation: acquire shared tokens for read-like work; acquire exclusive tokens for state mutations.
 /// - Shutdown:
-///   - Call <see cref="TriggerRundown"/> to immediately reject new acquisitions, or
-///   - Call <see cref="Dispose"/> to both reject new acquisitions and block until all active holders drain.
+///   - Call <see cref="TriggerRundown"/> to immediately reject new acquisitions without blocking; or
+///   - Call <see cref="Dispose"/> to reject new acquisitions and block until existing holders drain.
 /// Fairness: when there are exclusive waiters, new shared acquisitions are held back to avoid starving exclusives.
 /// </remarks>
 /// <example>
@@ -58,7 +59,7 @@ namespace LibUsbSharp.Internal;
 ///     // Perform critical operation that must not overlap with shared work
 /// }
 ///
-/// // Initiate shutdown (option A): prevent new acquisitions, existing work continues until released.
+/// // Initiate shutdown (option A): prevent new acquisitions; existing holders continue until release.
 /// guard.TriggerRundown();
 ///
 /// // Initiate shutdown (option B): block until all holders are released, then return.
@@ -82,10 +83,10 @@ public class RundownGuard : IDisposable
     // Number of threads currently waiting for exclusive access.
     private int _exclusiveWaiters;
 
-    // Rundown state flags.
+    // Rundown state flag: set once rundown begins (Dispose or TriggerRundown + drain).
     private bool _rundownStarted;
 
-    // Intrinsic lock for all condition changes and condition variable waits.
+    // Intrinsic lock guarding state and used as the monitor for wait/pulse.
     private readonly object _lock = new();
 
     /// <summary>
@@ -109,10 +110,10 @@ public class RundownGuard : IDisposable
     }
 
     /// <summary>
-    /// Acquires a shared token (throws on shutdown or timeout).
+    /// Acquires a shared token.
     /// </summary>
     /// <param name="timeout">Optional timeout. If expired, a <see cref="TimeoutException"/> is thrown.</param>
-    /// <returns>An <see cref="IDisposable"/> token that must be disposed to release the shared hold.</returns>
+    /// <returns>An <see cref="IDisposable"/> token that must be disposed to release the shared hold. Never null.</returns>
     /// <exception cref="ObjectDisposedException">Thrown if shutdown has started.</exception>
     /// <exception cref="TimeoutException">Thrown if the wait exceeds <paramref name="timeout"/>.</exception>
     /// <example>
@@ -128,7 +129,7 @@ public class RundownGuard : IDisposable
     }
 
     /// <summary>
-    /// Acquires shared access (throws on shutdown or timeout).
+    /// Acquires shared access.
     /// </summary>
     /// <param name="timeout">Optional timeout. If expired, a <see cref="TimeoutException"/> is thrown.</param>
     /// <exception cref="ObjectDisposedException">Thrown if shutdown has started.</exception>
@@ -142,7 +143,7 @@ public class RundownGuard : IDisposable
         {
             while (true)
             {
-                // If rundown/shutdown is in progress, reject new shared acquisitions.
+                // Reject new shared acquisitions during shutdown.
                 if (_isShuttingDown)
                 {
                     throw new ObjectDisposedException(
@@ -168,10 +169,10 @@ public class RundownGuard : IDisposable
     }
 
     /// <summary>
-    /// Acquires an exclusive token (throws on shutdown or timeout).
+    /// Acquires an exclusive token.
     /// </summary>
     /// <param name="timeout">Optional timeout. If expired, a <see cref="TimeoutException"/> is thrown.</param>
-    /// <returns>An <see cref="IDisposable"/> token that must be disposed to release the exclusive hold.</returns>
+    /// <returns>An <see cref="IDisposable"/> token that must be disposed to release the exclusive hold. Never null.</returns>
     /// <exception cref="ObjectDisposedException">Thrown if shutdown has started.</exception>
     /// <exception cref="TimeoutException">Thrown if the wait exceeds <paramref name="timeout"/>.</exception>
     /// <example>
@@ -187,7 +188,7 @@ public class RundownGuard : IDisposable
     }
 
     /// <summary>
-    /// Acquires exclusive access (throws on shutdown or timeout).
+    /// Acquires exclusive access.
     /// </summary>
     /// <param name="timeout">Optional timeout. If expired, a <see cref="TimeoutException"/> is thrown.</param>
     /// <exception cref="ObjectDisposedException">Thrown if shutdown has started.</exception>
@@ -199,14 +200,14 @@ public class RundownGuard : IDisposable
 
         lock (_lock)
         {
-            // Register that we're waiting for exclusivity so shared acquisitions don't starve us.
+            // Register as an exclusive waiter to avoid starvation from shared acquires.
             _exclusiveWaiters++;
 
             try
             {
                 while (true)
                 {
-                    // If rundown/shutdown is in progress, reject new acquisitions.
+                    // Reject new exclusive acquisitions during shutdown.
                     if (_isShuttingDown)
                     {
                         throw new ObjectDisposedException(
@@ -254,7 +255,7 @@ public class RundownGuard : IDisposable
     /// Does not block; existing holders continue until they release.
     /// </summary>
     /// <remarks>
-    /// Optional; calling <see cref="Dispose"/> will also initiate shutdown (and will block until drain).
+    /// Optional; calling <see cref="Dispose"/> will also initiate shutdown and will block until drain.
     /// </remarks>
     public void TriggerRundown()
     {
@@ -274,13 +275,13 @@ public class RundownGuard : IDisposable
     /// - Subsequent calls: throw <see cref="ObjectDisposedException"/>.
     /// </remarks>
     /// <exception cref="ObjectDisposedException">
-    /// Thrown if rundown has already started or completed.
+    /// Thrown if rundown has already started.
     /// </exception>
     public void Dispose()
     {
         lock (_lock)
         {
-            // If already started/completed, this instance is considered disposed.
+            // If already started, consider the instance disposed and reject further Dispose calls.
             if (_rundownStarted)
             {
                 throw new ObjectDisposedException(
