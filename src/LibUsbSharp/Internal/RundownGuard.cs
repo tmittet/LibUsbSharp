@@ -390,9 +390,7 @@ public class RundownException : InvalidOperationException
     /// Exception thrown when an acquisition is attempted after rundown has started.
     /// </summary>
     public RundownException(string msg)
-        : base(msg)
-    {
-    }
+        : base(msg) { }
 }
 
 public class RundownDisposedException : RundownException

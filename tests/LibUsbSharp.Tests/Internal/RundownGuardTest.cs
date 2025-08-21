@@ -62,11 +62,12 @@ public class RundownGuardTest
     }
 
     [Fact]
-    public void AcquireShared_returns_null_when_rundown_is_triggered()
+    public void AcquireShared_throws_RundownException_when_rundown_is_triggered()
     {
         var guard = new RundownGuard();
         guard.TriggerRundown();
-        guard.AcquireSharedToken(TimeSpan.FromMilliseconds(1)).Should().BeNull();
+        var act = () => guard.AcquireSharedToken(TimeSpan.FromMilliseconds(1));
+        act.Should().Throw<RundownException>();
     }
 
     [Fact]
@@ -109,11 +110,12 @@ public class RundownGuardTest
     }
 
     [Fact]
-    public void AcquireExclusive_returns_null_when_rundown_is_triggered()
+    public void AcquireExclusive_throws_RundownException_when_rundown_is_triggered()
     {
         var guard = new RundownGuard();
         guard.TriggerRundown();
-        guard.AcquireExclusiveToken(TimeSpan.FromMilliseconds(1)).Should().BeNull();
+        var act = () => guard.AcquireExclusiveToken(TimeSpan.FromMilliseconds(1));
+        act.Should().Throw<RundownException>();
     }
 
     [Fact]
@@ -133,11 +135,13 @@ public class RundownGuardTest
         worker.Start();
         exclusive.Dispose();
         worker.Join();
+
         var act = () => guard.AcquireExclusiveToken(TimeSpan.FromMilliseconds(1));
-        act.Should().Throw<RundownDisposedException>().WithMessage("The operation has timed out.");
+        act.Should().Throw<RundownException>();
     }
 
     /*
+    // WaitForRundown was removed from the API; keeping this example commented out for reference.
     [Fact]
     public void WaitForRundown_waits_for_all_guards_to_release()
     {
@@ -146,21 +150,24 @@ public class RundownGuardTest
         var worker1 = new Thread(
             () =>
             {
-                guard.AcquireSharedToken().Should().NotBeNull();
+                guard.AcquireSharedToken();
                 guard.ReleaseShared();
             }
         );
         worker1.Start();
         worker1.Join();
 
-        var worker2 = new Thread(() => guard.WaitForRundown());
-        worker2.Start();
-        worker2.Join();
+        // No longer applicable:
+        // var worker2 = new Thread(() => guard.WaitForRundown());
+        // worker2.Start();
+        // worker2.Join();
 
         exclusive.Dispose();
-        guard.AcquireExclusiveToken(TimeSpan.FromMilliseconds(1)).Should().BeNull();
+        // After rundown, acquisitions throw RundownException rather than returning null.
+        var act = () => guard.AcquireExclusiveToken(TimeSpan.FromMilliseconds(1));
+        act.Should().Throw<RundownException>();
+
         worker1.Join();
-        worker2.Join();
     }
     */
 }
