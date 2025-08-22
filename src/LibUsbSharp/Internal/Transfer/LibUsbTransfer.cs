@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace LibUsbSharp.Internal.Transfer;
@@ -28,7 +29,7 @@ internal static class LibUsbTransfer
 
         GCHandle callbackHandle = default;
         var transferPtr = IntPtr.Zero;
-        var transferStatus = LibUsbTransferStatus.Error;
+        var transferStatus = (int)LibUsbTransferStatus.Error;
         var transferLength = 0;
         try
         {
@@ -36,8 +37,8 @@ internal static class LibUsbTransfer
             LibUsbTransferCallback nativeCallback = (ptr) =>
             {
                 var transfer = Marshal.PtrToStructure<LibUsbTransferTemplate>(ptr);
-                transferStatus = transfer.Status;
-                transferLength = transfer.ActualLength;
+                Volatile.Write(ref transferStatus, (int)transfer.Status);
+                Volatile.Write(ref transferLength, (int)transfer.ActualLength);
                 _ = transferCompleteEvent.Set();
             };
             callbackHandle = GCHandle.Alloc(nativeCallback);
@@ -74,16 +75,28 @@ internal static class LibUsbTransfer
             {
                 // Tell libusb to cancel the transfer and discard the returned cancel status,
                 // the final transfer status is received through the LibUsbTransferCallback.
-                _ = libusb_cancel_transfer(transferPtr);
+                if (libusb_cancel_transfer(transferPtr) != 0)
+                {
+                    throw new LibUsbException(
+                        "Failed to cancel transfer after waiting for completion.",
+                        LibUsbResult.OtherError
+                    );
+                }
+
                 // We should not free the transfer or handle if there is still a chance
                 // that the callback is triggered, doing so may result in use-after-free.
                 // To avoid this, we wait indefinitely for completion or cancellation.
                 _ = transferCompleteEvent.WaitOne();
             }
 
+            Debug.Assert(
+                libusb_cancel_transfer(transferPtr) == (int)LibUsbResult.NotFound,
+                "libusb_cancel_transfer should fail here after transfer is complete or canceled"
+            );
+
             // The transfer is complete, canceled or failed; map status to result and return
-            bytesTransferred = transferLength;
-            return transferStatus.ToLibUsbError();
+            bytesTransferred = Volatile.Read(ref transferLength);
+            return ((LibUsbTransferStatus)Volatile.Read(ref transferStatus)).ToLibUsbError();
         }
         finally
         {
