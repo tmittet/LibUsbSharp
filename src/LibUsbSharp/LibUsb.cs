@@ -81,7 +81,7 @@ public sealed class LibUsb : ILibUsb
         if (callbackResult != 0)
         {
             _logger.LogWarning(
-                "Failed to set LibUsbOption.LogCallback. {ErrorDetail}",
+                "Failed to set LibUsbOption.LogCallback. {ErrorMessage}",
                 ((LibUsbResult)callbackResult).GetMessage()
             );
             return; // Only attempt to set log level if callback registration succeeded
@@ -91,7 +91,7 @@ public sealed class LibUsb : ILibUsb
         if (levelResult != 0)
         {
             _logger.LogWarning(
-                "Failed to set LibUsbOption.LogLevel. {ErrorDetail}",
+                "Failed to set LibUsbOption.LogLevel. {ErrorMessage}",
                 ((LibUsbResult)levelResult).GetMessage()
             );
         }

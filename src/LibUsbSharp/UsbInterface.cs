@@ -143,7 +143,6 @@ public sealed class UsbInterface : IUsbInterface
         catch (ObjectDisposedException ex)
         {
             _logger.LogWarning(
-                ex,
                 "BulkRead interrupted. {ErrorType}: {ErrorMessage}",
                 ex.GetType().Name,
                 ex.Message
@@ -207,7 +206,6 @@ public sealed class UsbInterface : IUsbInterface
         catch (ObjectDisposedException ex)
         {
             _logger.LogWarning(
-                ex,
                 "BulkWrite interrupted. {ErrorType}: {ErrorMessage}",
                 ex.GetType().Name,
                 ex.Message
