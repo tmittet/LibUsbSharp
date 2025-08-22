@@ -20,11 +20,11 @@ public sealed class UsbInterface : IUsbInterface
     private readonly byte[] _bulkReadBuffer;
     private readonly GCHandle _bulkReadBufferHandle;
     private readonly Lazy<IUsbEndpointDescriptor> _readEndpoint;
-    private readonly ReaderWriterLockSlim _bulkReadLock = new();
+    private readonly object _bulkReadLock = new();
     private readonly byte[] _bulkWriteBuffer;
     private readonly GCHandle _bulkWriteBufferHandle;
     private readonly Lazy<IUsbEndpointDescriptor> _writeEndpoint;
-    private readonly ReaderWriterLockSlim _bulkWriteLock = new();
+    private readonly object _bulkWriteLock = new();
     private readonly ReaderWriterLockSlim _disposeLock = new();
     private readonly CancellationTokenSource _disposeCts;
     private volatile bool _disposed;
