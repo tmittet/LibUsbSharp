@@ -115,7 +115,8 @@ public sealed class Given_any_USB_device : IDisposable
         var act = () => device.GetSerialNumber();
         act.Should().Throw<ObjectDisposedException>();
         // Calling dispose again is OK
-        device.Dispose();
+        var act2 = () => device.Dispose();
+        act2.Should().NotThrow();
     }
 
     public void Dispose()

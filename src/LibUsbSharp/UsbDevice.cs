@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
 using System.Text;
 using LibUsbSharp.Descriptor;
+using LibUsbSharp.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace LibUsbSharp;
@@ -15,9 +16,8 @@ public sealed class UsbDevice : IUsbDevice
     private readonly ILogger<UsbDevice> _logger;
     private readonly ConcurrentDictionary<byte, UsbInterface> _claimedInterfaces = new();
     private readonly ConcurrentDictionary<byte, string> _descriptorCache = new();
-    private readonly ReaderWriterLockSlim _lock = new();
     private readonly object _cacheLock = new();
-    private bool _disposed;
+    private readonly RundownGuard _rundownGuard = new();
 
     internal nint Handle { get; init; }
 
@@ -56,16 +56,20 @@ public sealed class UsbDevice : IUsbDevice
 
     private string ReadStringDescriptorCached(byte descriptorIndex)
     {
+        using var token = _rundownGuard.AcquireSharedToken();
+
         if (_descriptorCache.TryGetValue(descriptorIndex, out var cachedValue1))
         {
             return cachedValue1;
         }
+
         lock (_cacheLock)
         {
             if (_descriptorCache.TryGetValue(descriptorIndex, out var cachedValue2))
             {
                 return cachedValue2;
             }
+
             var value = ReadStringDescriptor(descriptorIndex);
             if (!string.IsNullOrWhiteSpace(value))
             {
@@ -78,57 +82,45 @@ public sealed class UsbDevice : IUsbDevice
     /// <inheritdoc />
     public string ReadStringDescriptor(byte descriptorIndex)
     {
-        _lock.EnterReadLock();
-        try
-        {
-            CheckDisposed();
-            var buffer = new byte[256];
-            var result = libusb_get_string_descriptor_ascii(
-                Handle,
-                descriptorIndex,
-                buffer,
-                buffer.Length
-            );
-            return result >= 0
-                ? Encoding.ASCII.GetString(buffer, 0, result)
-                : throw LibUsbException.FromError(result, "Failed to read device serial.");
-        }
-        finally
-        {
-            _lock.ExitReadLock();
-        }
+        using var token = _rundownGuard.AcquireSharedToken();
+
+        var buffer = new byte[256];
+        var result = libusb_get_string_descriptor_ascii(
+            Handle,
+            descriptorIndex,
+            buffer,
+            buffer.Length
+        );
+        return result >= 0
+            ? Encoding.ASCII.GetString(buffer, 0, result)
+            : throw LibUsbException.FromError(result, "Failed to read device serial.");
     }
 
     /// <inheritdoc />
     public IUsbInterface ClaimInterface(IUsbInterfaceDescriptor descriptor)
     {
-        _lock.EnterWriteLock();
-        try
+        using var token = _rundownGuard.AcquireExclusiveToken();
+
+        if (_claimedInterfaces.TryGetValue(descriptor.InterfaceNumber, out var existing))
         {
-            CheckDisposed();
-            if (_claimedInterfaces.TryGetValue(descriptor.InterfaceNumber, out var existing))
-            {
-                throw new ArgumentException($"USB interface {existing} already claimed.");
-            }
-            // TODO: libusb_set_auto_detach_kernel_driver on Linux?
-            var claimResult = libusb_claim_interface(Handle, descriptor.InterfaceNumber);
-            if (claimResult != 0)
-            {
-                throw LibUsbException.FromError(
-                    claimResult,
-                    $"Failed to claim USB interface {descriptor}."
-                );
-            }
-            var usbInterface = new UsbInterface(_loggerFactory, this, descriptor);
-            // No need to check if already added, checked in TryGetValue above
-            _claimedInterfaces[descriptor.InterfaceNumber] = usbInterface;
-            _logger.LogDebug("USB interface {UsbInterface} claimed.", usbInterface);
-            return usbInterface;
+            throw new ArgumentException($"USB interface {existing} already claimed.");
         }
-        finally
+
+        // TODO: libusb_set_auto_detach_kernel_driver on Linux?
+        var claimResult = libusb_claim_interface(Handle, descriptor.InterfaceNumber);
+        if (claimResult != 0)
         {
-            _lock.ExitWriteLock();
+            throw LibUsbException.FromError(
+                claimResult,
+                $"Failed to claim USB interface {descriptor}."
+            );
         }
+
+        var usbInterface = new UsbInterface(_loggerFactory, this, descriptor);
+        // No need to check if already added, checked in TryGetValue above
+        _claimedInterfaces[descriptor.InterfaceNumber] = usbInterface;
+        _logger.LogDebug("USB interface {UsbInterface} claimed.", usbInterface);
+        return usbInterface;
     }
 
     /// <summary>
@@ -145,73 +137,50 @@ public sealed class UsbDevice : IUsbDevice
     /// </exception>
     internal void ReleaseInterface(byte interfaceNumber)
     {
-        _lock.EnterWriteLock();
-        try
+        using var token = _rundownGuard.AcquireExclusiveToken();
+
+        if (!_claimedInterfaces.TryGetValue(interfaceNumber, out var usbInterface))
         {
-            CheckDisposed();
-            if (!_claimedInterfaces.TryGetValue(interfaceNumber, out var usbInterface))
-            {
-                throw new InvalidOperationException(
-                    $"USB interface #{interfaceNumber} not found in list of claimed interfaces."
-                );
-            }
-            var releaseResult = libusb_release_interface(Handle, interfaceNumber);
-            if (releaseResult != 0)
-            {
-                throw LibUsbException.FromError(
-                    releaseResult,
-                    $"Failed to release USB interface {usbInterface}."
-                );
-            }
-            if (_claimedInterfaces.TryRemove(interfaceNumber, out var _))
-            {
-                _logger.LogDebug("USB interface {UsbInterface} released.", usbInterface);
-            }
-            else
-            {
-                _logger.LogError(
-                    "Failed to remove released USB interface {UsbInterface} from list of claimed interfaces.",
-                    usbInterface
-                );
-            }
+            throw new InvalidOperationException(
+                $"USB interface #{interfaceNumber} not found in list of claimed interfaces."
+            );
         }
-        finally
+
+        var releaseResult = libusb_release_interface(Handle, interfaceNumber);
+        if (releaseResult != 0)
         {
-            _lock.ExitWriteLock();
+            throw LibUsbException.FromError(
+                releaseResult,
+                $"Failed to release USB interface {usbInterface}."
+            );
+        }
+
+        if (_claimedInterfaces.TryRemove(interfaceNumber, out var _))
+        {
+            _logger.LogDebug("USB interface {UsbInterface} released.", usbInterface);
+        }
+        else
+        {
+            _logger.LogError(
+                "Failed to remove released USB interface {UsbInterface} from list of claimed interfaces.",
+                usbInterface
+            );
         }
     }
 
     /// <inheritdoc />
     public void Reset()
     {
-        _lock.EnterWriteLock();
-        try
+        using var token = _rundownGuard.AcquireExclusiveToken();
+
+        var resetResult = libusb_reset_device(Handle);
+        if (resetResult != 0)
         {
-            CheckDisposed();
-            var resetResult = libusb_reset_device(Handle);
-            if (resetResult != 0)
-            {
-                throw LibUsbException.FromError(resetResult, $"Failed to reset USB device port.");
-            }
-        }
-        finally
-        {
-            _lock.ExitWriteLock();
+            throw LibUsbException.FromError(resetResult, $"Failed to reset USB device port.");
         }
     }
 
     public override string ToString() => _descriptor.DeviceKey;
-
-    /// <summary>
-    /// Throw ObjectDisposedException when UsbDevice is disposed.
-    /// </summary>
-    private void CheckDisposed()
-    {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(nameof(UsbDevice));
-        }
-    }
 
     /// <summary>
     /// Disposes this device and associated resources. Ongoing transfers are canceled,
@@ -219,15 +188,22 @@ public sealed class UsbDevice : IUsbDevice
     /// </summary>
     public void Dispose()
     {
-        _lock.EnterWriteLock();
         try
         {
-            if (_disposed)
-            {
-                _logger.LogDebug("Device '{DeviceKey}' already disposed.", Descriptor.DeviceKey);
-                return;
-            }
-
+            _rundownGuard.Dispose();
+        }
+        catch (ObjectDisposedException)
+        {
+#if DEBUG
+            throw;
+#endif
+#if !DEBUG
+            _logger.LogWarning("UsbDevice already disposed.");
+            return;
+#endif
+        }
+        try
+        {
             // Release all claimed USB interfaces
             foreach (var usbInterface in _claimedInterfaces.Values)
             {
@@ -237,8 +213,6 @@ public sealed class UsbDevice : IUsbDevice
 
             // Ask LibUsb to close device and remove it from list of open devices
             _libUsb.CloseDevice(Descriptor.DeviceKey, Handle);
-
-            _disposed = true;
             _logger.LogInformation("UsbDevice '{DeviceKey}' disposed.", Descriptor.DeviceKey);
         }
         catch (Exception ex)
@@ -248,10 +222,6 @@ public sealed class UsbDevice : IUsbDevice
                 ex.GetType().Name,
                 ex.Message
             );
-        }
-        finally
-        {
-            _lock.ExitWriteLock();
         }
     }
 
