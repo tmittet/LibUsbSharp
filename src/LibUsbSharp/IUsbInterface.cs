@@ -99,4 +99,6 @@ public interface IUsbInterface : IDisposable
         out int bytesWritten,
         int timeout = Timeout.Infinite
     );
+
+    void ControlTransfer();
 }

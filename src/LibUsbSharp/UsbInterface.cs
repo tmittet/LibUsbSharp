@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using LibUsbSharp.Descriptor;
+using LibUsbSharp.Internal.ControlTransfer;
 using LibUsbSharp.Internal.Transfer;
 using Microsoft.Extensions.Logging;
 
@@ -324,6 +325,12 @@ public sealed class UsbInterface : IUsbInterface
                 "Invalid timeout; must be greater than zero or -1 (infinite)."
             );
         }
+    }
+
+    public void ControlTransfer()
+    {
+        var transf = new LibUsbControlTransfer(_device);
+        transf.ControlTransfer();
     }
 
     /// <summary>

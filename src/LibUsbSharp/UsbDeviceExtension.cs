@@ -33,4 +33,5 @@ public static class UsbDeviceExtension
     {
         return usbDevice.ConfigDescriptor.Interfaces.Any(i => i.InterfaceClass == interfaceClass);
     }
+    
 }
