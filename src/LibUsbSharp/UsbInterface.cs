@@ -123,6 +123,7 @@ public sealed class UsbInterface : IUsbInterface
             lock (_bulkReadLock)
             {
                 var result = LibUsbTransfer.ExecuteSync(
+                    _logger,
                     _device.Handle,
                     LibUsbTransferType.Bulk,
                     _readEndpoint.Value.EndpointAddress,
@@ -191,6 +192,7 @@ public sealed class UsbInterface : IUsbInterface
             {
                 source[..bufferLength].CopyTo(_bulkWriteBuffer.AsSpan(0, bufferLength));
                 return LibUsbTransfer.ExecuteSync(
+                    _logger,
                     _device.Handle,
                     LibUsbTransferType.Bulk,
                     _writeEndpoint.Value.EndpointAddress,
