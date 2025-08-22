@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
 using System.Text;
 using LibUsbSharp.Descriptor;
+using LibUsbSharp.Internal.ControlTransfer;
 using Microsoft.Extensions.Logging;
 
 namespace LibUsbSharp;
@@ -26,6 +27,7 @@ public sealed class UsbDevice : IUsbDevice
 
     /// <inheritdoc />
     public IUsbConfigDescriptor ConfigDescriptor { get; init; }
+    private LibUsbControlTransfer LibUsbControlTransferController { get; init; }
 
     internal UsbDevice(
         ILoggerFactory loggerFactory,
@@ -43,6 +45,7 @@ public sealed class UsbDevice : IUsbDevice
         Handle = handle;
         _descriptor = descriptor;
         ConfigDescriptor = configDescriptor;
+        LibUsbControlTransferController = new LibUsbControlTransfer(this);
     }
 
     /// <inheritdoc />
@@ -198,6 +201,23 @@ public sealed class UsbDevice : IUsbDevice
         {
             _lock.ExitWriteLock();
         }
+    }
+
+    public byte[] ControlTransfer(
+        BmRequestType bmRequestType,
+        BRequest bRequest,
+        Selector selector,
+        byte[] buffer,
+        int timeoutMs
+    )
+    {
+        return LibUsbControlTransferController.ControlTransfer(
+            bmRequestType,
+            bRequest,
+            selector,
+            buffer,
+            timeoutMs
+        );
     }
 
     public override string ToString() => _descriptor.DeviceKey;

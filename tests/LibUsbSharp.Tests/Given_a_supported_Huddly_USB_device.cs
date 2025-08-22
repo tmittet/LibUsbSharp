@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿using System.Dynamic;
+using System.Numerics;
+using System.Text;
 using FluentAssertions;
 using LibUsbSharp.Descriptor;
 using LibUsbSharp.Tests.Infrastructure;
@@ -25,6 +27,79 @@ public sealed class Given_a_supported_Huddly_USB_device : IDisposable
         _libUsb.Initialize(LogLevel.Information);
         _deviceSource = new TestDeviceSource(_logger, _libUsb);
         _deviceSource.SetRequiredVendorId(HuddlyVendorId);
+    }
+
+    [SkippableFact]
+    public void Test()
+    {
+        var descriptors = _libUsb.GetDeviceList(vendorId: HuddlyVendorId);
+        var device = _libUsb.OpenDevice(descriptors[0]!);
+        var bLength = device.ControlTransfer(
+            Internal.ControlTransfer.BmRequestType.GetInterface,
+            Internal.ControlTransfer.BRequest.GetLength,
+            Internal.ControlTransfer.Selector.Brightness,
+            new byte[2],
+            1000
+        );
+        var length = BitConverter.ToUInt16(bLength, 0);
+
+        var bMax = device.ControlTransfer(
+            Internal.ControlTransfer.BmRequestType.GetInterface,
+            Internal.ControlTransfer.BRequest.GetMax,
+            Internal.ControlTransfer.Selector.Brightness,
+            new byte[length],
+            1000
+        );
+        var bMin = device.ControlTransfer(
+            Internal.ControlTransfer.BmRequestType.GetInterface,
+            Internal.ControlTransfer.BRequest.GetMin,
+            Internal.ControlTransfer.Selector.Brightness,
+            new byte[length],
+            1000
+        );
+        var bRes = device.ControlTransfer(
+            Internal.ControlTransfer.BmRequestType.GetInterface,
+            Internal.ControlTransfer.BRequest.GetResolution,
+            Internal.ControlTransfer.Selector.Brightness,
+            new byte[length],
+            1000
+        );
+
+        var bVal = device.ControlTransfer(
+            Internal.ControlTransfer.BmRequestType.GetInterface,
+            Internal.ControlTransfer.BRequest.GetCurrent,
+            Internal.ControlTransfer.Selector.Brightness,
+            new byte[length],
+            1000
+        );
+
+        var val = BitConverter.ToInt16(bVal);
+        var max = BitConverter.ToInt16(bMax);
+        var min = BitConverter.ToInt16(bMin);
+        var res = BitConverter.ToInt16(bRes);
+
+        static byte[] FromI16LE(short v) => new[] { (byte)(v & 0xFF), (byte)((v >> 8) & 0xFF) };
+        var setVal = FromI16LE(-590);
+        device.ControlTransfer(
+            Internal.ControlTransfer.BmRequestType.SetInterface,
+            Internal.ControlTransfer.BRequest.SetCurrent,
+            Internal.ControlTransfer.Selector.Brightness,
+            setVal,
+            1000
+        );
+        var bNewVal = device.ControlTransfer(
+            Internal.ControlTransfer.BmRequestType.SetInterface,
+            Internal.ControlTransfer.BRequest.SetCurrent,
+            Internal.ControlTransfer.Selector.Brightness,
+            setVal,
+            1000
+        );
+
+        var newVal = BitConverter.ToInt16(bNewVal);
+
+        Console.WriteLine(
+            $"Original Value: {val}, Max: {max}, Min: {min}, Resolution: {res}, New Value: {newVal}"
+        );
     }
 
     [SkippableFact]

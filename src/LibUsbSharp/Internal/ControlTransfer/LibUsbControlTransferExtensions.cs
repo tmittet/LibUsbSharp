@@ -1,15 +1,30 @@
-using System;
-
 namespace LibUsbSharp.Internal.ControlTransfer;
-
-public struct ExtraDescriptorIds
-{
-    byte CameraTerminalId;
-    byte ProcessingUnitId;
-}
 
 static class LibUsbControlTransferExtensions
 {
+    private static List<string> GetBmControlsForDescriptor(
+        int bmStart,
+        int bLength,
+        byte[] extra,
+        int off
+    )
+    {
+        int bmLen = Math.Max(0, bLength - bmStart);
+        var bmOutput = new List<string>();
+        if (bmLen > 0 && off + bmStart + bmLen <= extra.Length)
+        {
+            var bm = new byte[bmLen];
+            Buffer.BlockCopy(extra, off + bmStart, bm, 0, bmLen);
+            Console.Write("    PU bmControls: ");
+            for (int k = 0; k < bm.Length; k++)
+            {
+                var hexStr = $"{bm[k]:X2}";
+                bmOutput.Add(hexStr);
+            }
+        }
+        return bmOutput;
+    }
+
     internal static void ExtractInfoFromExtraBytes(
         this LibUsbControlTransfer libUsbControlTransfer,
         byte[] extra
@@ -44,6 +59,9 @@ static class LibUsbControlTransferExtensions
                             ushort wTerminalType = BitConverter.ToUInt16(extra, off + 4);
                             if (wTerminalType == ITT_CAMERA && bTerminalID != 0)
                                 libUsbControlTransfer.CameraTerminalId = bTerminalID;
+                            var bmOutput = GetBmControlsForDescriptor(8, bLength, extra, off);
+                            // Maybe use this later? But probably fine to hard code capabilities
+                            Console.WriteLine(bmOutput);
                         }
                         break;
                     // Same as above
@@ -52,6 +70,9 @@ static class LibUsbControlTransferExtensions
                         {
                             byte bUnitID = extra[off + 3];
                             libUsbControlTransfer.ProcessingUnitId = bUnitID;
+                            var bmOutput = GetBmControlsForDescriptor(7, bLength, extra, off);
+                            // Maybe use this later? But probably fine to hard code capabilities
+                            Console.WriteLine(bmOutput);
                         }
                         break;
 

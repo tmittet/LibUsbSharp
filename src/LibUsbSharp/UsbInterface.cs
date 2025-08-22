@@ -327,12 +327,6 @@ public sealed class UsbInterface : IUsbInterface
         }
     }
 
-    public void ControlTransfer()
-    {
-        var transf = new LibUsbControlTransfer(_device);
-        transf.ControlTransfer();
-    }
-
     /// <summary>
     /// Disposes this interface and associated resources. Ongoing read and write
     /// transfers are canceled and allocated read and write memory buffers are freed.
