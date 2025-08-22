@@ -193,8 +193,15 @@ public sealed class UsbDevice : IUsbDevice
     /// </summary>
     public void Dispose()
     {
-        _rundownGuard.Dispose();
-
+        try
+        {
+            _rundownGuard.Dispose();
+        }
+        catch (ObjectDisposedException)
+        {
+            _logger.LogWarning("UsbDevice already disposed.");
+            return;
+        }
         try
         {
             // Release all claimed USB interfaces
