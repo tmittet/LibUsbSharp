@@ -196,8 +196,7 @@ public sealed class UsbDevice : IUsbDevice
         {
 #if DEBUG
             throw;
-#endif
-#if !DEBUG
+#else
             _logger.LogWarning("UsbDevice already disposed.");
             return;
 #endif
