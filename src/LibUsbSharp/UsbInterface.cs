@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using LibUsbSharp.Descriptor;
+using LibUsbSharp.Internal.ControlTransfer;
 using LibUsbSharp.Internal.Transfer;
 using Microsoft.Extensions.Logging;
 

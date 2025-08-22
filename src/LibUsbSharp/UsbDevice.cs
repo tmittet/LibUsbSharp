@@ -27,6 +27,7 @@ public sealed class UsbDevice : IUsbDevice
 
     /// <inheritdoc />
     public IUsbConfigDescriptor ConfigDescriptor { get; init; }
+    private LibUsbControlTransfer LibUsbControlTransferController { get; init; }
 
     internal UsbDevice(
         ILoggerFactory loggerFactory,
@@ -44,6 +45,7 @@ public sealed class UsbDevice : IUsbDevice
         Handle = handle;
         _descriptor = descriptor;
         ConfigDescriptor = configDescriptor;
+        LibUsbControlTransferController = new LibUsbControlTransfer(this);
     }
 
     /// <inheritdoc />
@@ -183,6 +185,23 @@ public sealed class UsbDevice : IUsbDevice
         {
             throw LibUsbException.FromError(resetResult, $"Failed to reset USB device port.");
         }
+    }
+
+    public byte[] ControlTransfer(
+        BmRequestType bmRequestType,
+        BRequest bRequest,
+        Selector selector,
+        byte[] buffer,
+        int timeoutMs
+    )
+    {
+        return LibUsbControlTransferController.ControlTransfer(
+            bmRequestType,
+            bRequest,
+            selector,
+            buffer,
+            timeoutMs
+        );
     }
 
     public override string ToString() => _descriptor.DeviceKey;

@@ -1,4 +1,5 @@
 using LibUsbSharp.Descriptor;
+using LibUsbSharp.Internal.ControlTransfer;
 
 namespace LibUsbSharp;
 
@@ -64,4 +65,12 @@ public interface IUsbDevice : IDisposable
     /// cannot be restored, the device will appear to be disconnected and reconnected.
     /// </summary>
     void Reset();
+
+    byte[] ControlTransfer(
+        BmRequestType bmRequestType,
+        BRequest bRequest,
+        Selector selector,
+        byte[] buffer,
+        int timeoutMs
+    );
 }
