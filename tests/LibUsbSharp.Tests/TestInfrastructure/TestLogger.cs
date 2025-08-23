@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Xunit.Abstractions;
 
-namespace LibUsbSharp.Tests.Infrastructure;
+namespace LibUsbSharp.Tests.TestInfrastructure;
 
 public class TestLogger(string _categoryName, ITestOutputHelper _output) : ILogger
 {

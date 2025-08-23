@@ -3,7 +3,7 @@ using LibUsbSharp.Descriptor;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
-namespace LibUsbSharp.Tests.Infrastructure;
+namespace LibUsbSharp.Tests.TestInfrastructure;
 
 public class TestDeviceSource(ILogger _logger, ILibUsb _libUsb)
 {

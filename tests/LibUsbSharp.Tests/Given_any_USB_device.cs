@@ -1,6 +1,6 @@
 using FluentAssertions;
 using LibUsbSharp.Descriptor;
-using LibUsbSharp.Tests.Infrastructure;
+using LibUsbSharp.Tests.TestInfrastructure;
 using Microsoft.Extensions.Logging;
 using Xunit;
 using Xunit.Abstractions;
