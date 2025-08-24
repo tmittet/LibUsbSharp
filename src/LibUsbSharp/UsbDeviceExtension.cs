@@ -1,9 +1,12 @@
+using LibUsbSharp.Descriptor;
+
 namespace LibUsbSharp;
 
 public static class UsbDeviceExtension
 {
     /// <summary>
     /// Claim a USB interface. The interface will be auto-released when the device is disposed.
+    /// NOTE: When more than one matching interface is found, the first is selected and claimed.
     /// </summary>
     /// <exception cref="ArgumentException">
     /// Thrown when the USB interface is already claimed.
@@ -17,27 +20,33 @@ public static class UsbDeviceExtension
     /// <exception cref="ObjectDisposedException">
     /// Thrown when the UsbDevice is disposed.
     /// </exception>
-    public static IUsbInterface ClaimInterface(this IUsbDevice device, UsbClass interfaceClass)
+    public static IUsbInterface ClaimInterface(
+        this IUsbDevice device,
+        UsbClass withClass,
+        byte? withSubClass = null
+    )
     {
-        var usbInterface = device.ConfigDescriptor.Interfaces.FirstOrDefault(i =>
-            i.InterfaceClass == interfaceClass
-        );
+        var usbInterface = device.Interfaces(withClass, withSubClass).FirstOrDefault();
         return usbInterface is null
             ? throw new InvalidOperationException(
-                $"Device '{device}' {interfaceClass} interface not found."
+                $"Device '{device}' {withClass} interface not found."
             )
             : device.ClaimInterface(usbInterface);
     }
 
     public static bool HasInterface(
+        this IUsbDevice device,
+        UsbClass withClass,
+        byte? withSubClass = null
+    ) => device.Interfaces(withClass, withSubClass).Any();
+
+    private static IEnumerable<IUsbInterfaceDescriptor> Interfaces(
         this IUsbDevice usbDevice,
-        UsbClass interfaceClass,
-        byte? interfaceSubClass = null
-    )
-    {
-        return usbDevice.ConfigDescriptor.Interfaces.Any(i =>
-            i.InterfaceClass == interfaceClass
-            && (interfaceSubClass is null || i.InterfaceSubClass == interfaceSubClass.Value)
+        UsbClass withClass,
+        byte? withSubClass
+    ) =>
+        usbDevice.ConfigDescriptor.Interfaces.Where(i =>
+            i.InterfaceClass == withClass
+            && (withSubClass is null || i.InterfaceSubClass == withSubClass.Value)
         );
-    }
 }
