@@ -60,7 +60,7 @@ public sealed class Given_a_vendor_class_USB_device : IDisposable
     public void Open_interfaces_are_auto_disposed_when_UsbDevice_is_disposed()
     {
         // Open device and leave it open
-        var device = _deviceSource.OpenUsbDeviceOrSkip();
+        var device = _deviceSource.OpenUsbDeviceOrSkip(UsbClass.VendorSpecific);
         // Claim interface without disposing it
         _ = device.ClaimInterface(UsbClass.VendorSpecific);
         // Dispose device
