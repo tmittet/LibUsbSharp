@@ -8,6 +8,7 @@ internal static class LibUsbTransfer
 {
     /// <summary>
     /// Synchronously create, submit and wait for a transfer to complete, be canceled or fail.
+    /// NOTE: On macOS, cancelling a transfer may cancel all transfers on specified endpoint.
     /// </summary>
     public static LibUsbResult ExecuteSync(
         ILogger logger,

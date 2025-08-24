@@ -105,9 +105,6 @@ public sealed class UsbInterface : IUsbInterface
         }
     }
 
-    public LibUsbResult BulkRead(byte[] destination, out int bytesRead, int timeout) =>
-        BulkRead(destination.AsSpan(), out bytesRead, timeout);
-
     /// <inheritdoc />
     public LibUsbResult BulkRead(Span<byte> destination, out int bytesRead, int timeout)
     {
@@ -156,28 +153,9 @@ public sealed class UsbInterface : IUsbInterface
         }
     }
 
-    public LibUsbResult BulkWrite(byte[] source, int count, out int bytesWritten, int timeout) =>
-        BulkWrite(source.AsSpan(), count, out bytesWritten, timeout);
-
-    public LibUsbResult BulkWrite(ReadOnlySpan<byte> source, out int bytesWritten, int timeout) =>
-        BulkWrite(source, source.Length, out bytesWritten, timeout);
-
     /// <inheritdoc />
-    public LibUsbResult BulkWrite(
-        ReadOnlySpan<byte> source,
-        int count,
-        out int bytesWritten,
-        int timeout
-    )
+    public LibUsbResult BulkWrite(ReadOnlySpan<byte> source, out int bytesWritten, int timeout)
     {
-        if (count > source.Length)
-        {
-            throw new ArgumentOutOfRangeException(
-                nameof(count),
-                count,
-                "Count must not be greater than the provided buffer length."
-            );
-        }
         CheckTransferTimeout(timeout);
         _disposeLock.EnterReadLock(); // Use read lock for reads and writes, to support duplex
         try
@@ -186,7 +164,7 @@ public sealed class UsbInterface : IUsbInterface
             {
                 throw new ObjectDisposedException(nameof(UsbInterface));
             }
-            var bufferLength = Math.Min(count, WriteBufferSize);
+            var bufferLength = Math.Min(source.Length, WriteBufferSize);
             lock (_bulkWriteLock)
             {
                 source[..bufferLength].CopyTo(_bulkWriteBuffer.AsSpan(0, bufferLength));
