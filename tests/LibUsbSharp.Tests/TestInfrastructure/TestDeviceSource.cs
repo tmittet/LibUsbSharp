@@ -1,7 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
 using LibUsbSharp.Descriptor;
-using Microsoft.Extensions.Logging;
-using Xunit;
 
 namespace LibUsbSharp.Tests.TestInfrastructure;
 

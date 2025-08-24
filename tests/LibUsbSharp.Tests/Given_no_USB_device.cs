@@ -1,9 +1,3 @@
-using FluentAssertions;
-using LibUsbSharp.Tests.TestInfrastructure;
-using Microsoft.Extensions.Logging;
-using Xunit;
-using Xunit.Abstractions;
-
 namespace LibUsbSharp.Tests;
 
 public sealed class Given_no_USB_device : IDisposable
