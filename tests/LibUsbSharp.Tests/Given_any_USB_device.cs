@@ -1,9 +1,4 @@
-using FluentAssertions;
 using LibUsbSharp.Descriptor;
-using LibUsbSharp.Tests.TestInfrastructure;
-using Microsoft.Extensions.Logging;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace LibUsbSharp.Tests;
 

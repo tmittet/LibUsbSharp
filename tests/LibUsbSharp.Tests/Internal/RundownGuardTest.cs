@@ -1,6 +1,4 @@
-﻿using FluentAssertions;
-using LibUsbSharp.Internal;
-using Xunit;
+﻿using LibUsbSharp.Internal;
 
 namespace LibUsbSharp.Tests.Internal;
 
