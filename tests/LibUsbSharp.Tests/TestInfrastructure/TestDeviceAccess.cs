@@ -1,0 +1,10 @@
+﻿namespace LibUsbSharp.Tests.TestInfrastructure;
+
+[Flags]
+internal enum TestDeviceAccess
+{
+    None = 0,
+    Control = 0b0001,
+    BulkRead = 0b0010,
+    BulkWrite = 0b0100,
+}

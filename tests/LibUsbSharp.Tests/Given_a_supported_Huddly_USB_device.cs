@@ -20,6 +20,10 @@ public sealed class Given_a_supported_Huddly_USB_device : IDisposable
         _libUsb.Initialize(LogLevel.Information);
         _deviceSource = new TestDeviceSource(_logger, _libUsb);
         _deviceSource.SetRequiredVendorId(HuddlyVendorId);
+        _deviceSource.SetRequiredInterfaceClass(
+            UsbClass.VendorSpecific,
+            TestDeviceAccess.BulkRead | TestDeviceAccess.BulkWrite
+        );
     }
 
     [SkippableFact]
@@ -47,7 +51,7 @@ public sealed class Given_a_supported_Huddly_USB_device : IDisposable
     public void GetDeviceSerial_returns_serial_given_a_Huddly_device_descriptor()
     {
         IUsbDeviceDescriptor deviceDescriptor;
-        using (var device = _deviceSource.OpenUsbDeviceOrSkip(UsbClass.VendorSpecific))
+        using (var device = _deviceSource.OpenUsbDeviceOrSkip())
         {
             deviceDescriptor = device.Descriptor;
         }
@@ -58,7 +62,7 @@ public sealed class Given_a_supported_Huddly_USB_device : IDisposable
     [SkippableFact]
     public void GetSerialNumber_returns_serial_given_an_open_Huddly_device()
     {
-        using var device = _deviceSource.OpenUsbDeviceOrSkip(UsbClass.VendorSpecific);
+        using var device = _deviceSource.OpenUsbDeviceOrSkip();
         var serial = device.GetSerialNumber();
         _logger.LogInformation(
             "Device open: VID=0x{VID:X4}, PID=0x{PID:X4}, SerialNumber={SerialNumber}.",
@@ -72,7 +76,7 @@ public sealed class Given_a_supported_Huddly_USB_device : IDisposable
     [SkippableFact]
     public void GetManufacturer_returns_manufacturer_given_an_open_Huddly_device()
     {
-        using var device = _deviceSource.OpenUsbDeviceOrSkip(UsbClass.VendorSpecific);
+        using var device = _deviceSource.OpenUsbDeviceOrSkip();
         var manufacturer = device.GetManufacturer();
         manufacturer.Should().Be("Huddly");
     }
@@ -80,7 +84,7 @@ public sealed class Given_a_supported_Huddly_USB_device : IDisposable
     [SkippableFact]
     public void GetProductName_returns_product_name_given_an_open_Huddly_device()
     {
-        using var device = _deviceSource.OpenUsbDeviceOrSkip(UsbClass.VendorSpecific);
+        using var device = _deviceSource.OpenUsbDeviceOrSkip();
         var productName = device.GetProduct();
         productName.Should().NotBeNullOrWhiteSpace();
     }
@@ -88,7 +92,7 @@ public sealed class Given_a_supported_Huddly_USB_device : IDisposable
     [SkippableFact]
     public void Huddly_device_has_vendor_interface_with_exactly_one_input_and_one_output_endpoint()
     {
-        using var device = _deviceSource.OpenUsbDeviceOrSkip(UsbClass.VendorSpecific);
+        using var device = _deviceSource.OpenUsbDeviceOrSkip();
         device
             .ConfigDescriptor.Interfaces.Should()
             .ContainSingle(i => i.InterfaceClass == UsbClass.VendorSpecific);
@@ -104,7 +108,7 @@ public sealed class Given_a_supported_Huddly_USB_device : IDisposable
     [SkippableFact]
     public void Huddly_device_is_able_to_claim_interface_and_get_an_input_endpoint()
     {
-        using var device = _deviceSource.OpenUsbDeviceOrSkip(UsbClass.VendorSpecific);
+        using var device = _deviceSource.OpenUsbDeviceOrSkip();
         using var usbInterface = device.ClaimInterface(UsbClass.VendorSpecific);
         var endpointFound = usbInterface.TryGetInputEndpoint(out var endpoint);
         endpointFound.Should().BeTrue();
@@ -114,7 +118,7 @@ public sealed class Given_a_supported_Huddly_USB_device : IDisposable
     [SkippableFact]
     public void Huddly_device_is_able_to_claim_interface_and_get_an_output_endpoint()
     {
-        using var device = _deviceSource.OpenUsbDeviceOrSkip(UsbClass.VendorSpecific);
+        using var device = _deviceSource.OpenUsbDeviceOrSkip();
         using var usbInterface = device.ClaimInterface(UsbClass.VendorSpecific);
         var endpointFound = usbInterface.TryGetOutputEndpoint(out var endpoint);
         endpointFound.Should().BeTrue();
@@ -129,7 +133,7 @@ public sealed class Given_a_supported_Huddly_USB_device : IDisposable
     [InlineData(5)]
     public void It_is_able_to_send_salute_to_Huddly_device(int _)
     {
-        using var device = _deviceSource.OpenUsbDeviceOrSkip(UsbClass.VendorSpecific);
+        using var device = _deviceSource.OpenUsbDeviceOrSkip();
         using var usbInterface = device.ClaimInterface(UsbClass.VendorSpecific);
         // Send Huddly "reset"
         usbInterface.BulkWrite([], 0, out _, 200).Should().Be(LibUsbResult.Success);
@@ -148,7 +152,7 @@ public sealed class Given_a_supported_Huddly_USB_device : IDisposable
     [InlineData(5)]
     public void It_is_able_to_send_salute_and_receive_response_from_Huddly_device(int _)
     {
-        using var device = _deviceSource.OpenUsbDeviceOrSkip(UsbClass.VendorSpecific);
+        using var device = _deviceSource.OpenUsbDeviceOrSkip();
         using var usbInterface = device.ClaimInterface(UsbClass.VendorSpecific);
         // Send Huddly "reset"
         usbInterface.BulkWrite([], 0, out _, 200).Should().Be(LibUsbResult.Success);
@@ -173,7 +177,7 @@ public sealed class Given_a_supported_Huddly_USB_device : IDisposable
     [InlineData(3)]
     public async Task Disposing_the_USB_interface_cancels_an_ongoing_Huddly_device_transfer(int _)
     {
-        using var device = _deviceSource.OpenUsbDeviceOrSkip(UsbClass.VendorSpecific);
+        using var device = _deviceSource.OpenUsbDeviceOrSkip();
         using var usbInterface = device.ClaimInterface(UsbClass.VendorSpecific);
         var readTask = Task.Run(() =>
         {
