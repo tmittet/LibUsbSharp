@@ -18,12 +18,16 @@ public sealed class Given_a_vendor_class_USB_device : IDisposable
         _libUsb.Initialize(LogLevel.Information);
         _deviceSource = new TestDeviceSource(_logger, _libUsb);
         _deviceSource.SetPreferredVendorId(0x2BD9);
+        _deviceSource.SetRequiredInterfaceClass(
+            UsbClass.VendorSpecific,
+            TestDeviceAccess.BulkRead | TestDeviceAccess.BulkWrite
+        );
     }
 
     [SkippableFact]
     public void Device_has_vendor_interface_with_input_and_output_endpoints()
     {
-        using var device = _deviceSource.OpenUsbDeviceOrSkip(UsbClass.VendorSpecific);
+        using var device = _deviceSource.OpenUsbDeviceOrSkip();
         device
             .ConfigDescriptor.Interfaces.Should()
             .ContainSingle(i => i.InterfaceClass == UsbClass.VendorSpecific);
@@ -39,7 +43,7 @@ public sealed class Given_a_vendor_class_USB_device : IDisposable
     [SkippableFact]
     public void Device_is_able_to_claim_interface_and_get_an_input_endpoint()
     {
-        using var device = _deviceSource.OpenUsbDeviceOrSkip(UsbClass.VendorSpecific);
+        using var device = _deviceSource.OpenUsbDeviceOrSkip();
         using var usbInterface = device.ClaimInterface(UsbClass.VendorSpecific);
         var endpointFound = usbInterface.TryGetInputEndpoint(out var endpoint);
         endpointFound.Should().BeTrue();
@@ -49,7 +53,7 @@ public sealed class Given_a_vendor_class_USB_device : IDisposable
     [SkippableFact]
     public void Device_is_able_to_claim_interface_and_get_an_output_endpoint()
     {
-        using var device = _deviceSource.OpenUsbDeviceOrSkip(UsbClass.VendorSpecific);
+        using var device = _deviceSource.OpenUsbDeviceOrSkip();
         using var usbInterface = device.ClaimInterface(UsbClass.VendorSpecific);
         var endpointFound = usbInterface.TryGetOutputEndpoint(out var endpoint);
         endpointFound.Should().BeTrue();
@@ -60,7 +64,7 @@ public sealed class Given_a_vendor_class_USB_device : IDisposable
     public void Open_interfaces_are_auto_disposed_when_UsbDevice_is_disposed()
     {
         // Open device and leave it open
-        var device = _deviceSource.OpenUsbDeviceOrSkip(UsbClass.VendorSpecific);
+        var device = _deviceSource.OpenUsbDeviceOrSkip();
         // Claim interface without disposing it
         _ = device.ClaimInterface(UsbClass.VendorSpecific);
         // Dispose device

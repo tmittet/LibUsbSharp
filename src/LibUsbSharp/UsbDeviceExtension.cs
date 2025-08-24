@@ -29,8 +29,15 @@ public static class UsbDeviceExtension
             : device.ClaimInterface(usbInterface);
     }
 
-    public static bool HasInterface(this IUsbDevice usbDevice, UsbClass interfaceClass)
+    public static bool HasInterface(
+        this IUsbDevice usbDevice,
+        UsbClass interfaceClass,
+        byte? interfaceSubClass = null
+    )
     {
-        return usbDevice.ConfigDescriptor.Interfaces.Any(i => i.InterfaceClass == interfaceClass);
+        return usbDevice.ConfigDescriptor.Interfaces.Any(i =>
+            i.InterfaceClass == interfaceClass
+            && (interfaceSubClass is null || i.InterfaceSubClass == interfaceSubClass.Value)
+        );
     }
 }

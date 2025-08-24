@@ -3,10 +3,13 @@ using LibUsbSharp.Descriptor;
 
 namespace LibUsbSharp.Tests.TestInfrastructure;
 
-public class TestDeviceSource(ILogger _logger, ILibUsb _libUsb)
+internal sealed class TestDeviceSource(ILogger _logger, ILibUsb _libUsb)
 {
     private ushort _preferredVendorId;
     private ushort? _requiredVendorId;
+    private UsbClass? _interfaceClass;
+    private TestDeviceAccess _interfaceAccess = TestDeviceAccess.None;
+    private byte? _interfaceSubClass;
 
     public void SetPreferredVendorId(ushort vendorId)
     {
@@ -18,23 +21,39 @@ public class TestDeviceSource(ILogger _logger, ILibUsb _libUsb)
         _requiredVendorId = vendorId;
     }
 
+    public void SetRequiredInterfaceClass(UsbClass interfaceClass, TestDeviceAccess requiredAccess)
+    {
+        _interfaceClass = interfaceClass;
+        _interfaceAccess = requiredAccess;
+    }
+
+    public void SetRequiredInterfaceSubClass(byte interfaceSubClass)
+    {
+        if (_interfaceClass is null)
+        {
+            throw new InvalidOperationException(
+                "RequiredInterfaceClass must be set before setting RequiredInterfaceSubClass."
+            );
+        }
+        _interfaceSubClass = interfaceSubClass;
+    }
+
     /// <summary>
     /// Returns an open USB device or throws an exception that results
     /// in a "Skipped" result for the test, when no device is found.
     /// </summary>
-    public IUsbDevice OpenUsbDeviceOrSkip(UsbClass? withInterfaceClass = null)
+    public IUsbDevice OpenUsbDeviceOrSkip()
     {
-        if (TryOpenUsbDevice(out var openDevice, withInterfaceClass))
+        if (TryOpenUsbDevice(out var openDevice))
+        {
             return openDevice;
-        throw withInterfaceClass is null
-            ? new SkipException("No USB device available.")
-            : new SkipException($"No USB device with a {withInterfaceClass} interface available.");
+        }
+        throw _interfaceClass is null
+            ? new SkipException("No accessible USB device available.")
+            : new SkipException($"No suitable {_interfaceClass} interface USB device available.");
     }
 
-    public bool TryOpenUsbDevice(
-        [NotNullWhen(true)] out IUsbDevice? openDevice,
-        UsbClass? withInterfaceClass = null
-    )
+    public bool TryOpenUsbDevice([NotNullWhen(true)] out IUsbDevice? openDevice)
     {
         var devices = _libUsb
             .GetDeviceList(_requiredVendorId)
@@ -42,7 +61,7 @@ public class TestDeviceSource(ILogger _logger, ILibUsb _libUsb)
 
         foreach (var deviceDescriptor in devices)
         {
-            if (TryOpenDevice(deviceDescriptor, withInterfaceClass, out openDevice))
+            if (TryOpenDevice(deviceDescriptor, out openDevice))
                 return true;
         }
 
@@ -52,7 +71,6 @@ public class TestDeviceSource(ILogger _logger, ILibUsb _libUsb)
 
     public bool TryOpenDevice(
         IUsbDeviceDescriptor deviceDescriptor,
-        UsbClass? withInterfaceClass,
         [NotNullWhen(true)] out IUsbDevice? openDevice,
         int attempts = 3
     )
@@ -86,8 +104,13 @@ public class TestDeviceSource(ILogger _logger, ILibUsb _libUsb)
             device is not null
             && DeviceSerialIsReadable(device)
             && (
-                withInterfaceClass is null
-                || DeviceInterfaceIsAccessible(device, withInterfaceClass.Value)
+                _interfaceClass is null
+                || DeviceInterfaceIsAccessible(device, _interfaceClass.Value, _interfaceAccess)
+            )
+            && (
+                _interfaceClass is null
+                || _interfaceSubClass is null
+                || device.HasInterface(_interfaceClass.Value, _interfaceSubClass.Value)
             )
         )
         {
@@ -99,15 +122,25 @@ public class TestDeviceSource(ILogger _logger, ILibUsb _libUsb)
         return false;
     }
 
-    private static bool DeviceInterfaceIsAccessible(IUsbDevice device, UsbClass interfaceClass)
+    private static bool DeviceInterfaceIsAccessible(
+        IUsbDevice device,
+        UsbClass interfaceClass,
+        TestDeviceAccess interfaceAccess
+    )
     {
+        var requiresRead = interfaceAccess.HasFlag(TestDeviceAccess.BulkRead);
+        var requiresWrite = interfaceAccess.HasFlag(TestDeviceAccess.BulkWrite);
         if (device.HasInterface(interfaceClass))
         {
             try
             {
+                if (!requiresRead && !requiresWrite)
+                {
+                    return true;
+                }
                 using var usbInterface = device.ClaimInterface(interfaceClass);
-                return usbInterface.TryGetInputEndpoint(out _)
-                    && usbInterface.TryGetOutputEndpoint(out _);
+                return (!requiresRead || usbInterface.TryGetInputEndpoint(out _))
+                    && (!requiresWrite || usbInterface.TryGetOutputEndpoint(out _));
             }
             catch
             {
