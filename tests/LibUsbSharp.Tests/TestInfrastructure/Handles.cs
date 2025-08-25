@@ -1,12 +1,4 @@
-﻿using System;
-using System;
-using System.Collections.Generic;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Runtime.InteropServices;
 
 namespace LibUsbSharp.Tests.TestInfrastructure;
 

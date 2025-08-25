@@ -1,6 +1,3 @@
-using Microsoft.Extensions.Logging;
-using Xunit.Abstractions;
-
 namespace LibUsbSharp.Tests.TestInfrastructure;
 
 public class TestLogger : ILogger
