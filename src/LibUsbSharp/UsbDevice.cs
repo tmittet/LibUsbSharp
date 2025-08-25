@@ -22,6 +22,7 @@ public sealed class UsbDevice : IUsbDevice
     private readonly object _cacheLock = new();
     private readonly RundownGuard _rundownGuard = new();
     private readonly object _interfaceLock = new();
+    private readonly CancellationTokenSource _disposeCts = new();
 
     internal nint Handle { get; init; }
 
@@ -138,7 +139,7 @@ public sealed class UsbDevice : IUsbDevice
                 buffer.Length,
                 timeout > 0 ? (uint)timeout : 0,
                 out var bytesReadInt, // Length of data only (not setup)
-                CancellationToken.None // TODO: Dispose cancellation
+                _disposeCts.Token
             );
             bytesRead = (ushort)bytesReadInt;
             if (result != LibUsbResult.Success || bytesRead <= 0)
@@ -197,7 +198,7 @@ public sealed class UsbDevice : IUsbDevice
                 buffer.Length,
                 timeout > 0 ? (uint)timeout : 0,
                 out bytesWritten, // Length of data only (not setup)
-                CancellationToken.None // TODO: Dispose cancellation
+                _disposeCts.Token
             );
         }
         finally
@@ -304,6 +305,7 @@ public sealed class UsbDevice : IUsbDevice
     {
         try
         {
+            _disposeCts.Cancel();
             _rundownGuard.Dispose();
         }
         catch (ObjectDisposedException)
@@ -329,6 +331,8 @@ public sealed class UsbDevice : IUsbDevice
             // Ask LibUsb to close device and remove it from list of open devices
             _libUsb.CloseDevice(Descriptor.DeviceKey, Handle);
             _logger.LogInformation("UsbDevice '{DeviceKey}' disposed.", Descriptor.DeviceKey);
+
+            _disposeCts.Dispose();
         }
         catch (Exception ex)
         {
