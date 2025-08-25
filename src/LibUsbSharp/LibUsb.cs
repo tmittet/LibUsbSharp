@@ -11,6 +11,7 @@ namespace LibUsbSharp;
 public sealed class LibUsb : ILibUsb
 {
     internal const string LibraryName = "libusb-1.0";
+    private static readonly SemaphoreSlim _instanceSemaphore = new(1, 1);
     private static ILogger<LibUsb>? _staticLogger;
 
     private readonly object _lock = new();
@@ -41,6 +42,10 @@ public sealed class LibUsb : ILibUsb
     /// </param>
     public LibUsb(ILoggerFactory? loggerFactory)
     {
+        if (!_instanceSemaphore.Wait(0))
+        {
+            throw new InvalidOperationException("Only one instance of LibUsb allowed.");
+        }
         _loggerFactory = loggerFactory ?? new NullLoggerFactory();
         _logger = _loggerFactory.CreateLogger<LibUsb>();
         _staticLogger = _logger;
@@ -375,6 +380,7 @@ public sealed class LibUsb : ILibUsb
             _staticLogger = null;
             _logger.LogDebug("LibUsb disposed.");
             _disposed = true;
+            _ = _instanceSemaphore.Release();
         }
     }
 
