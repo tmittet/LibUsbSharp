@@ -7,6 +7,8 @@ public sealed class TestDeviceSource(ILogger _logger, ILibUsb _libUsb)
 {
     private ushort _preferredVendorId;
     private ushort? _requiredVendorId;
+    private ushort[]? _requiredProductIds;
+    private string[]? _requiredSerialNumbers;
     private UsbClass? _interfaceClass;
     private TestDeviceAccess _interfaceAccess = TestDeviceAccess.None;
     private byte? _interfaceSubClass;
@@ -19,6 +21,16 @@ public sealed class TestDeviceSource(ILogger _logger, ILibUsb _libUsb)
     public void SetRequiredVendorId(ushort vendorId)
     {
         _requiredVendorId = vendorId;
+    }
+
+    public void SetRequiredProductId(params ushort[] oneOf)
+    {
+        _requiredProductIds = oneOf;
+    }
+
+    public void SetRequiredSerialNumber(params string[] oneOf)
+    {
+        _requiredSerialNumbers = oneOf;
     }
 
     public void SetRequiredInterfaceClass(UsbClass interfaceClass, TestDeviceAccess requiredAccess)
@@ -54,7 +66,7 @@ public sealed class TestDeviceSource(ILogger _logger, ILibUsb _libUsb)
     public bool TryOpenUsbDevice([NotNullWhen(true)] out IUsbDevice? openDevice)
     {
         var devices = _libUsb
-            .GetDeviceList(_requiredVendorId)
+            .GetDeviceList(_requiredVendorId, _requiredProductIds?.ToHashSet())
             .OrderBy(d => d.VendorId == _preferredVendorId ? 0 : 1);
 
         foreach (var deviceDescriptor in devices)
@@ -100,7 +112,7 @@ public sealed class TestDeviceSource(ILogger _logger, ILibUsb _libUsb)
         }
         if (
             device is not null
-            && DeviceSerialIsReadable(device)
+            && DeviceSerialMatchesExpected(device)
             && (
                 _interfaceClass is null
                 || DeviceInterfaceIsAccessible(device, _interfaceClass.Value, _interfaceAccess)
@@ -146,7 +158,7 @@ public sealed class TestDeviceSource(ILogger _logger, ILibUsb _libUsb)
         return false;
     }
 
-    private bool DeviceSerialIsReadable(IUsbDevice device)
+    private bool DeviceSerialMatchesExpected(IUsbDevice device)
     {
         var serialNumberIndex = device.Descriptor.SerialNumberIndex;
         if (serialNumberIndex == 0)
@@ -165,7 +177,7 @@ public sealed class TestDeviceSource(ILogger _logger, ILibUsb _libUsb)
                 device.Descriptor.DeviceKey,
                 serialNumber
             );
-            return true;
+            return _requiredSerialNumbers is null || _requiredSerialNumbers.Contains(serialNumber);
         }
         catch (LibUsbException ex)
         {

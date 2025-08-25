@@ -1,4 +1,5 @@
 ﻿using System.Security.Principal;
+using LibUsbSharp.Tests.TestInfrastructure;
 
 namespace LibUsbSharp.Tests;
 
