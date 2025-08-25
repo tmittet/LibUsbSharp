@@ -46,9 +46,17 @@ public sealed class LibUsb : ILibUsb
         {
             throw new InvalidOperationException("Only one instance of LibUsb allowed.");
         }
-        _loggerFactory = loggerFactory ?? new NullLoggerFactory();
-        _logger = _loggerFactory.CreateLogger<LibUsb>();
-        _staticLogger = _logger;
+        try
+        {
+            _loggerFactory = loggerFactory ?? new NullLoggerFactory();
+            _logger = _loggerFactory.CreateLogger<LibUsb>();
+            _staticLogger = _logger;
+        }
+        catch (Exception)
+        {
+            _ = _instanceSemaphore.Release();
+            throw;
+        }
     }
 
     /// <inheritdoc />
@@ -379,8 +387,8 @@ public sealed class LibUsb : ILibUsb
             }
             _staticLogger = null;
             _logger.LogDebug("LibUsb disposed.");
-            _disposed = true;
             _ = _instanceSemaphore.Release();
+            _disposed = true;
         }
     }
 
