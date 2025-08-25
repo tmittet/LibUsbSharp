@@ -3,12 +3,15 @@ using System.Runtime.InteropServices;
 using System.Text;
 using LibUsbSharp.Descriptor;
 using LibUsbSharp.Internal;
+using LibUsbSharp.Internal.Transfer;
 using Microsoft.Extensions.Logging;
 
 namespace LibUsbSharp;
 
 public sealed class UsbDevice : IUsbDevice
 {
+    private const byte ControlEndpoint = 0x00;
+
     private readonly LibUsb _libUsb;
     private readonly nint _context;
     private readonly UsbDeviceDescriptor _descriptor;
@@ -95,6 +98,107 @@ public sealed class UsbDevice : IUsbDevice
         return result >= 0
             ? Encoding.ASCII.GetString(buffer, 0, result)
             : throw LibUsbException.FromError(result, "Failed to read device serial.");
+    }
+
+    /// <inheritdoc />
+    public LibUsbResult ControlRead(
+        ControlRequestRecipient recipient,
+        ControlRequestType type,
+        byte request,
+        ushort value,
+        ushort index,
+        Span<byte> destination,
+        out ushort bytesRead,
+        int timeout
+    )
+    {
+        if (destination.Length > ushort.MaxValue)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(destination),
+                destination.Length,
+                $"Destination buffer must be less than {ushort.MaxValue} bytes."
+            );
+        }
+        var length = (ushort)destination.Length;
+        var setup = LibUsbControlSetup.ReadRequest(recipient, type, request, value, index, length);
+        var buffer = setup.CreateBuffer();
+        var bufferHandle = GCHandle.Alloc(buffer, GCHandleType.Pinned);
+        try
+        {
+            var result = LibUsbTransfer.ExecuteSync(
+                _logger,
+                Handle,
+                LibUsbTransferType.Control,
+                ControlEndpoint,
+                bufferHandle,
+                buffer.Length,
+                timeout > 0 ? (uint)timeout : 0,
+                out var bytesReadInt, // Length of data only (not setup)
+                CancellationToken.None // TODO: Dispose cancellation
+            );
+            bytesRead = (ushort)bytesReadInt;
+            if (result != LibUsbResult.Success || bytesRead <= 0)
+            {
+                destination = Array.Empty<byte>();
+                return result;
+            }
+            buffer.AsSpan(LibUsbControlSetup.Size, bytesRead).CopyTo(destination);
+            return result;
+        }
+        finally
+        {
+            bufferHandle.Free();
+        }
+    }
+
+    /// <inheritdoc />
+    public LibUsbResult ControlWrite(
+        ControlRequestRecipient recipient,
+        ControlRequestType type,
+        byte request,
+        ushort value,
+        ushort index,
+        ReadOnlySpan<byte> source,
+        out int bytesWritten,
+        int timeout
+    )
+    {
+        if (source.Length > ushort.MaxValue)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(source),
+                source.Length,
+                $"Payload must be less than {ushort.MaxValue} bytes."
+            );
+        }
+
+        var length = (ushort)source.Length;
+        var setup = LibUsbControlSetup.WriteRequest(recipient, type, request, value, index, length);
+        var buffer = setup.CreateBuffer();
+        if (length > 0)
+        {
+            source.CopyTo(buffer.AsSpan(LibUsbControlSetup.Size, length));
+        }
+        var bufferHandle = GCHandle.Alloc(buffer, GCHandleType.Pinned);
+        try
+        {
+            return LibUsbTransfer.ExecuteSync(
+                _logger,
+                Handle,
+                LibUsbTransferType.Control,
+                ControlEndpoint,
+                bufferHandle,
+                buffer.Length,
+                timeout > 0 ? (uint)timeout : 0,
+                out bytesWritten, // Length of data only (not setup)
+                CancellationToken.None // TODO: Dispose cancellation
+            );
+        }
+        finally
+        {
+            bufferHandle.Free();
+        }
     }
 
     /// <inheritdoc />
