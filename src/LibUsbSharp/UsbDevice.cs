@@ -120,6 +120,9 @@ public sealed class UsbDevice : IUsbDevice
                 $"Destination buffer must be less than {ushort.MaxValue} bytes."
             );
         }
+
+        using var token = _rundownGuard.AcquireSharedToken();
+
         var length = (ushort)destination.Length;
         var setup = LibUsbControlSetup.ReadRequest(recipient, type, request, value, index, length);
         var buffer = setup.CreateBuffer();
@@ -172,6 +175,8 @@ public sealed class UsbDevice : IUsbDevice
                 $"Payload must be less than {ushort.MaxValue} bytes."
             );
         }
+
+        using var token = _rundownGuard.AcquireSharedToken();
 
         var length = (ushort)source.Length;
         var setup = LibUsbControlSetup.WriteRequest(recipient, type, request, value, index, length);
