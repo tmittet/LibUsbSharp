@@ -18,7 +18,7 @@ namespace LibUsbSharp.Internal.Transfer;
 /// <param name="Length">Read/write payload length or 0 when request has no payload.</param>
 // Use pack 1; the fields should be layed out in memory without padding
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
-internal record struct LibUsbControlSetup(
+internal record struct LibUsbControlRequestSetup(
     byte RequestType,
     byte Request,
     ushort Value,
@@ -31,29 +31,29 @@ internal record struct LibUsbControlSetup(
     /// <summary>
     /// Create an 8 byte read request LibUsbControlSetup struct from given parameters.
     /// </summary>
-    internal static LibUsbControlSetup ReadRequest(
+    internal static LibUsbControlRequestSetup Read(
         ControlRequestRecipient recipient,
         ControlRequestType type,
         byte request,
         ushort value,
         ushort index,
         ushort length
-    ) => AnyRequest(ControlRequestDirection.In, recipient, type, request, value, index, length);
+    ) => Packet(ControlRequestDirection.In, recipient, type, request, value, index, length);
 
     /// <summary>
     /// Create an 8 byte write request LibUsbControlSetup struct from given parameters.
     /// </summary>
-    internal static LibUsbControlSetup WriteRequest(
+    internal static LibUsbControlRequestSetup Write(
         ControlRequestRecipient recipient,
         ControlRequestType type,
         byte request,
         ushort value,
         ushort index,
         ushort length
-    ) => AnyRequest(ControlRequestDirection.Out, recipient, type, request, value, index, length);
+    ) => Packet(ControlRequestDirection.Out, recipient, type, request, value, index, length);
 
     /// Create an 8 byte LibUsbControlSetup struct from given parameters.
-    private static LibUsbControlSetup AnyRequest(
+    private static LibUsbControlRequestSetup Packet(
         ControlRequestDirection direction,
         ControlRequestRecipient recipient,
         ControlRequestType type,
