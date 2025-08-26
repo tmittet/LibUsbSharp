@@ -3,7 +3,7 @@
 namespace LibUsbSharp.Internal.Transfer;
 
 /// <summary>
-/// A LibUsbControlSetup struct for Control Transfer input/read and output/wrote requests.
+/// A LibUsbControlRequestSetup struct for Control Transfer input/read and output/wrote requests.
 /// The struct forms the 8 byte header/setup packet. It may or may not be followed by a payload.
 /// </summary>
 /// <param name="RequestType">
@@ -29,7 +29,7 @@ internal record struct LibUsbControlRequestSetup(
     internal const int Size = 8; // Setup packet is exactly 8 bytes without padding
 
     /// <summary>
-    /// Create an 8 byte read request LibUsbControlSetup struct from given parameters.
+    /// Create an 8 byte read request LibUsbControlRequestSetup struct from given parameters.
     /// </summary>
     internal static LibUsbControlRequestSetup Read(
         ControlRequestRecipient recipient,
@@ -41,7 +41,7 @@ internal record struct LibUsbControlRequestSetup(
     ) => Packet(ControlRequestDirection.In, recipient, type, request, value, index, length);
 
     /// <summary>
-    /// Create an 8 byte write request LibUsbControlSetup struct from given parameters.
+    /// Create an 8 byte write request LibUsbControlRequestSetup struct from given parameters.
     /// </summary>
     internal static LibUsbControlRequestSetup Write(
         ControlRequestRecipient recipient,
@@ -52,7 +52,7 @@ internal record struct LibUsbControlRequestSetup(
         ushort length
     ) => Packet(ControlRequestDirection.Out, recipient, type, request, value, index, length);
 
-    /// Create an 8 byte LibUsbControlSetup struct from given parameters.
+    /// Create an 8 byte LibUsbControlRequestSetup struct from given parameters.
     private static LibUsbControlRequestSetup Packet(
         ControlRequestDirection direction,
         ControlRequestRecipient recipient,

@@ -66,7 +66,7 @@ public interface IUsbDevice : IDisposable
     /// Interrupted = The read operation was canceled.<br />
     /// NotSupported = The transfer flags are not supported by the operating system.<br />
     /// </returns>
-    LibUsbResult ControlRequestRead(
+    LibUsbResult ControlRead(
         ControlRequestRecipient recipient,
         ControlRequestType type,
         byte request,
@@ -100,7 +100,7 @@ public interface IUsbDevice : IDisposable
     /// Interrupted = The write operation was canceled.<br />
     /// NotSupported = The transfer flags are not supported by the operating system.<br />
     /// </returns>
-    LibUsbResult ControlRequestWrite(
+    LibUsbResult ControlWrite(
         ControlRequestRecipient recipient,
         ControlRequestType type,
         byte request,

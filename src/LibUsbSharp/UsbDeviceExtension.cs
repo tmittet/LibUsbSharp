@@ -4,7 +4,7 @@ namespace LibUsbSharp;
 
 public static class UsbDeviceExtension
 {
-    public static LibUsbResult ControlRequestRead(
+    public static LibUsbResult ControlRead(
         this IUsbDevice device,
         ControlRequestRecipient recipient,
         ControlRequestStandard request,
@@ -14,7 +14,7 @@ public static class UsbDeviceExtension
         out ushort bytesRead,
         int timeout = Timeout.Infinite
     ) =>
-        device.ControlRequestRead(
+        device.ControlRead(
             recipient,
             ControlRequestType.Standard,
             (byte)request,
@@ -25,7 +25,7 @@ public static class UsbDeviceExtension
             timeout
         );
 
-    public static LibUsbResult ControlRequestWrite(
+    public static LibUsbResult ControlWrite(
         this IUsbDevice device,
         ControlRequestRecipient recipient,
         ControlRequestStandard request,
@@ -35,7 +35,7 @@ public static class UsbDeviceExtension
         out int bytesWritten,
         int timeout = Timeout.Infinite
     ) =>
-        device.ControlRequestWrite(
+        device.ControlWrite(
             recipient,
             ControlRequestType.Standard,
             (byte)request,
