@@ -10,7 +10,7 @@ namespace LibUsbSharp;
 
 public sealed class UsbDevice : IUsbDevice
 {
-    private const byte ControTransferEndpoint = 0x00;
+    private const byte ControlRequestEndpoint = 0x00;
 
     private readonly LibUsb _libUsb;
     private readonly nint _context;
@@ -134,7 +134,7 @@ public sealed class UsbDevice : IUsbDevice
                 _logger,
                 Handle,
                 LibUsbTransferType.Control,
-                ControTransferEndpoint,
+                ControlRequestEndpoint,
                 bufferHandle,
                 buffer.Length,
                 timeout > 0 ? (uint)timeout : 0,
@@ -193,7 +193,7 @@ public sealed class UsbDevice : IUsbDevice
                 _logger,
                 Handle,
                 LibUsbTransferType.Control,
-                ControTransferEndpoint,
+                ControlRequestEndpoint,
                 bufferHandle,
                 buffer.Length,
                 timeout > 0 ? (uint)timeout : 0,
