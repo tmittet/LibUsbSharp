@@ -102,7 +102,7 @@ public sealed class UsbDevice : IUsbDevice
     }
 
     /// <inheritdoc />
-    public LibUsbResult ControlRead(
+    public LibUsbResult ControlRequestRead(
         ControlRequestRecipient recipient,
         ControlRequestType type,
         byte request,
@@ -157,7 +157,7 @@ public sealed class UsbDevice : IUsbDevice
     }
 
     /// <inheritdoc />
-    public LibUsbResult ControlWrite(
+    public LibUsbResult ControlRequestWrite(
         ControlRequestRecipient recipient,
         ControlRequestType type,
         byte request,

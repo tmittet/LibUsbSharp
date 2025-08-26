@@ -131,7 +131,7 @@ public sealed class Given_any_USB_device : IDisposable
         // this enables us to test that bytesRead returns expected length.
         var descriptorBuffer = new byte[32];
 
-        var result = device.ControlRead(
+        var result = device.ControlRequestRead(
             ControlRequestRecipient.Device,
             ControlRequestStandard.GetDescriptor,
             (DescriptorTypeDevice << 8) | DescriptorIndex,
@@ -167,7 +167,7 @@ public sealed class Given_any_USB_device : IDisposable
 
         // Start by getting current device configuration
         var readBuffer = new byte[1];
-        var readResult = device.ControlRead(
+        var readResult = device.ControlRequestRead(
             ControlRequestRecipient.Device,
             ControlRequestStandard.GetConfiguration,
             0,
@@ -181,7 +181,7 @@ public sealed class Given_any_USB_device : IDisposable
         }
 
         // When configuration read is successful, write the same config value back to the device
-        var writeResult = device.ControlWrite(
+        var writeResult = device.ControlRequestWrite(
             ControlRequestRecipient.Device,
             ControlRequestStandard.SetConfiguration,
             readBuffer[0],
