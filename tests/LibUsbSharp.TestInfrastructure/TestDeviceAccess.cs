@@ -1,7 +1,7 @@
-﻿namespace LibUsbSharp.Tests.TestInfrastructure;
+﻿namespace LibUsbSharp.TestInfrastructure;
 
 [Flags]
-internal enum TestDeviceAccess
+public enum TestDeviceAccess
 {
     None = 0,
     Control = 0b0001,

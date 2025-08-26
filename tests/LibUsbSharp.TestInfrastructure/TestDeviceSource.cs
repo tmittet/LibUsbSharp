@@ -1,9 +1,9 @@
 using System.Diagnostics.CodeAnalysis;
 using LibUsbSharp.Descriptor;
 
-namespace LibUsbSharp.Tests.TestInfrastructure;
+namespace LibUsbSharp.TestInfrastructure;
 
-internal sealed class TestDeviceSource(ILogger _logger, ILibUsb _libUsb)
+public sealed class TestDeviceSource(ILogger _logger, ILibUsb _libUsb)
 {
     private ushort _preferredVendorId;
     private ushort? _requiredVendorId;
@@ -45,9 +45,7 @@ internal sealed class TestDeviceSource(ILogger _logger, ILibUsb _libUsb)
     public IUsbDevice OpenUsbDeviceOrSkip()
     {
         if (TryOpenUsbDevice(out var openDevice))
-        {
             return openDevice;
-        }
         throw _interfaceClass is null
             ? new SkipException("No accessible USB device available.")
             : new SkipException($"No suitable {_interfaceClass} interface USB device available.");
@@ -135,9 +133,7 @@ internal sealed class TestDeviceSource(ILogger _logger, ILibUsb _libUsb)
             try
             {
                 if (!requiresRead && !requiresWrite)
-                {
                     return true;
-                }
                 using var usbInterface = device.ClaimInterface(interfaceClass);
                 return (!requiresRead || usbInterface.TryGetInputEndpoint(out _))
                     && (!requiresWrite || usbInterface.TryGetOutputEndpoint(out _));
