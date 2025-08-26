@@ -63,7 +63,7 @@ internal record struct LibUsbControlRequestSetup(
         ushort length
     ) =>
         new(
-            RequestType: (byte)((byte)direction | (byte)recipient | (byte)type),
+            RequestType: (byte)((byte)direction << 7 | (byte)type << 5 | (byte)recipient),
             Request: request,
             Value: value,
             Index: index,

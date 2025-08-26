@@ -25,6 +25,9 @@
         <AnalysisLevel>latest-recommended</AnalysisLevel>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     </PropertyGroup>
+    <ItemGroup>
+        <InternalsVisibleTo Include="LibUsbSharp.Tests" />
+    </ItemGroup>
     <ItemGroup Label="Include Native Libraries">
         <!-- linux-arm64 - NOTE: Rely on included libusb (apt-get) on Linux -->
         <!-- linux-x64 - NOTE: Rely on included libusb (apt-get) on Linux -->
