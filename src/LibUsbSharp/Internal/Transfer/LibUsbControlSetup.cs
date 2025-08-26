@@ -3,7 +3,8 @@
 namespace LibUsbSharp.Internal.Transfer;
 
 /// <summary>
-/// An 8 byte LibUsbControlSetup struct.
+/// A LibUsbControlSetup struct for Control Transfer input/read and output/wrote requests.
+/// The struct forms the 8 byte header/setup packet. It may or may not be followed by a payload.
 /// </summary>
 /// <param name="RequestType">
 /// Bit 7 (Direction)     | 0 = Host -> Device (OUT) 1 = Device -> Host (IN).<br />
