@@ -1,4 +1,4 @@
-namespace LibUsbSharp.Tests.TestInfrastructure;
+namespace LibUsbSharp.TestInfrastructure;
 
 public sealed class TestLoggerProvider(ITestOutputHelper _output) : ILoggerProvider
 {
