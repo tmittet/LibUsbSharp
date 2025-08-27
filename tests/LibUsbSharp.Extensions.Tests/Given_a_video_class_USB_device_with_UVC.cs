@@ -1,4 +1,7 @@
-namespace LibUsbSharp.Tests;
+using LibUsbSharp.Extensions.Uvc;
+using LibUsbSharp.Transfer;
+
+namespace LibUsbSharp.Extensions.Tests;
 
 [Trait("Category", "UsbVideoControl")]
 public sealed class Given_a_video_class_USB_device_with_UVC : IDisposable
@@ -35,6 +38,15 @@ public sealed class Given_a_video_class_USB_device_with_UVC : IDisposable
         );
 
         // TODO: This test is an example; replace with a real UVC device test method
+        //var result = device.ControlUvcWrite(
+        //    ControlRequestRecipient.Device,
+        //    ControlRequestUvc.SetCurrentSetting,
+        //    0,
+        //    0,
+        //    [],
+        //    out var bytesWritten
+        //);
+        //result.Should().Be(LibUsbResult.Success);
     }
 
     public void Dispose()
