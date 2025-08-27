@@ -1,4 +1,5 @@
 using LibUsbSharp.Descriptor;
+using LibUsbSharp.Transfer;
 
 namespace LibUsbSharp.Tests;
 

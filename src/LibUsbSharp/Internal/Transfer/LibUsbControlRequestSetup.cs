@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using LibUsbSharp.Transfer;
 
 namespace LibUsbSharp.Internal.Transfer;
 
