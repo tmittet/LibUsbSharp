@@ -50,3 +50,49 @@ public enum ControlRequestRecipient : byte
     /// </summary>
     Other = 0b00011, // 0x03
 }
+
+public abstract record ControlRequestRequest
+{
+    // The raw bRequest value
+    public abstract byte RawRequest { get; }
+    public abstract ushort RawValue { get; }
+    public abstract ushort RawIndex { get; }
+    public abstract ControlRequestType RawType { get; }
+
+    // Variants
+    public sealed record Standard(ControlRequestStandard Request, ushort Value, ushort Index) : ControlRequestRequest
+    {
+        public override byte RawRequest => (byte)Request;
+        public override ushort RawValue => Value;
+        public override ushort RawIndex => Index;
+        public override ControlRequestType RawType => ControlRequestType.Standard;
+        public override string ToString() => $"Standard(0x{Value:X2})";
+    }
+
+    public sealed record Class(byte Request, ushort Value, ushort Index) : ControlRequestRequest
+    {
+        public override byte RawRequest => Request;
+        public override ushort RawValue => Value;
+        public override ushort RawIndex => Index;
+        public override ControlRequestType RawType => ControlRequestType.Class;
+
+        public override string ToString() => $"Class(0x{Request:X2})";
+    }
+
+    public sealed record Vendor(byte Request, ushort Value, ushort Index) : ControlRequestRequest
+    {
+        public override byte RawRequest => Request;
+        public override ushort RawValue => Value;
+        public override ushort RawIndex => Index;
+        public override ControlRequestType RawType => ControlRequestType.Vendor;
+
+        public override string ToString() => $"Vendor(0x{Value:X2})";
+    }
+    /*
+        public sealed record Reserved(byte Request, ushort Value, ushort Index) : ControlRequestRequest
+        {
+            //public override byte Code => Value;
+            public override string ToString() => $"Reserved(0x{Value:X2})";
+        }
+    */
+}

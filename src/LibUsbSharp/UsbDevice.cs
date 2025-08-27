@@ -105,10 +105,7 @@ public sealed class UsbDevice : IUsbDevice
     /// <inheritdoc />
     public LibUsbResult ControlRead(
         ControlRequestRecipient recipient,
-        ControlRequestType type,
-        byte request,
-        ushort value,
-        ushort index,
+        ControlRequestRequest request,
         Span<byte> destination,
         out ushort bytesRead,
         int timeout
@@ -126,7 +123,7 @@ public sealed class UsbDevice : IUsbDevice
         using var token = _rundownGuard.AcquireSharedToken();
 
         var length = (ushort)destination.Length;
-        var setup = LibUsbControlRequestSetup.Read(recipient, type, request, value, index, length);
+        var setup = LibUsbControlRequestSetup.Read(recipient, request, length);
         var buffer = setup.CreateBuffer();
         var bufferHandle = GCHandle.Alloc(buffer, GCHandleType.Pinned);
         try
@@ -160,10 +157,7 @@ public sealed class UsbDevice : IUsbDevice
     /// <inheritdoc />
     public LibUsbResult ControlWrite(
         ControlRequestRecipient recipient,
-        ControlRequestType type,
-        byte request,
-        ushort value,
-        ushort index,
+        ControlRequestRequest request,
         ReadOnlySpan<byte> source,
         out int bytesWritten,
         int timeout
@@ -181,7 +175,7 @@ public sealed class UsbDevice : IUsbDevice
         using var token = _rundownGuard.AcquireSharedToken();
 
         var length = (ushort)source.Length;
-        var setup = LibUsbControlRequestSetup.Write(recipient, type, request, value, index, length);
+        var setup = LibUsbControlRequestSetup.Write(recipient, request, length);
         var buffer = setup.CreateBuffer();
         if (length > 0)
         {

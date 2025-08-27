@@ -5,48 +5,6 @@ namespace LibUsbSharp;
 
 public static class UsbDeviceExtension
 {
-    public static LibUsbResult ControlRead(
-        this IUsbDevice device,
-        ControlRequestRecipient recipient,
-        ControlRequestStandard request,
-        ushort value,
-        ushort index,
-        Span<byte> destination,
-        out ushort bytesRead,
-        int timeout = Timeout.Infinite
-    ) =>
-        device.ControlRead(
-            recipient,
-            ControlRequestType.Standard,
-            (byte)request,
-            value,
-            index,
-            destination,
-            out bytesRead,
-            timeout
-        );
-
-    public static LibUsbResult ControlWrite(
-        this IUsbDevice device,
-        ControlRequestRecipient recipient,
-        ControlRequestStandard request,
-        ushort value,
-        ushort index,
-        ReadOnlySpan<byte> source,
-        out int bytesWritten,
-        int timeout = Timeout.Infinite
-    ) =>
-        device.ControlWrite(
-            recipient,
-            ControlRequestType.Standard,
-            (byte)request,
-            value,
-            index,
-            source,
-            out bytesWritten,
-            timeout
-        );
-
     /// <summary>
     /// Claim a USB interface. The interface will be auto-released when the device is disposed.
     /// NOTE: When more than one matching interface is found, the first is selected and claimed.

@@ -46,6 +46,7 @@ public sealed class TestDeviceSource(ILogger _logger, ILibUsb _libUsb)
     {
         if (TryOpenUsbDevice(out var openDevice))
             return openDevice;
+
         throw _interfaceClass is null
             ? new SkipException("No accessible USB device available.")
             : new SkipException($"No suitable {_interfaceClass} interface USB device available.");

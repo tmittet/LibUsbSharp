@@ -1,5 +1,7 @@
+using System;
 using LibUsbSharp.Descriptor;
 using LibUsbSharp.Transfer;
+using Newtonsoft.Json.Linq;
 
 namespace LibUsbSharp.Tests;
 
@@ -134,14 +136,15 @@ public sealed class Given_any_USB_device : IDisposable
 
         var result = device.ControlRead(
             ControlRequestRecipient.Device,
-            ControlRequestStandard.GetDescriptor,
-            (DescriptorTypeDevice << 8) | DescriptorIndex,
-            DescriptorIndex,
+            new ControlRequestRequest.Standard(ControlRequestStandard.GetDescriptor,
+                                               (DescriptorTypeDevice << 8) | DescriptorIndex,
+                                               DescriptorIndex
+            ),
             descriptorBuffer,
             out var bytesRead
         );
 
-        using var scope = new AssertionScope();
+        //using var scope = new AssertionScope();
         result.Should().Be(LibUsbResult.Success);
 
         // USB Descriptor is always 18 bytes
@@ -170,9 +173,9 @@ public sealed class Given_any_USB_device : IDisposable
         var readBuffer = new byte[1];
         var readResult = device.ControlRead(
             ControlRequestRecipient.Device,
-            ControlRequestStandard.GetConfiguration,
+            new ControlRequestRequest.Standard(ControlRequestStandard.GetConfiguration,
             0,
-            0,
+            0),
             readBuffer,
             out var bytesRead
         );
@@ -184,14 +187,15 @@ public sealed class Given_any_USB_device : IDisposable
         // When configuration read is successful, write the same config value back to the device
         var writeResult = device.ControlWrite(
             ControlRequestRecipient.Device,
-            ControlRequestStandard.SetConfiguration,
-            readBuffer[0],
-            DescriptorIndex,
+            new ControlRequestRequest.Standard(ControlRequestStandard.SetConfiguration,
+                                               readBuffer[0],
+                                               DescriptorIndex
+            ),
             [],
             out var bytesWritten
         );
 
-        using var scope = new AssertionScope();
+        //using var scope = new AssertionScope();
         writeResult.Should().Be(LibUsbResult.Success);
         // We did not provide a payload, expect zero bytes written
         bytesWritten.Should().Be(0);

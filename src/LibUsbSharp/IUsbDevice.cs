@@ -48,10 +48,7 @@ public interface IUsbDevice : IDisposable
     /// Send a ControlRead request. Data is read Device -> Host.
     /// </summary>
     /// <param name="recipient">The recipient of the control request</param>
-    /// <param name="type">The control request type; standard, class or vendor</param>
     /// <param name="request">The USB standard spec, class spec or vendor defined request</param>
-    /// <param name="value">The value field for the setup packet</param>
-    /// <param name="index">The index field for the setup packet</param>
     /// <param name="destination">A destination span for read bytes</param>
     /// <param name="bytesRead">The number of bytes read</param>
     /// <param name="timeout">Timeout before giving up due to no response being received</param>
@@ -69,10 +66,7 @@ public interface IUsbDevice : IDisposable
     /// </returns>
     LibUsbResult ControlRead(
         ControlRequestRecipient recipient,
-        ControlRequestType type,
-        byte request,
-        ushort value,
-        ushort index,
+        ControlRequestRequest request,
         Span<byte> destination,
         out ushort bytesRead,
         int timeout = Timeout.Infinite
@@ -82,10 +76,7 @@ public interface IUsbDevice : IDisposable
     /// Send a ControlWrite request. Data is written Host -> Device.
     /// </summary>
     /// <param name="recipient">The recipient of the control request</param>
-    /// <param name="type">The control request type; standard, class or vendor</param>
     /// <param name="request">The USB standard spec, class spec or vendor defined request</param>
-    /// <param name="value">The value field for the setup packet</param>
-    /// <param name="index">The index field for the setup packet</param>
     /// <param name="source">The payload to send to the device (max. 65.535 bytes)</param>
     /// <param name="timeout">Timeout before giving up due to no response being received</param>
     /// <param name="bytesWritten">The actual number of bytes written to the device</param>
@@ -103,10 +94,7 @@ public interface IUsbDevice : IDisposable
     /// </returns>
     LibUsbResult ControlWrite(
         ControlRequestRecipient recipient,
-        ControlRequestType type,
-        byte request,
-        ushort value,
-        ushort index,
+        ControlRequestRequest request,
         ReadOnlySpan<byte> source,
         out int bytesWritten,
         int timeout = Timeout.Infinite

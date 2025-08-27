@@ -34,40 +34,31 @@ internal record struct LibUsbControlRequestSetup(
     /// </summary>
     internal static LibUsbControlRequestSetup Read(
         ControlRequestRecipient recipient,
-        ControlRequestType type,
-        byte request,
-        ushort value,
-        ushort index,
+        ControlRequestRequest request,
         ushort length
-    ) => Packet(ControlRequestDirection.In, recipient, type, request, value, index, length);
+    ) => Any(ControlRequestDirection.In, recipient, request, length);
 
     /// <summary>
     /// Create an 8 byte write request LibUsbControlRequestSetup struct from given parameters.
     /// </summary>
     internal static LibUsbControlRequestSetup Write(
         ControlRequestRecipient recipient,
-        ControlRequestType type,
-        byte request,
-        ushort value,
-        ushort index,
+        ControlRequestRequest request,
         ushort length
-    ) => Packet(ControlRequestDirection.Out, recipient, type, request, value, index, length);
+    ) => Any(ControlRequestDirection.Out, recipient, request, length);
 
     /// Create an 8 byte LibUsbControlRequestSetup struct from given parameters.
-    private static LibUsbControlRequestSetup Packet(
+    private static LibUsbControlRequestSetup Any(
         ControlRequestDirection direction,
         ControlRequestRecipient recipient,
-        ControlRequestType type,
-        byte request,
-        ushort value,
-        ushort index,
+        ControlRequestRequest request,
         ushort length
     ) =>
         new(
-            RequestType: (byte)((byte)direction << 7 | (byte)type << 5 | (byte)recipient),
-            Request: request,
-            Value: value,
-            Index: index,
+            RequestType: (byte)((byte)direction << 7 | (byte)request.RawType << 5 | (byte)recipient),
+            Request: request.RawRequest,
+            Value: request.RawValue,
+            Index: request.RawIndex,
             Length: length
         );
 
