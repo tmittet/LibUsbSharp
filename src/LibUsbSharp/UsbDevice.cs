@@ -7,6 +7,8 @@ using LibUsbSharp.Internal.Transfer;
 using LibUsbSharp.Transfer;
 using Microsoft.Extensions.Logging;
 
+//using static System.Runtime.InteropServices.JavaScript.JSType;
+
 namespace LibUsbSharp;
 
 public sealed class UsbDevice : IUsbDevice
@@ -104,8 +106,7 @@ public sealed class UsbDevice : IUsbDevice
 
     /// <inheritdoc />
     public LibUsbResult ControlRead(
-        ControlRequestRecipient recipient,
-        ControlRequestRequest request,
+        ControlTransfer transfer,
         Span<byte> destination,
         out ushort bytesRead,
         int timeout
@@ -122,10 +123,10 @@ public sealed class UsbDevice : IUsbDevice
 
         using var token = _rundownGuard.AcquireSharedToken();
 
-        var length = (ushort)destination.Length;
-        var setup = LibUsbControlRequestSetup.Read(recipient, request, length);
-        var buffer = setup.CreateBuffer();
+        var buffer = transfer.ToSetupPacket().ToBytes();
+        Array.Resize(ref buffer, buffer.Length + destination.Length);
         var bufferHandle = GCHandle.Alloc(buffer, GCHandleType.Pinned);
+
         try
         {
             var result = LibUsbTransfer.ExecuteSync(
@@ -145,7 +146,7 @@ public sealed class UsbDevice : IUsbDevice
                 destination = Array.Empty<byte>();
                 return result;
             }
-            buffer.AsSpan(LibUsbControlRequestSetup.Size, bytesRead).CopyTo(destination);
+            buffer.AsSpan(8, bytesRead).CopyTo(destination);
             return result;
         }
         finally
@@ -156,8 +157,7 @@ public sealed class UsbDevice : IUsbDevice
 
     /// <inheritdoc />
     public LibUsbResult ControlWrite(
-        ControlRequestRecipient recipient,
-        ControlRequestRequest request,
+        ControlTransfer transfer,
         ReadOnlySpan<byte> source,
         out int bytesWritten,
         int timeout
@@ -175,13 +175,11 @@ public sealed class UsbDevice : IUsbDevice
         using var token = _rundownGuard.AcquireSharedToken();
 
         var length = (ushort)source.Length;
-        var setup = LibUsbControlRequestSetup.Write(recipient, request, length);
-        var buffer = setup.CreateBuffer();
-        if (length > 0)
-        {
-            source.CopyTo(buffer.AsSpan(LibUsbControlRequestSetup.Size, length));
-        }
+        var buffer = transfer.ToSetupPacket().ToBytes();
+        buffer = buffer.Concat(source.ToArray()).ToArray();
+
         var bufferHandle = GCHandle.Alloc(buffer, GCHandleType.Pinned);
+
         try
         {
             return LibUsbTransfer.ExecuteSync(
