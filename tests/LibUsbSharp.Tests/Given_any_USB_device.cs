@@ -136,7 +136,7 @@ public sealed class Given_any_USB_device : IDisposable
 
         var result = device.ControlRead(
             ControlTransfer.Device.Standard.In(
-                StandardRequest.GET_DESCRIPTOR,
+                StandardRequest.GetDescriptor,
                 (DescriptorTypeDevice << 8) | DescriptorIndex,
                 DescriptorIndex
             ),
@@ -173,7 +173,7 @@ public sealed class Given_any_USB_device : IDisposable
         var readBuffer = new byte[1];
         var readResult = device.ControlRead(
             ControlTransfer.Device.Standard.In(
-                StandardRequest.GET_CONFIGURATION
+                StandardRequest.GetConfiguration
             ), 
             readBuffer,
             out var bytesRead
@@ -186,7 +186,7 @@ public sealed class Given_any_USB_device : IDisposable
         // When configuration read is successful, write the same config value back to the device
         var writeResult = device.ControlWrite(
             ControlTransfer.Device.Standard.Out(
-                StandardRequest.SET_CONFIGURATION, 
+                StandardRequest.SetConfiguration,
                 readBuffer[0],
                 DescriptorIndex
             ),

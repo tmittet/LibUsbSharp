@@ -5,23 +5,39 @@ namespace LibUsbSharp.Transfer;
 #pragma warning disable CA1720 // Identifier contains type name
 
 // -------- enums --------
-public enum UsbDirection : byte { Out = 0, In = 1 }
-public enum UsbRequestType : byte { Standard = 0, Class = 1, Vendor = 2 }
-public enum UsbRecipient : byte { Device = 0, Interface = 1, Endpoint = 2 }
+public enum UsbDirection : byte
+{
+    Out = 0,
+    In = 1,
+}
+
+public enum UsbRequestType : byte
+{
+    Standard = 0,
+    Class = 1,
+    Vendor = 2,
+}
+
+public enum UsbRecipient : byte
+{
+    Device = 0,
+    Interface = 1,
+    Endpoint = 2,
+}
 
 public enum StandardRequest : byte
 {
-    GET_STATUS = 0x00, // IN
-    CLEAR_FEATURE = 0x01, // OUT
-    SET_FEATURE = 0x03, // OUT
-    SET_ADDRESS = 0x05, // OUT (device only)
-    GET_DESCRIPTOR = 0x06, // IN
-    SET_DESCRIPTOR = 0x07, // OUT
-    GET_CONFIGURATION = 0x08, // IN (device only)
-    SET_CONFIGURATION = 0x09, // OUT (device only)
-    GET_INTERFACE = 0x0A, // IN (interface only)
-    SET_INTERFACE = 0x0B, // OUT (interface only)
-    SYNCH_FRAME = 0x0C  // IN  (endpoint only)
+    GetStatus = 0x00, // IN
+    ClearFeature = 0x01, // OUT
+    SetFeature = 0x03, // OUT
+    SetAddress = 0x05, // OUT (device only)
+    GetDescriptor = 0x06, // IN
+    SetDescriptor = 0x07, // OUT
+    GetConfiguration = 0x08, // IN (device only)
+    SetConfiguration = 0x09, // OUT (device only)
+    GetInterface = 0x0A, // IN (interface only)
+    SetInterface = 0x0B, // OUT (interface only)
+    SyncFrame = 0x0C, // IN  (endpoint only)
 }
 
 public enum DescriptorType : byte
@@ -152,9 +168,7 @@ public sealed record ControlTransfer(
         }
     }
 
-
-// ---- ENDPOINT ----
-public static class Endpoint
+     public static class Endpoint
     {
         const UsbRecipient Rec = UsbRecipient.Endpoint;
 
