@@ -1,4 +1,4 @@
-﻿namespace LibUsbSharp;
+﻿namespace LibUsbSharp.Transfer;
 
 /// <summary>
 /// Standard control requests (USB spec Chapter 9.4) and USB 3.x additions.

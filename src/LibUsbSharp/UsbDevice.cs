@@ -4,6 +4,7 @@ using System.Text;
 using LibUsbSharp.Descriptor;
 using LibUsbSharp.Internal;
 using LibUsbSharp.Internal.Transfer;
+using LibUsbSharp.Transfer;
 using Microsoft.Extensions.Logging;
 
 namespace LibUsbSharp;
