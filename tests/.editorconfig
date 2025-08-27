@@ -11,3 +11,6 @@ dotnet_diagnostic.CA2202.severity = none # Do Not Dispose Objects Multiple Times
 dotnet_diagnostic.CS1591.severity = none # XML-Comment warnings
 dotnet_diagnostic.CA1707.severity = none # Remove the underscore from type name
 dotnet_diagnostic.IDE0058.severity = none # Expression value is never used
+
+dotnet_diagnostic.xUnit1004.severity = error  # Test methods should not be skipped
+dotnet_diagnostic.xUnit1009.severity = error  # Test method names should be unique
