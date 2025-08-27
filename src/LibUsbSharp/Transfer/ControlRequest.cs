@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Net;
+using System.Reflection;
 
 namespace LibUsbSharp.Transfer;
 
@@ -37,7 +39,7 @@ public enum StandardRequest : byte
     SetConfiguration = 0x09, // OUT (device only)
     GetInterface = 0x0A, // IN (interface only)
     SetInterface = 0x0B, // OUT (interface only)
-    SyncFrame = 0x0C, // IN  (endpoint only)
+    SyncFrame = 0x0C // IN  (endpoint only)
 }
 
 public enum DescriptorType : byte
@@ -81,127 +83,131 @@ public readonly struct SetupPacket
 
 // -------- generic control transfer --------
 public sealed record ControlTransfer(
-    byte bmRequestType,
-    byte bRequest,
-    ushort wValue,
-    ushort wIndex,
-    ushort wLength = 0)
+    UsbRecipient Recipient,
+    UsbRequestType Type,
+    UsbDirection Direction,
+    byte Request,
+    ushort Value,
+    ushort Index,
+    ushort Length = 0
+)
 {
-    public UsbDirection Direction => (UsbDirection)((bmRequestType >> 7) & 0x01);
-    public UsbRequestType Type => (UsbRequestType)((bmRequestType >> 5) & 0x03);
-    public UsbRecipient Recipient => (UsbRecipient)(bmRequestType & 0x1F);
-
-    public void Deconstruct(out byte bm, out byte br, out ushort v, out ushort i, out ushort l)
-    { bm = bmRequestType; br = bRequest; v = wValue; i = wIndex; l = wLength; }
-
-    public SetupPacket ToSetupPacket() => new(bmRequestType, bRequest, wValue, wIndex, wLength);
-    public static ControlTransfer FromSetupPacket(SetupPacket sp) =>
-        new(sp.BmRequestType, sp.BRequest, sp.WValue, sp.WIndex, sp.WLength);
+    public byte[] ToSetupPacket()
+    {
+        var buf = new byte[8];
+        var BmRequestType = (byte)(((byte)Direction << 7) | ((byte)Type << 5) | (byte)Recipient);
+        buf[0] = BmRequestType;
+        buf[1] = Request;
+        buf[2] = (byte)(Value & 0xFF);
+        buf[3] = (byte)(Value >> 8);
+        buf[4] = (byte)(Index & 0xFF);
+        buf[5] = (byte)(Index >> 8);
+        buf[6] = (byte)(Length & 0xFF);
+        buf[7] = (byte)(Length >> 8);
+        return buf;
+    }
 
     public override string ToString() =>
-        $"bm=0x{bmRequestType:X2} ({Direction}/{Type}/{Recipient}) bReq=0x{bRequest:X2} val=0x{wValue:X4} idx=0x{wIndex:X4} len={wLength}";
+        $"{Recipient}/{Type}/{Direction}) bReq=0x{Request:X2} val=0x{Value:X4} idx=0x{Index:X4} len={Length}";
 
     // ---- DEVICE ----
     public static class Device
     {
-        const UsbRecipient Rec = UsbRecipient.Device;
+        private const UsbRecipient Recipient = UsbRecipient.Device;
 
         // STANDARD (enum-only; validated)
         public static class Standard
         {
             public static ControlTransfer In(StandardRequest req, ushort value = 0, ushort index = 0, ushort length = 0)
-                => new(BuildBm(UsbDirection.In, UsbRequestType.Standard, Rec), (byte)req, value, index, length);
+                => new(UsbRecipient.Device, UsbRequestType.Standard, UsbDirection.In, (byte)req, value, index, length);
 
             public static ControlTransfer Out(StandardRequest req, ushort value = 0, ushort index = 0, ushort length = 0)
-                => new(BuildBm(UsbDirection.Out, UsbRequestType.Standard, Rec), (byte)req, value, index, length);
+                => new(Recipient, UsbRequestType.Standard, UsbDirection.Out, (byte)req, value, index, length);
         }
 
         public static class Class
         {
             public static ControlTransfer In(byte bRequest, ushort value, ushort index, ushort length = 0)
-                => new(BuildBm(UsbDirection.In, UsbRequestType.Class, Rec), bRequest, value, index, length);
+                => new(Recipient, UsbRequestType.Class, UsbDirection.In, bRequest, value, index, length);
 
             public static ControlTransfer Out(byte bRequest, ushort value, ushort index, ushort length = 0)
-                => new(BuildBm(UsbDirection.Out, UsbRequestType.Class, Rec), bRequest, value, index, length);
+                => new(Recipient, UsbRequestType.Class, UsbDirection.Out, bRequest, value, index, length);
         }
 
         public static class Vendor
         {
             public static ControlTransfer In(byte bRequest, ushort value, ushort index, ushort length = 0)
-                => new(BuildBm(UsbDirection.In, UsbRequestType.Vendor, Rec), bRequest, value, index, length);
+                => new(Recipient, UsbRequestType.Vendor, UsbDirection.In, bRequest, value, index, length);
 
             public static ControlTransfer Out(byte bRequest, ushort value, ushort index, ushort length = 0)
-                => new(BuildBm(UsbDirection.Out, UsbRequestType.Vendor, Rec), bRequest, value, index, length);
+                => new(Recipient, UsbRequestType.Vendor, UsbDirection.Out, bRequest, value, index, length);
         }
     }
 
     // ---- INTERFACE ----
     public static class Interface
     {
-        const UsbRecipient Rec = UsbRecipient.Interface;
+        private const UsbRecipient Recipient = UsbRecipient.Interface;
 
         public static class Standard
         {
             public static ControlTransfer In(StandardRequest req, ushort value = 0, ushort index = 0, ushort length = 0)
-                => new(BuildBm(UsbDirection.In, UsbRequestType.Standard, Rec), (byte)req, value, index, length);
+                => new(Recipient, UsbRequestType.Standard, UsbDirection.In, (byte)req, value, index, length);
 
             public static ControlTransfer Out(StandardRequest req, ushort value = 0, ushort index = 0, ushort length = 0)
-                => new(BuildBm(UsbDirection.Out, UsbRequestType.Standard, Rec), (byte)req, value, index, length);
+                => new(Recipient, UsbRequestType.Standard, UsbDirection.Out, (byte)req, value, index, length);
         }
 
         public static class Class
         {
             public static ControlTransfer In(byte bRequest, ushort value, ushort index, ushort length = 0)
-                => new(BuildBm(UsbDirection.In, UsbRequestType.Class, Rec), bRequest, value, index, length);
+                => new(Recipient, UsbRequestType.Class, UsbDirection.In, bRequest, value, index, length);
 
             public static ControlTransfer Out(byte bRequest, ushort value, ushort index, ushort length = 0)
-                => new(BuildBm(UsbDirection.Out, UsbRequestType.Class, Rec), bRequest, value, index, length);
+                => new(Recipient, UsbRequestType.Class, UsbDirection.Out, bRequest, value, index, length);
         }
 
         public static class Vendor
         {
             public static ControlTransfer In(byte bRequest, ushort value, ushort index, ushort length = 0)
-                => new(BuildBm(UsbDirection.In, UsbRequestType.Vendor, Rec), bRequest, value, index, length);
+                => new(Recipient, UsbRequestType.Vendor, UsbDirection.In, bRequest, value, index, length);
 
             public static ControlTransfer Out(byte bRequest, ushort value, ushort index, ushort length = 0)
-                => new(BuildBm(UsbDirection.Out, UsbRequestType.Vendor, Rec), bRequest, value, index, length);
+                => new(Recipient, UsbRequestType.Vendor, UsbDirection.Out, bRequest, value, index, length);
         }
     }
 
-     public static class Endpoint
+    public static class Endpoint
     {
-        const UsbRecipient Rec = UsbRecipient.Endpoint;
+        private const UsbRecipient Recipient = UsbRecipient.Endpoint;
 
         public static class Standard
         {
             public static ControlTransfer In(StandardRequest req, ushort value = 0, ushort index = 0, ushort length = 0)
-                => new(BuildBm(UsbDirection.In, UsbRequestType.Standard, Rec), (byte) req, value, index, length);
-            
+                => new(Recipient, UsbRequestType.Standard, UsbDirection.In, (byte)req, value, index, length);
+
             public static ControlTransfer Out(StandardRequest req, ushort value = 0, ushort index = 0, ushort length = 0)
-                => new(BuildBm(UsbDirection.Out, UsbRequestType.Standard, Rec), (byte)req, value, index, length);
+                => new(Recipient, UsbRequestType.Standard, UsbDirection.Out, (byte)req, value, index, length);
         }
 
         public static class Class
         {
             public static ControlTransfer In(byte bRequest, ushort value, ushort index, ushort length = 0)
-                => new(BuildBm(UsbDirection.In, UsbRequestType.Class, Rec), bRequest, value, index, length);
+                => new(Recipient, UsbRequestType.Class, UsbDirection.In, bRequest, value, index, length);
 
             public static ControlTransfer Out(byte bRequest, ushort value, ushort index, ushort length = 0)
-                => new(BuildBm(UsbDirection.Out, UsbRequestType.Class, Rec), bRequest, value, index, length);
+                => new(Recipient, UsbRequestType.Class, UsbDirection.Out, bRequest, value, index, length);
         }
 
         public static class Vendor
         {
             public static ControlTransfer In(byte bRequest, ushort value, ushort index, ushort length = 0)
-                => new(BuildBm(UsbDirection.In, UsbRequestType.Vendor, Rec), bRequest, value, index, length);
+                => new(Recipient, UsbRequestType.Vendor, UsbDirection.In, bRequest, value, index, length);
 
             public static ControlTransfer Out(byte bRequest, ushort value, ushort index, ushort length = 0)
-                => new(BuildBm(UsbDirection.Out, UsbRequestType.Vendor, Rec), bRequest, value, index, length);
+                => new(Recipient, UsbRequestType.Vendor, UsbDirection.Out, bRequest, value, index, length);
         }
     }
-    
-    private static byte BuildBm(UsbDirection dir, UsbRequestType type, UsbRecipient rec) =>
-        (byte)(((byte)dir << 7) | ((byte)type << 5) | (byte)rec);
 }
 
 

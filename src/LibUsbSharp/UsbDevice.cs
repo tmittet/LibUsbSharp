@@ -123,7 +123,7 @@ public sealed class UsbDevice : IUsbDevice
 
         using var token = _rundownGuard.AcquireSharedToken();
 
-        var buffer = transfer.ToSetupPacket().ToBytes();
+        var buffer = transfer.ToSetupPacket();
         Array.Resize(ref buffer, buffer.Length + destination.Length);
         var bufferHandle = GCHandle.Alloc(buffer, GCHandleType.Pinned);
 
@@ -175,7 +175,7 @@ public sealed class UsbDevice : IUsbDevice
         using var token = _rundownGuard.AcquireSharedToken();
 
         var length = (ushort)source.Length;
-        var buffer = transfer.ToSetupPacket().ToBytes();
+        var buffer = transfer.ToSetupPacket();
         buffer = buffer.Concat(source.ToArray()).ToArray();
 
         var bufferHandle = GCHandle.Alloc(buffer, GCHandleType.Pinned);
