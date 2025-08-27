@@ -1,8 +1,13 @@
 namespace LibUsbSharp.TestInfrastructure;
 
-public sealed class TestLoggerFactory(ITestOutputHelper _output) : ILoggerFactory
+public sealed class TestLoggerFactory : ILoggerFactory
 {
-    private readonly TestLoggerProvider _provider = new(_output);
+    private readonly TestLoggerProvider _provider;
+
+    public TestLoggerFactory(ITestOutputHelper output, LogLevel minLevel = LogLevel.Trace)
+    {
+        _provider = new TestLoggerProvider(output, minLevel);
+    }
 
     public void AddProvider(ILoggerProvider provider)
     {
