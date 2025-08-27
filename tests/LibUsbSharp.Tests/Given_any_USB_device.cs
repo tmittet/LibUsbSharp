@@ -172,9 +172,7 @@ public sealed class Given_any_USB_device : IDisposable
         // Start by getting current device configuration
         var readBuffer = new byte[1];
         var readResult = device.ControlRead(
-            ControlTransfer.Device.Standard.In(
-                StandardRequest.GetConfiguration
-            ), 
+            ControlTransfer.Device.Standard.In(StandardRequest.GetConfiguration),
             readBuffer,
             out var bytesRead
         );

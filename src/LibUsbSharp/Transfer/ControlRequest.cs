@@ -118,29 +118,107 @@ public sealed record ControlTransfer(
         // STANDARD (enum-only; validated)
         public static class Standard
         {
-            public static ControlTransfer In(StandardRequest req, ushort value = 0, ushort index = 0, ushort length = 0)
-                => new(UsbRecipient.Device, UsbRequestType.Standard, UsbDirection.In, (byte)req, value, index, length);
+            public static ControlTransfer In(
+                StandardRequest req,
+                ushort value = 0,
+                ushort index = 0,
+                ushort length = 0
+            ) =>
+                new(
+                    UsbRecipient.Device,
+                    UsbRequestType.Standard,
+                    UsbDirection.In,
+                    (byte)req,
+                    value,
+                    index,
+                    length
+                );
 
-            public static ControlTransfer Out(StandardRequest req, ushort value = 0, ushort index = 0, ushort length = 0)
-                => new(Recipient, UsbRequestType.Standard, UsbDirection.Out, (byte)req, value, index, length);
+            public static ControlTransfer Out(
+                StandardRequest req,
+                ushort value = 0,
+                ushort index = 0,
+                ushort length = 0
+            ) =>
+                new(
+                    Recipient,
+                    UsbRequestType.Standard,
+                    UsbDirection.Out,
+                    (byte)req,
+                    value,
+                    index,
+                    length
+                );
         }
 
         public static class Class
         {
-            public static ControlTransfer In(byte bRequest, ushort value, ushort index, ushort length = 0)
-                => new(Recipient, UsbRequestType.Class, UsbDirection.In, bRequest, value, index, length);
+            public static ControlTransfer In(
+                byte bRequest,
+                ushort value,
+                ushort index,
+                ushort length = 0
+            ) =>
+                new(
+                    Recipient,
+                    UsbRequestType.Class,
+                    UsbDirection.In,
+                    bRequest,
+                    value,
+                    index,
+                    length
+                );
 
-            public static ControlTransfer Out(byte bRequest, ushort value, ushort index, ushort length = 0)
-                => new(Recipient, UsbRequestType.Class, UsbDirection.Out, bRequest, value, index, length);
+            public static ControlTransfer Out(
+                byte bRequest,
+                ushort value,
+                ushort index,
+                ushort length = 0
+            ) =>
+                new(
+                    Recipient,
+                    UsbRequestType.Class,
+                    UsbDirection.Out,
+                    bRequest,
+                    value,
+                    index,
+                    length
+                );
         }
 
         public static class Vendor
         {
-            public static ControlTransfer In(byte bRequest, ushort value, ushort index, ushort length = 0)
-                => new(Recipient, UsbRequestType.Vendor, UsbDirection.In, bRequest, value, index, length);
+            public static ControlTransfer In(
+                byte bRequest,
+                ushort value,
+                ushort index,
+                ushort length = 0
+            ) =>
+                new(
+                    Recipient,
+                    UsbRequestType.Vendor,
+                    UsbDirection.In,
+                    bRequest,
+                    value,
+                    index,
+                    length
+                );
 
-            public static ControlTransfer Out(byte bRequest, ushort value, ushort index, ushort length = 0)
-                => new(Recipient, UsbRequestType.Vendor, UsbDirection.Out, bRequest, value, index, length);
+            public static ControlTransfer Out(
+                byte bRequest,
+                ushort value,
+                ushort index,
+                ushort length = 0
+            ) =>
+                new(
+                    Recipient,
+                    UsbRequestType.Vendor,
+                    UsbDirection.Out,
+                    bRequest,
+                    value,
+                    index,
+                    length
+                );
         }
     }
 
@@ -151,29 +229,107 @@ public sealed record ControlTransfer(
 
         public static class Standard
         {
-            public static ControlTransfer In(StandardRequest req, ushort value = 0, ushort index = 0, ushort length = 0)
-                => new(Recipient, UsbRequestType.Standard, UsbDirection.In, (byte)req, value, index, length);
+            public static ControlTransfer In(
+                StandardRequest req,
+                ushort value = 0,
+                ushort index = 0,
+                ushort length = 0
+            ) =>
+                new(
+                    Recipient,
+                    UsbRequestType.Standard,
+                    UsbDirection.In,
+                    (byte)req,
+                    value,
+                    index,
+                    length
+                );
 
-            public static ControlTransfer Out(StandardRequest req, ushort value = 0, ushort index = 0, ushort length = 0)
-                => new(Recipient, UsbRequestType.Standard, UsbDirection.Out, (byte)req, value, index, length);
+            public static ControlTransfer Out(
+                StandardRequest req,
+                ushort value = 0,
+                ushort index = 0,
+                ushort length = 0
+            ) =>
+                new(
+                    Recipient,
+                    UsbRequestType.Standard,
+                    UsbDirection.Out,
+                    (byte)req,
+                    value,
+                    index,
+                    length
+                );
         }
 
         public static class Class
         {
-            public static ControlTransfer In(byte bRequest, ushort value, ushort index, ushort length = 0)
-                => new(Recipient, UsbRequestType.Class, UsbDirection.In, bRequest, value, index, length);
+            public static ControlTransfer In(
+                byte bRequest,
+                ushort value,
+                ushort index,
+                ushort length = 0
+            ) =>
+                new(
+                    Recipient,
+                    UsbRequestType.Class,
+                    UsbDirection.In,
+                    bRequest,
+                    value,
+                    index,
+                    length
+                );
 
-            public static ControlTransfer Out(byte bRequest, ushort value, ushort index, ushort length = 0)
-                => new(Recipient, UsbRequestType.Class, UsbDirection.Out, bRequest, value, index, length);
+            public static ControlTransfer Out(
+                byte bRequest,
+                ushort value,
+                ushort index,
+                ushort length = 0
+            ) =>
+                new(
+                    Recipient,
+                    UsbRequestType.Class,
+                    UsbDirection.Out,
+                    bRequest,
+                    value,
+                    index,
+                    length
+                );
         }
 
         public static class Vendor
         {
-            public static ControlTransfer In(byte bRequest, ushort value, ushort index, ushort length = 0)
-                => new(Recipient, UsbRequestType.Vendor, UsbDirection.In, bRequest, value, index, length);
+            public static ControlTransfer In(
+                byte bRequest,
+                ushort value,
+                ushort index,
+                ushort length = 0
+            ) =>
+                new(
+                    Recipient,
+                    UsbRequestType.Vendor,
+                    UsbDirection.In,
+                    bRequest,
+                    value,
+                    index,
+                    length
+                );
 
-            public static ControlTransfer Out(byte bRequest, ushort value, ushort index, ushort length = 0)
-                => new(Recipient, UsbRequestType.Vendor, UsbDirection.Out, bRequest, value, index, length);
+            public static ControlTransfer Out(
+                byte bRequest,
+                ushort value,
+                ushort index,
+                ushort length = 0
+            ) =>
+                new(
+                    Recipient,
+                    UsbRequestType.Vendor,
+                    UsbDirection.Out,
+                    bRequest,
+                    value,
+                    index,
+                    length
+                );
         }
     }
 
@@ -183,29 +339,107 @@ public sealed record ControlTransfer(
 
         public static class Standard
         {
-            public static ControlTransfer In(StandardRequest req, ushort value = 0, ushort index = 0, ushort length = 0)
-                => new(Recipient, UsbRequestType.Standard, UsbDirection.In, (byte)req, value, index, length);
+            public static ControlTransfer In(
+                StandardRequest req,
+                ushort value = 0,
+                ushort index = 0,
+                ushort length = 0
+            ) =>
+                new(
+                    Recipient,
+                    UsbRequestType.Standard,
+                    UsbDirection.In,
+                    (byte)req,
+                    value,
+                    index,
+                    length
+                );
 
-            public static ControlTransfer Out(StandardRequest req, ushort value = 0, ushort index = 0, ushort length = 0)
-                => new(Recipient, UsbRequestType.Standard, UsbDirection.Out, (byte)req, value, index, length);
+            public static ControlTransfer Out(
+                StandardRequest req,
+                ushort value = 0,
+                ushort index = 0,
+                ushort length = 0
+            ) =>
+                new(
+                    Recipient,
+                    UsbRequestType.Standard,
+                    UsbDirection.Out,
+                    (byte)req,
+                    value,
+                    index,
+                    length
+                );
         }
 
         public static class Class
         {
-            public static ControlTransfer In(byte bRequest, ushort value, ushort index, ushort length = 0)
-                => new(Recipient, UsbRequestType.Class, UsbDirection.In, bRequest, value, index, length);
+            public static ControlTransfer In(
+                byte bRequest,
+                ushort value,
+                ushort index,
+                ushort length = 0
+            ) =>
+                new(
+                    Recipient,
+                    UsbRequestType.Class,
+                    UsbDirection.In,
+                    bRequest,
+                    value,
+                    index,
+                    length
+                );
 
-            public static ControlTransfer Out(byte bRequest, ushort value, ushort index, ushort length = 0)
-                => new(Recipient, UsbRequestType.Class, UsbDirection.Out, bRequest, value, index, length);
+            public static ControlTransfer Out(
+                byte bRequest,
+                ushort value,
+                ushort index,
+                ushort length = 0
+            ) =>
+                new(
+                    Recipient,
+                    UsbRequestType.Class,
+                    UsbDirection.Out,
+                    bRequest,
+                    value,
+                    index,
+                    length
+                );
         }
 
         public static class Vendor
         {
-            public static ControlTransfer In(byte bRequest, ushort value, ushort index, ushort length = 0)
-                => new(Recipient, UsbRequestType.Vendor, UsbDirection.In, bRequest, value, index, length);
+            public static ControlTransfer In(
+                byte bRequest,
+                ushort value,
+                ushort index,
+                ushort length = 0
+            ) =>
+                new(
+                    Recipient,
+                    UsbRequestType.Vendor,
+                    UsbDirection.In,
+                    bRequest,
+                    value,
+                    index,
+                    length
+                );
 
-            public static ControlTransfer Out(byte bRequest, ushort value, ushort index, ushort length = 0)
-                => new(Recipient, UsbRequestType.Vendor, UsbDirection.Out, bRequest, value, index, length);
+            public static ControlTransfer Out(
+                byte bRequest,
+                ushort value,
+                ushort index,
+                ushort length = 0
+            ) =>
+                new(
+                    Recipient,
+                    UsbRequestType.Vendor,
+                    UsbDirection.Out,
+                    bRequest,
+                    value,
+                    index,
+                    length
+                );
         }
     }
 }
