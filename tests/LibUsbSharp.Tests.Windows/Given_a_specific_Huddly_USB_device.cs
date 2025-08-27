@@ -54,9 +54,6 @@ public sealed class Given_a_specific_Huddly_USB_device : IDisposable
         using var _libUsb = new LibUsb(_loggerFactory);
         _libUsb.Initialize(LogLevel.Warning);
 
-        // Should this fail?
-        using var _libUsb2 = new LibUsb(_loggerFactory);
-
         GC.Collect();
         var handle_count = Handles.GetHandleCount();
         _logger.LogInformation("Handle count: {HandleCount}", handle_count);
