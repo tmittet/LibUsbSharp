@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace LibUsbSharp.Tests.TestInfrastructure;
+namespace LibUsbSharp.Tests.Windows;
 
 public class Handles
 {

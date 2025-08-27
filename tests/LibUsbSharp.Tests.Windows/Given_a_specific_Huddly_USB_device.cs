@@ -1,7 +1,6 @@
 ﻿using System.Security.Principal;
-using LibUsbSharp.Tests.TestInfrastructure;
 
-namespace LibUsbSharp.Tests;
+namespace LibUsbSharp.Tests.Windows;
 
 public sealed class Given_a_specific_Huddly_USB_device : IDisposable
 {
@@ -32,7 +31,7 @@ public sealed class Given_a_specific_Huddly_USB_device : IDisposable
 
     */
 
-    [Fact(Skip = "WIP")]
+    [Fact]
     public void SerializedIntegrationTests()
     {
         if (OperatingSystem.IsWindows())
