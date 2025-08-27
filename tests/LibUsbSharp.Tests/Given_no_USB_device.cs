@@ -24,7 +24,7 @@ public sealed class Given_no_USB_device : IDisposable
         var act = () => new LibUsb(_loggerFactory);
         act.Should()
             .Throw<InvalidOperationException>()
-            .WithMessage("Only one instance of LibUsb allowed.");
+            .WithMessage("Only one LibUsb instance allowed.");
     }
 
     [Fact]
