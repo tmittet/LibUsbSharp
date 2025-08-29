@@ -4,9 +4,7 @@ namespace LibUsbSharp.Internal.Descriptor;
 
 internal static class LibUsbDescriptorExtension
 {
-    public static IUsbConfigDescriptor ToUsbInterfaceDescriptor(
-        this LibUsbConfigDescriptor descriptor
-    ) =>
+    public static IUsbConfigDescriptor ToUsbInterfaceDescriptor(this LibUsbConfigDescriptor descriptor) =>
         new UsbConfigDescriptor(
             ConfigId: descriptor.ConfigurationValue,
             StringDescriptionIndex: descriptor.Configuration,
@@ -20,9 +18,7 @@ internal static class LibUsbDescriptorExtension
                 .ToList()
         );
 
-    public static IUsbInterfaceDescriptor ToUsbInterfaceDescriptor(
-        this LibUsbInterfaceDescriptor descriptor
-    ) =>
+    public static IUsbInterfaceDescriptor ToUsbInterfaceDescriptor(this LibUsbInterfaceDescriptor descriptor) =>
         new UsbInterfaceDescriptor(
             InterfaceNumber: descriptor.InterfaceNumber,
             AlternateSetting: descriptor.AlternateSetting,
@@ -31,15 +27,10 @@ internal static class LibUsbDescriptorExtension
             InterfaceProtocol: descriptor.InterfaceProtocol,
             StringDescriptionIndex: descriptor.Interface,
             ExtraBytes: descriptor.GetExtraBytes(),
-            Endpoints: descriptor
-                .GetEndpointList()
-                .Select(e => e.ToUsbEndpointDescriptor())
-                .ToList()
+            Endpoints: descriptor.GetEndpointList().Select(e => e.ToUsbEndpointDescriptor()).ToList()
         );
 
-    public static IUsbEndpointDescriptor ToUsbEndpointDescriptor(
-        this LibUsbEndpointDescriptor descriptor
-    ) =>
+    public static IUsbEndpointDescriptor ToUsbEndpointDescriptor(this LibUsbEndpointDescriptor descriptor) =>
         new UsbEndpointDescriptor(
             EndpointAddress: descriptor.EndpointAddress,
             Attributes: descriptor.Attributes,

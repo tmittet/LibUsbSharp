@@ -22,9 +22,7 @@ public sealed class Given_no_USB_device : IDisposable
     {
         using var libUsb1 = new LibUsb(_loggerFactory);
         var act = () => new LibUsb(_loggerFactory);
-        act.Should()
-            .Throw<InvalidOperationException>()
-            .WithMessage("Only one LibUsb instance allowed.");
+        act.Should().Throw<InvalidOperationException>().WithMessage("Only one LibUsb instance allowed.");
     }
 
     [Fact]
@@ -41,9 +39,7 @@ public sealed class Given_no_USB_device : IDisposable
         using var libUsb = new LibUsb(_loggerFactory);
         libUsb.Initialize();
         var act = () => libUsb.Initialize();
-        act.Should()
-            .Throw<InvalidOperationException>()
-            .WithMessage("libusb-1.0 already initialized.");
+        act.Should().Throw<InvalidOperationException>().WithMessage("libusb-1.0 already initialized.");
     }
 
     [Fact]

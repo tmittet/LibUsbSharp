@@ -153,10 +153,7 @@ public sealed class Given_any_USB_device : IDisposable
         // Byte 8-9 is vendor ID
         BitConverter.ToUInt16(descriptorBuffer[8..10], 0).Should().Be(device.Descriptor.VendorId);
         // Byte 10-11 is product ID
-        BitConverter
-            .ToUInt16(descriptorBuffer[10..12], 0)
-            .Should()
-            .Be(device.Descriptor.ProductId);
+        BitConverter.ToUInt16(descriptorBuffer[10..12], 0).Should().Be(device.Descriptor.ProductId);
     }
 
     [SkippableFact]

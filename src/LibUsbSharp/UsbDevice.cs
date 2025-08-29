@@ -91,12 +91,7 @@ public sealed class UsbDevice : IUsbDevice
         using var token = _rundownGuard.AcquireSharedToken();
 
         var buffer = new byte[256];
-        var result = libusb_get_string_descriptor_ascii(
-            Handle,
-            descriptorIndex,
-            buffer,
-            buffer.Length
-        );
+        var result = libusb_get_string_descriptor_ascii(Handle, descriptorIndex, buffer, buffer.Length);
         return result >= 0
             ? Encoding.ASCII.GetString(buffer, 0, result)
             : throw LibUsbException.FromError(result, "Failed to read device serial.");
@@ -224,10 +219,7 @@ public sealed class UsbDevice : IUsbDevice
             var claimResult = libusb_claim_interface(Handle, descriptor.InterfaceNumber);
             if (claimResult != 0)
             {
-                throw LibUsbException.FromError(
-                    claimResult,
-                    $"Failed to claim USB interface {descriptor}."
-                );
+                throw LibUsbException.FromError(claimResult, $"Failed to claim USB interface {descriptor}.");
             }
 
             var usbInterface = new UsbInterface(_loggerFactory, this, descriptor);
@@ -264,10 +256,7 @@ public sealed class UsbDevice : IUsbDevice
             var releaseResult = libusb_release_interface(Handle, interfaceNumber);
             if (releaseResult != 0)
             {
-                throw LibUsbException.FromError(
-                    releaseResult,
-                    $"Failed to release USB interface {usbInterface}."
-                );
+                throw LibUsbException.FromError(releaseResult, $"Failed to release USB interface {usbInterface}.");
             }
 
             if (_claimedInterfaces.TryRemove(interfaceNumber, out var _))
@@ -337,11 +326,7 @@ public sealed class UsbDevice : IUsbDevice
         }
         catch (Exception ex)
         {
-            _logger.LogError(
-                "UsbDevice dispose failed. {ErrorType}: {ErrorMessage}",
-                ex.GetType().Name,
-                ex.Message
-            );
+            _logger.LogError("UsbDevice dispose failed. {ErrorType}: {ErrorMessage}", ex.GetType().Name, ex.Message);
         }
     }
 

@@ -130,10 +130,7 @@ internal sealed class LibUsbEventLoop : IDisposable
     /// parameter to allow for race free waiting for the completion of a specific transfer.
     /// </summary>
     [DllImport(LibUsb.LibraryName, CallingConvention = CallingConvention.Cdecl)]
-    private static extern unsafe int libusb_handle_events_completed(
-        IntPtr context,
-        IntPtr completed
-    );
+    private static extern unsafe int libusb_handle_events_completed(IntPtr context, IntPtr completed);
 
     /// <summary>
     /// Interrupt any active thread that is handling events. This is mainly useful for interrupting

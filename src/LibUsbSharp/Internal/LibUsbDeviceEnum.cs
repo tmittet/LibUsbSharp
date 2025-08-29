@@ -46,10 +46,10 @@ internal static class LibUsbDeviceEnum
     /// </summary>
     /// <param name="logger">A logger.</param>
     /// <param name="listPtr">Pointer to device list returned by libusb_get_device_list.</param>
-    internal static IEnumerable<(
-        nint DescriptorPtr,
-        UsbDeviceDescriptor Descriptor
-    )> GetDeviceDescriptors(ILogger logger, nint listPtr)
+    internal static IEnumerable<(nint DescriptorPtr, UsbDeviceDescriptor Descriptor)> GetDeviceDescriptors(
+        ILogger logger,
+        nint listPtr
+    )
     {
         var offset = 0;
         nint descriptorPtr;
@@ -76,10 +76,7 @@ internal static class LibUsbDeviceEnum
     /// Get the cached USB device descriptor for a given, alrady in memory, device descriptor.
     /// NOTE: since libusb-1.0.16, LIBUSBX_API_VERSION >= 0x01000102, this function always succeeds.
     /// </summary>
-    internal static LibUsbResult TryGetDeviceDescriptor(
-        nint deviceDescriptorPtr,
-        out UsbDeviceDescriptor? descriptor
-    )
+    internal static LibUsbResult TryGetDeviceDescriptor(nint deviceDescriptorPtr, out UsbDeviceDescriptor? descriptor)
     {
         descriptor = null;
         var result = libusb_get_device_descriptor(deviceDescriptorPtr, out var partialDescriptor);
@@ -99,10 +96,7 @@ internal static class LibUsbDeviceEnum
     /// Get the USB configuration descriptor for the currently active device configuration. This
     /// is a non-blocking function which does not involve any requests being sent to the device.
     /// </summary>
-    internal static LibUsbResult TryGetConfigDescriptor(
-        nint deviceDescriptorPtr,
-        out IUsbConfigDescriptor? descriptor
-    )
+    internal static LibUsbResult TryGetConfigDescriptor(nint deviceDescriptorPtr, out IUsbConfigDescriptor? descriptor)
     {
         descriptor = null;
         var result = libusb_get_active_config_descriptor(deviceDescriptorPtr, out var configPtr);
@@ -112,9 +106,7 @@ internal static class LibUsbDeviceEnum
         }
         try
         {
-            descriptor = Marshal
-                .PtrToStructure<LibUsbConfigDescriptor>(configPtr)
-                .ToUsbInterfaceDescriptor();
+            descriptor = Marshal.PtrToStructure<LibUsbConfigDescriptor>(configPtr).ToUsbInterfaceDescriptor();
         }
         finally
         {

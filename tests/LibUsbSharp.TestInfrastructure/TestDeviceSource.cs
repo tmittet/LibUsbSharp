@@ -53,9 +53,7 @@ public sealed class TestDeviceSource(ILogger _logger, ILibUsb _libUsb)
 
     public bool TryOpenUsbDevice([NotNullWhen(true)] out IUsbDevice? openDevice)
     {
-        var devices = _libUsb
-            .GetDeviceList(_requiredVendorId)
-            .OrderBy(d => d.VendorId == _preferredVendorId ? 0 : 1);
+        var devices = _libUsb.GetDeviceList(_requiredVendorId).OrderBy(d => d.VendorId == _preferredVendorId ? 0 : 1);
 
         foreach (var deviceDescriptor in devices)
         {
@@ -81,11 +79,7 @@ public sealed class TestDeviceSource(ILogger _logger, ILibUsb _libUsb)
                 device = _libUsb.OpenDevice(deviceDescriptor);
             }
             catch (LibUsbException ex)
-                when (ex.ResultCode
-                        is LibUsbResult.AccessDenied
-                            or LibUsbResult.IoError
-                            or LibUsbResult.NotSupported
-                )
+                when (ex.ResultCode is LibUsbResult.AccessDenied or LibUsbResult.IoError or LibUsbResult.NotSupported)
             {
                 if (i > 0)
                     Thread.Sleep(10);
@@ -101,10 +95,7 @@ public sealed class TestDeviceSource(ILogger _logger, ILibUsb _libUsb)
         if (
             device is not null
             && DeviceSerialIsReadable(device)
-            && (
-                _interfaceClass is null
-                || DeviceInterfaceIsAccessible(device, _interfaceClass.Value, _interfaceAccess)
-            )
+            && (_interfaceClass is null || DeviceInterfaceIsAccessible(device, _interfaceClass.Value, _interfaceAccess))
             && (
                 _interfaceClass is null
                 || _interfaceSubClass is null

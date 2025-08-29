@@ -28,9 +28,7 @@ public sealed class Given_a_vendor_class_USB_device : IDisposable
     public void Device_has_vendor_interface_with_input_and_output_endpoints()
     {
         using var device = _deviceSource.OpenUsbDeviceOrSkip();
-        device
-            .ConfigDescriptor.Interfaces.Should()
-            .ContainSingle(i => i.InterfaceClass == UsbClass.VendorSpecific);
+        device.ConfigDescriptor.Interfaces.Should().ContainSingle(i => i.InterfaceClass == UsbClass.VendorSpecific);
         var vendorInterface = device.ConfigDescriptor.Interfaces.First(i =>
             i.InterfaceClass == UsbClass.VendorSpecific
         );

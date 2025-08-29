@@ -192,20 +192,12 @@ public sealed class LibUsb : ILibUsb
     }
 
     /// <inheritdoc />
-    public List<IUsbDeviceDescriptor> GetDeviceList(
-        ushort? vendorId = default,
-        HashSet<ushort>? productIds = default
-    )
+    public List<IUsbDeviceDescriptor> GetDeviceList(ushort? vendorId = default, HashSet<ushort>? productIds = default)
     {
         lock (_lock)
         {
             CheckDisposed();
-            return LibUsbDeviceEnum.GetDeviceList(
-                _logger,
-                GetInitializedContextOrThrow(),
-                vendorId,
-                productIds
-            );
+            return LibUsbDeviceEnum.GetDeviceList(_logger, GetInitializedContextOrThrow(), vendorId, productIds);
         }
     }
 
@@ -274,15 +266,9 @@ public sealed class LibUsb : ILibUsb
             .FirstOrDefault(d => d.Descriptor.DeviceKey == deviceKey);
         if (descriptorPtr == IntPtr.Zero)
         {
-            throw LibUsbException.FromResult(
-                LibUsbResult.NotFound,
-                "Failed to get device from list."
-            );
+            throw LibUsbException.FromResult(LibUsbResult.NotFound, "Failed to get device from list.");
         }
-        var configResult = LibUsbDeviceEnum.TryGetConfigDescriptor(
-            descriptorPtr,
-            out var configDescriptor
-        );
+        var configResult = LibUsbDeviceEnum.TryGetConfigDescriptor(descriptorPtr, out var configDescriptor);
         if (configResult != 0)
         {
             throw LibUsbException.FromResult(
@@ -292,14 +278,7 @@ public sealed class LibUsb : ILibUsb
         }
         var openResult = libusb_open(descriptorPtr, out var deviceHandle);
         return openResult == 0
-            ? new UsbDevice(
-                _loggerFactory,
-                this,
-                context,
-                deviceHandle,
-                descriptor,
-                configDescriptor!
-            )
+            ? new UsbDevice(_loggerFactory, this, context, deviceHandle, descriptor, configDescriptor!)
             : throw LibUsbException.FromError(openResult, $"Failed to open device '{deviceKey}'.");
     }
 
@@ -314,9 +293,7 @@ public sealed class LibUsb : ILibUsb
             _ = GetInitializedContextOrThrow();
             if (!_openDevices.TryRemove(key, out _))
             {
-                throw new InvalidOperationException(
-                    $"Device not found in the list of open devices."
-                );
+                throw new InvalidOperationException($"Device not found in the list of open devices.");
             }
             libusb_close(handle);
         }
@@ -369,10 +346,7 @@ public sealed class LibUsb : ILibUsb
                 // Close any devices, interfaces and transfers that remain open or are ongoing
                 foreach (var device in _openDevices)
                 {
-                    _logger.LogDebug(
-                        "Auto disposing device '{DeviceKey}' on LibUsb dispose.",
-                        device.Key
-                    );
+                    _logger.LogDebug("Auto disposing device '{DeviceKey}' on LibUsb dispose.", device.Key);
                     // Device dispose calls LibUsb.CloseDevice, which removes it from the
                     // _openDevices dictionary. This works without deadlock or race conditions since
                     // the C# Monitor lock is re-entrant and the ConcurrentDictionary is designed to
@@ -481,10 +455,7 @@ public sealed class LibUsb : ILibUsb
     );
 
     [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)]
-    private static extern void libusb_hotplug_deregister_callback(
-        IntPtr context,
-        int callbackHandle
-    );
+    private static extern void libusb_hotplug_deregister_callback(IntPtr context, int callbackHandle);
 
 #pragma warning restore SYSLIB1054 // Use 'LibraryImportAttribute' instead of 'DllImportAttribute'
 }

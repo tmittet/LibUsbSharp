@@ -16,11 +16,7 @@ public interface ILibUsb : IDisposable
     /// Hotplug events are supported on macOS, Linux and Windows.
     /// https://libusb.sourceforge.io/api-1.0/libusb_hotplug.html
     /// </summary>
-    bool RegisterHotplug(
-        UsbClass? deviceClass = null,
-        ushort? vendorId = null,
-        ushort? productId = null
-    );
+    bool RegisterHotplug(UsbClass? deviceClass = null, ushort? vendorId = null, ushort? productId = null);
 
     /// <summary>
     /// Returns a list of device descriptors for connected USB devices.
@@ -30,10 +26,7 @@ public interface ILibUsb : IDisposable
     /// <param name="productIds">Optional product ID filter.</param>
     /// <exception cref="ObjectDisposedException">Thrown when LibUsb is disposed.</exception>
     /// <exception cref="InvalidOperationException">Thrown when LibUsb is not initialized.</exception>
-    List<IUsbDeviceDescriptor> GetDeviceList(
-        ushort? vendorId = default,
-        HashSet<ushort>? productIds = default
-    );
+    List<IUsbDeviceDescriptor> GetDeviceList(ushort? vendorId = default, HashSet<ushort>? productIds = default);
 
     /// <summary>
     /// Get the device serial number. To read the serial the device must be opened for a brief
