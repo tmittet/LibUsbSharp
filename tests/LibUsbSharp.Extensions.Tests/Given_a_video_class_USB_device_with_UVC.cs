@@ -36,6 +36,23 @@ public sealed class Given_a_video_class_USB_device_with_UVC : IDisposable
             device.Descriptor.ProductId,
             serial
         );
+        var selector = 0x02;
+        var processingUnit = 0x03;
+        var vcInterface = 0x00;
+        var value = (ushort)(selector << 8);
+        var index = (ushort)(processingUnit << 8 | vcInterface);
+        var val = new Span<byte>(new byte[2]);
+        var result = device.ControlUvcRead(
+            ControlRequestRecipient.Interface,
+            ControlRequestUvc.GetCurrentSetting,
+            value,
+            index,
+            val,
+            out _,
+            1000
+        );
+        //var valueConverted = BitConverter.ToInt16(val);
+        result.Should().Be(LibUsbResult.Success);
 
         // TODO: This test is an example; replace with a real UVC device test method
         //var result = device.ControlUvcWrite(
