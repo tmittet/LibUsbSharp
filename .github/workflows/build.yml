@@ -78,6 +78,12 @@ jobs:
           --no-restore \
           --runtime ${{ matrix.config.runtime }}
 
+    - name: Install libusb 1.0 dev (for linux)
+      if: startsWith(matrix.config.runtime, 'linux-')
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libusb-1.0-0-dev
+
     - name: Build LibUsbSharp.Tests
       shell: bash
       run: |
@@ -85,16 +91,26 @@ jobs:
           --no-restore \
           --runtime ${{ matrix.config.runtime }}
 
-    - name: Install libusb 1.0 dev (for linux)
-      if: startsWith(matrix.config.runtime, 'linux-')
+    - name: Build LibUsbSharp.Extensions.Tests
+      shell: bash
       run: |
-        sudo apt-get update
-        sudo apt-get install -y libusb-1.0-0-dev
+        dotnet build tests/LibUsbSharp.Extensions.Tests/LibUsbSharp.Extensions.Tests.csproj \
+          --no-restore \
+          --runtime ${{ matrix.config.runtime }}
 
     - name: Run LibUsbSharp.Tests
       shell: bash
       run: |
         dotnet test tests/LibUsbSharp.Tests/LibUsbSharp.Tests.csproj \
+          --no-build \
+          --runtime ${{ matrix.config.runtime }} \
+          --logger junit \
+          --verbosity normal
+
+    - name: Run LibUsbSharp.Extensions.Tests
+      shell: bash
+      run: |
+        dotnet test tests/LibUsbSharp.Extensions.Tests/LibUsbSharp.Extensions.Tests.csproj \
           --no-build \
           --runtime ${{ matrix.config.runtime }} \
           --logger junit \

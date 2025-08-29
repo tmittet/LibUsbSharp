@@ -71,6 +71,12 @@ public static class UsbDeviceExtension
             : device.ClaimInterface(usbInterface);
     }
 
+    public static IList<IUsbInterfaceDescriptor> GetInterfaceDescriptors(
+        this IUsbDevice device,
+        UsbClass withClass,
+        byte? withSubClass = null
+    ) => device.Interfaces(withClass, withSubClass).ToList();
+
     public static bool HasInterface(this IUsbDevice device, UsbClass withClass, byte? withSubClass = null) =>
         device.Interfaces(withClass, withSubClass).Any();
 
