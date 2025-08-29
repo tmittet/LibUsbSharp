@@ -71,6 +71,26 @@ public static class UsbDeviceExtension
             : device.ClaimInterface(usbInterface);
     }
 
+    /// <summary>
+    /// Get interface descriptors matching given parameters.
+    /// </summary>
+    /// <param name="device">A UsbDevice instance.</param>
+    /// <param name="withClass">Interface class filter.</param>
+    /// <param name="withSubClass">Optional interface sub-class filter.</param>
+    /// <returns>A list of matching interface descriptors.</returns>
+    public static IList<IUsbInterfaceDescriptor> GetInterfaceDescriptors(
+        this IUsbDevice device,
+        UsbClass withClass,
+        byte? withSubClass = null
+    ) => device.Interfaces(withClass, withSubClass).ToList();
+
+    /// <summary>
+    /// Check if device has an interface matching given parameters.
+    /// </summary>
+    /// <param name="device">A UsbDevice instance.</param>
+    /// <param name="withClass">Interface class filter.</param>
+    /// <param name="withSubClass">Optional interface sub-class filter.</param>
+    /// <returns>True when one or more matching interfaces are found.</returns>
     public static bool HasInterface(this IUsbDevice device, UsbClass withClass, byte? withSubClass = null) =>
         device.Interfaces(withClass, withSubClass).Any();
 

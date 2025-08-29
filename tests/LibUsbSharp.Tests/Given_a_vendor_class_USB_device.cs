@@ -69,6 +69,27 @@ public sealed class Given_a_vendor_class_USB_device : IDisposable
         device.Dispose();
     }
 
+    [SkippableFact]
+    public void GetInterfaceDescriptors_returns_at_least_one_vendor_interface()
+    {
+        using var device = _deviceSource.OpenUsbDeviceOrSkip();
+        var vendorInterfaces = device.GetInterfaceDescriptors(UsbClass.VendorSpecific);
+        vendorInterfaces.Should().NotBeEmpty();
+    }
+
+    [SkippableFact]
+    public void GetInterfaceDescriptors_returns_interface_of_specified_sub_class()
+    {
+        using var device = _deviceSource.OpenUsbDeviceOrSkip();
+        var interfaceSubClass = device
+            .GetInterfaceDescriptors(UsbClass.VendorSpecific)
+            .Select(i => i.InterfaceSubClass)
+            .FirstOrDefault();
+        // Get interfaces with specific class and sub-class
+        var vendorInterfaces = device.GetInterfaceDescriptors(UsbClass.VendorSpecific, interfaceSubClass);
+        vendorInterfaces.Should().NotBeEmpty();
+    }
+
     public void Dispose()
     {
         _libUsb.Dispose();
