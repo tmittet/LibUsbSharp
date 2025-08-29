@@ -12,8 +12,7 @@ public sealed class Given_a_video_class_USB_device_with_UVC : IDisposable
     private const byte selector = 0x02;
     private const byte processingUnit = 0x03;
     private const byte vcInterface = 0x00;
-    private const ushort value = (ushort)(selector << 8);
-    private const ushort index = (ushort)(processingUnit << 8 | vcInterface);
+    private const ushort value = selector << 8;
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger<Given_a_video_class_USB_device_with_UVC> _logger;
     private readonly LibUsb _libUsb;
@@ -36,34 +35,28 @@ public sealed class Given_a_video_class_USB_device_with_UVC : IDisposable
     {
         using var device = _deviceSource.OpenUsbDeviceOrSkip();
         var serial = device.GetSerialNumber();
+        var uvcInterfaces = device.GetInterfaceDescriptors(UsbClass.Video, UvcInterfaceSubClass);
+        var uvcInterface = uvcInterfaces.First();
         _logger.LogInformation(
-            "Video device w/UVC open: VID=0x{VID:X4}, PID=0x{PID:X4}, SerialNumber={SerialNumber}.",
+            "Video device open: VID=0x{VID:X4}, PID=0x{PID:X4}, "
+                + "SerialNumber={SerialNumber}, UVC interface: {Interface}.",
             device.Descriptor.VendorId,
             device.Descriptor.ProductId,
-            serial
+            serial,
+            uvcInterface.InterfaceNumber
         );
         var val = new Span<byte>(new byte[2]);
         var result = device.ControlUvcRead(
             ControlRequestRecipient.Interface,
             ControlRequestUvc.GetCurrentSetting,
             value,
-            index,
+            (ushort)(processingUnit << 8 | uvcInterface.InterfaceNumber),
             val,
             out _,
             1000
         );
+        var valueConverted = BitConverter.ToInt16(val);
         result.Should().Be(LibUsbResult.Success);
-
-        // TODO: This test is an example; replace with a real UVC device test method
-        //var result = device.ControlUvcWrite(
-        //    ControlRequestRecipient.Device,
-        //    ControlRequestUvc.SetCurrentSetting,
-        //    0,
-        //    0,
-        //    [],
-        //    out var bytesWritten
-        //);
-        //result.Should().Be(LibUsbResult.Success);
     }
 
     [SkippableFact]
@@ -71,18 +64,21 @@ public sealed class Given_a_video_class_USB_device_with_UVC : IDisposable
     {
         using var device = _deviceSource.OpenUsbDeviceOrSkip();
         var serial = device.GetSerialNumber();
+        var uvcInterface = device.GetInterfaceDescriptors(UsbClass.Video, UvcInterfaceSubClass).First();
         _logger.LogInformation(
-            "Video device w/UVC open: VID=0x{VID:X4}, PID=0x{PID:X4}, SerialNumber={SerialNumber}.",
+            "Video device open: VID=0x{VID:X4}, PID=0x{PID:X4}, "
+                + "SerialNumber={SerialNumber}, UVC interface: {Interface}.",
             device.Descriptor.VendorId,
             device.Descriptor.ProductId,
-            serial
+            serial,
+            uvcInterface.InterfaceNumber
         );
         var initialValSpan = new Span<byte>(new byte[2]);
         _ = device.ControlUvcRead(
             ControlRequestRecipient.Interface,
             ControlRequestUvc.GetCurrentSetting,
             value,
-            index,
+            (ushort)(processingUnit << 8 | uvcInterface.InterfaceNumber),
             initialValSpan,
             out _,
             1000
@@ -95,7 +91,7 @@ public sealed class Given_a_video_class_USB_device_with_UVC : IDisposable
             ControlRequestRecipient.Interface,
             ControlRequestUvc.SetCurrentSetting,
             value,
-            index,
+            (ushort)(processingUnit << 8 | uvcInterface.InterfaceNumber),
             val,
             out _,
             1000
@@ -108,23 +104,13 @@ public sealed class Given_a_video_class_USB_device_with_UVC : IDisposable
             ControlRequestRecipient.Interface,
             ControlRequestUvc.GetCurrentSetting,
             value,
-            index,
+            (ushort)(processingUnit << 8 | uvcInterface.InterfaceNumber),
             newValSpan,
             out _,
             1000
         );
 
         newVal.Should().Be(BitConverter.ToInt16(newValSpan.ToArray()));
-        // TODO: This test is an example; replace with a real UVC device test method
-        //var result = device.ControlUvcWrite(
-        //    ControlRequestRecipient.Device,
-        //    ControlRequestUvc.SetCurrentSetting,
-        //    0,
-        //    0,
-        //    [],
-        //    out var bytesWritten
-        //);
-        //result.Should().Be(LibUsbResult.Success);
     }
 
     public void Dispose()
