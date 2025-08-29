@@ -63,25 +63,16 @@ public static class UsbDeviceExtension
     /// <exception cref="ObjectDisposedException">
     /// Thrown when the UsbDevice is disposed.
     /// </exception>
-    public static IUsbInterface ClaimInterface(
-        this IUsbDevice device,
-        UsbClass withClass,
-        byte? withSubClass = null
-    )
+    public static IUsbInterface ClaimInterface(this IUsbDevice device, UsbClass withClass, byte? withSubClass = null)
     {
         var usbInterface = device.Interfaces(withClass, withSubClass).FirstOrDefault();
         return usbInterface is null
-            ? throw new InvalidOperationException(
-                $"Device '{device}' {withClass} interface not found."
-            )
+            ? throw new InvalidOperationException($"Device '{device}' {withClass} interface not found.")
             : device.ClaimInterface(usbInterface);
     }
 
-    public static bool HasInterface(
-        this IUsbDevice device,
-        UsbClass withClass,
-        byte? withSubClass = null
-    ) => device.Interfaces(withClass, withSubClass).Any();
+    public static bool HasInterface(this IUsbDevice device, UsbClass withClass, byte? withSubClass = null) =>
+        device.Interfaces(withClass, withSubClass).Any();
 
     private static IEnumerable<IUsbInterfaceDescriptor> Interfaces(
         this IUsbDevice usbDevice,
@@ -89,7 +80,6 @@ public static class UsbDeviceExtension
         byte? withSubClass
     ) =>
         usbDevice.ConfigDescriptor.Interfaces.Where(i =>
-            i.InterfaceClass == withClass
-            && (withSubClass is null || i.InterfaceSubClass == withSubClass.Value)
+            i.InterfaceClass == withClass && (withSubClass is null || i.InterfaceSubClass == withSubClass.Value)
         );
 }

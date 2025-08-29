@@ -22,9 +22,7 @@ internal struct LibUsbInterface
         for (var i = 0; i < NumAltSetting; i++)
         {
             var interfaceHandle = new IntPtr(AltSetting + (i * interfaceByteSize));
-            altInterfaceList.Add(
-                Marshal.PtrToStructure<LibUsbInterfaceDescriptor>(interfaceHandle)
-            );
+            altInterfaceList.Add(Marshal.PtrToStructure<LibUsbInterfaceDescriptor>(interfaceHandle));
         }
         return altInterfaceList;
     }

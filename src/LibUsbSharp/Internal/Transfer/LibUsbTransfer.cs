@@ -80,16 +80,10 @@ internal static class LibUsbTransfer
                 // is received through the LibUsbTransferCallback.
                 var cancelResult = (LibUsbResult)libusb_cancel_transfer(transferPtr);
                 if (
-                    cancelResult
-                    is not LibUsbResult.NoDevice
-                        and not LibUsbResult.NotFound
-                        and not LibUsbResult.Success
+                    cancelResult is not LibUsbResult.NoDevice and not LibUsbResult.NotFound and not LibUsbResult.Success
                 )
                 {
-                    logger.LogError(
-                        "Failed to cancel LibUsb transfer. {ErrorMessage}",
-                        cancelResult.GetMessage()
-                    );
+                    logger.LogError("Failed to cancel LibUsb transfer. {ErrorMessage}", cancelResult.GetMessage());
                 }
                 // We should not free the transfer or handle if there is still a chance
                 // that the callback is triggered, doing so may result in use-after-free.
