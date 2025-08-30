@@ -92,4 +92,6 @@ internal struct LibUsbTransferTemplate
 
     // Isochronous packet descriptors, for isochronous transfers only.
     // IsoPacketDesc
+    public override readonly string ToString() =>
+        $"Handle=0x{(nuint)DeviceHandle:X} Ep=0x{Endpoint:X2} Type={Type} Flags={Flags} Status={Status} Len={Length} Actual={ActualLength} Timeout={Timeout}ms Buf=0x{(nuint)Buffer:X} User=0x{(nuint)UserData:X} IsoPkts={NumIsoPackets}";
 }

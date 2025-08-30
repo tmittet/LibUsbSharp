@@ -7,6 +7,8 @@ using LibUsbSharp.Internal.Transfer;
 using LibUsbSharp.Transfer;
 using Microsoft.Extensions.Logging;
 
+//using static System.Runtime.InteropServices.JavaScript.JSType;
+
 namespace LibUsbSharp;
 
 public sealed class UsbDevice : IUsbDevice
@@ -98,16 +100,7 @@ public sealed class UsbDevice : IUsbDevice
     }
 
     /// <inheritdoc />
-    public LibUsbResult ControlRead(
-        ControlRequestRecipient recipient,
-        ControlRequestType type,
-        byte request,
-        ushort value,
-        ushort index,
-        Span<byte> destination,
-        out ushort bytesRead,
-        int timeout
-    )
+    public LibUsbResult ControlRead(ControlTransfer transfer, Span<byte> destination, out ushort bytesRead, int timeout)
     {
         if (destination.Length > ushort.MaxValue)
         {
@@ -120,10 +113,10 @@ public sealed class UsbDevice : IUsbDevice
 
         using var token = _rundownGuard.AcquireSharedToken();
 
-        var length = (ushort)destination.Length;
-        var setup = LibUsbControlRequestSetup.Read(recipient, type, request, value, index, length);
-        var buffer = setup.CreateBuffer();
+        var buffer = transfer.ToSetupPacket();
+        Array.Resize(ref buffer, buffer.Length + destination.Length);
         var bufferHandle = GCHandle.Alloc(buffer, GCHandleType.Pinned);
+
         try
         {
             var result = LibUsbTransfer.ExecuteSync(
@@ -143,7 +136,7 @@ public sealed class UsbDevice : IUsbDevice
                 destination = Array.Empty<byte>();
                 return result;
             }
-            buffer.AsSpan(LibUsbControlRequestSetup.Size, bytesRead).CopyTo(destination);
+            buffer.AsSpan(8, bytesRead).CopyTo(destination);
             return result;
         }
         finally
@@ -154,11 +147,7 @@ public sealed class UsbDevice : IUsbDevice
 
     /// <inheritdoc />
     public LibUsbResult ControlWrite(
-        ControlRequestRecipient recipient,
-        ControlRequestType type,
-        byte request,
-        ushort value,
-        ushort index,
+        ControlTransfer transfer,
         ReadOnlySpan<byte> source,
         out int bytesWritten,
         int timeout
@@ -176,13 +165,12 @@ public sealed class UsbDevice : IUsbDevice
         using var token = _rundownGuard.AcquireSharedToken();
 
         var length = (ushort)source.Length;
-        var setup = LibUsbControlRequestSetup.Write(recipient, type, request, value, index, length);
-        var buffer = setup.CreateBuffer();
-        if (length > 0)
-        {
-            source.CopyTo(buffer.AsSpan(LibUsbControlRequestSetup.Size, length));
-        }
+        var buffer = transfer.ToSetupPacket();
+        buffer = buffer.Concat(source.ToArray()).ToArray();
+        _logger.LogDebug("ControlWrite: {Transfer}", transfer);
+
         var bufferHandle = GCHandle.Alloc(buffer, GCHandleType.Pinned);
+
         try
         {
             return LibUsbTransfer.ExecuteSync(
@@ -216,7 +204,7 @@ public sealed class UsbDevice : IUsbDevice
             }
 
             // TODO: libusb_set_auto_detach_kernel_driver on Linux?
-            var claimResult = libusb_claim_interface(Handle, descriptor.InterfaceNumber);
+            var claimResult = libusb_claim_interface(Handle, 0);
             if (claimResult != 0)
             {
                 throw LibUsbException.FromError(claimResult, $"Failed to claim USB interface {descriptor}.");
@@ -227,6 +215,17 @@ public sealed class UsbDevice : IUsbDevice
             _claimedInterfaces[descriptor.InterfaceNumber] = usbInterface;
             _logger.LogDebug("USB interface {UsbInterface} claimed.", usbInterface);
             return usbInterface;
+        }
+    }
+
+    public void ClaimInterface(int number)
+    {
+        _logger.LogDebug("Claiming USB interface #{InterfaceNumber}.", number);
+        // TODO: libusb_set_auto_detach_kernel_driver on Linux?
+        var claimResult = libusb_claim_interface(Handle, number);
+        if (claimResult != 0)
+        {
+            throw LibUsbException.FromError(claimResult, $"Failed to claim USB interface {number}.");
         }
     }
 

@@ -383,6 +383,8 @@ public sealed class LibUsb : ILibUsb
             case LibUsbLogLevel.Debug:
                 _staticLogger?.LogTrace("{LibUsbMessage}", message.TrimEnd());
                 break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(level), level, null);
         }
     }
 

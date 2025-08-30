@@ -1,5 +1,8 @@
+using System;
+using System.Reflection.Metadata;
 using LibUsbSharp.Descriptor;
 using LibUsbSharp.Transfer;
+using Newtonsoft.Json.Linq;
 
 namespace LibUsbSharp.Tests;
 
@@ -16,7 +19,7 @@ public sealed class Given_any_USB_device : IDisposable
         _loggerFactory = new TestLoggerFactory(output);
         _logger = _loggerFactory.CreateLogger<Given_any_USB_device>();
         _libUsb = new LibUsb(_loggerFactory);
-        _libUsb.Initialize(LogLevel.Information);
+        _libUsb.Initialize(LogLevel.Trace);
         _deviceSource = new TestDeviceSource(_logger, _libUsb);
         _deviceSource.SetPreferredVendorId(0x2BD9);
     }
@@ -133,15 +136,16 @@ public sealed class Given_any_USB_device : IDisposable
         var descriptorBuffer = new byte[32];
 
         var result = device.ControlRead(
-            ControlRequestRecipient.Device,
-            ControlRequestStandard.GetDescriptor,
-            (DescriptorTypeDevice << 8) | DescriptorIndex,
-            DescriptorIndex,
+            ControlTransfer.Device.Standard.In(
+                StandardRequest.GetDescriptor,
+                (DescriptorTypeDevice << 8) | DescriptorIndex,
+                DescriptorIndex
+            ),
             descriptorBuffer,
             out var bytesRead
         );
 
-        using var scope = new AssertionScope();
+        //using var scope = new AssertionScope();
         result.Should().Be(LibUsbResult.Success);
 
         // USB Descriptor is always 18 bytes
@@ -166,10 +170,7 @@ public sealed class Given_any_USB_device : IDisposable
         // Start by getting current device configuration
         var readBuffer = new byte[1];
         var readResult = device.ControlRead(
-            ControlRequestRecipient.Device,
-            ControlRequestStandard.GetConfiguration,
-            0,
-            0,
+            ControlTransfer.Device.Standard.In(StandardRequest.GetConfiguration),
             readBuffer,
             out var bytesRead
         );
@@ -180,18 +181,34 @@ public sealed class Given_any_USB_device : IDisposable
 
         // When configuration read is successful, write the same config value back to the device
         var writeResult = device.ControlWrite(
-            ControlRequestRecipient.Device,
-            ControlRequestStandard.SetConfiguration,
-            readBuffer[0],
-            DescriptorIndex,
+            ControlTransfer.Device.Standard.Out(StandardRequest.SetConfiguration, readBuffer[0], DescriptorIndex),
             [],
             out var bytesWritten
         );
 
-        using var scope = new AssertionScope();
+        //using var scope = new AssertionScope();
         writeResult.Should().Be(LibUsbResult.Success);
         // We did not provide a payload, expect zero bytes written
         bytesWritten.Should().Be(0);
+    }
+
+    [SkippableFact]
+    public void UVC_ControlRead()
+    {
+        using var device = _deviceSource.OpenUsbDeviceOrSkip();
+        _logger.LogInformation("yoyo {}", device.Descriptor.ToString());
+
+        var dev = device as UsbDevice;
+        dev!.ClaimInterface(4);
+
+        var result = device.ControlWrite(
+            ControlTransfer.Interface.Class.Uvc.Out(UvcRequest.SetCur, 0x0200, 0x0403, 2),
+            [0x00, 0x01],
+            out var bytesRead
+        );
+
+        //using var scope = new AssertionScope();
+        result.Should().Be(LibUsbResult.Success);
     }
 
     public void Dispose()
