@@ -121,8 +121,7 @@ public sealed class UsbDevice : IUsbDevice
         using var token = _rundownGuard.AcquireSharedToken();
 
         var length = (ushort)destination.Length;
-        var setup = LibUsbControlRequestSetup.Read(recipient, type, request, value, index, length);
-        var buffer = setup.CreateBuffer();
+        var buffer = ControlRequestPacket.CreateRead(recipient, type, request, value, index, length);
         var bufferHandle = GCHandle.Alloc(buffer, GCHandleType.Pinned);
         try
         {
@@ -143,7 +142,7 @@ public sealed class UsbDevice : IUsbDevice
                 destination = Array.Empty<byte>();
                 return result;
             }
-            buffer.AsSpan(LibUsbControlRequestSetup.Size, bytesRead).CopyTo(destination);
+            buffer.AsSpan(ControlRequestPacket.SetupSize, bytesRead).CopyTo(destination);
             return result;
         }
         finally
@@ -176,11 +175,10 @@ public sealed class UsbDevice : IUsbDevice
         using var token = _rundownGuard.AcquireSharedToken();
 
         var length = (ushort)source.Length;
-        var setup = LibUsbControlRequestSetup.Write(recipient, type, request, value, index, length);
-        var buffer = setup.CreateBuffer();
+        var buffer = ControlRequestPacket.CreateWrite(recipient, type, request, value, index, length);
         if (length > 0)
         {
-            source.CopyTo(buffer.AsSpan(LibUsbControlRequestSetup.Size, length));
+            source.CopyTo(buffer.AsSpan(ControlRequestPacket.SetupSize, length));
         }
         var bufferHandle = GCHandle.Alloc(buffer, GCHandleType.Pinned);
         try

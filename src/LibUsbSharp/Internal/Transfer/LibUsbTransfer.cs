@@ -64,6 +64,9 @@ internal static class LibUsbTransfer
             );
             Marshal.StructureToPtr(transferTemplate, transferPtr, false);
 
+#if DEBUG
+            logger.LogTrace("Submitting transfer: {Transfer}.", transferTemplate);
+#endif
             // Submit the USB transfer and then return immediately.
             // The registered LibUsbTransferCallback is invoked on completion.
             var submitResult = (LibUsbResult)libusb_submit_transfer(transferPtr);
