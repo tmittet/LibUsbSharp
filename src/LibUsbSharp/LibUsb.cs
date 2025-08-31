@@ -385,8 +385,15 @@ public sealed class LibUsb : ILibUsb
                 break;
             case LibUsbLogLevel.None:
                 break;
+            // Catch the unlikely case that libusb adds another log level in a future version
             default:
-                throw new ArgumentOutOfRangeException(nameof(level), level, null);
+                _staticLogger?.LogError(
+                    "Unexpected {LibraryName} log level {LibUsbLogLevel}. {LibUsbMessage}",
+                    LibraryName,
+                    level,
+                    message.TrimEnd()
+                );
+                break;
         }
     }
 
