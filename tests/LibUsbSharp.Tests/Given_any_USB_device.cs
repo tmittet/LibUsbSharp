@@ -189,13 +189,13 @@ public sealed class Given_any_USB_device : IDisposable
         var descriptorBuffer = new byte[32];
 
         var result = device.ControlRead(
+            descriptorBuffer,
+            out var bytesRead,
             ControlRequestRecipient.Device,
             ControlRequestType.Standard,
             GetDescriptorRequest,
             (DeviceDescriptorType << 8) | DescriptorIndex,
-            DescriptorIndex,
-            descriptorBuffer,
-            out var bytesRead
+            0 // Always zero for Device, GetDescriptor
         );
 
         using var scope = new AssertionScope();
@@ -218,20 +218,19 @@ public sealed class Given_any_USB_device : IDisposable
     {
         const byte GetConfigurationRequest = 0x08;
         const byte SetConfigurationRequest = 0x09;
-        const ushort DescriptorIndex = 0;
 
         using var device = _deviceSource.OpenUsbDeviceOrSkip();
 
         // Start by getting current device configuration
         var readBuffer = new byte[1];
         var readResult = device.ControlRead(
+            readBuffer,
+            out var bytesRead,
             ControlRequestRecipient.Device,
             ControlRequestType.Standard,
             GetConfigurationRequest,
-            0,
-            0,
-            readBuffer,
-            out var bytesRead
+            0, // Always zero for Device, GetConfigurationRequest
+            0 // Always zero for Device, GetConfigurationRequest
         );
         if (readResult != LibUsbResult.Success && bytesRead == 1)
         {
@@ -240,13 +239,13 @@ public sealed class Given_any_USB_device : IDisposable
 
         // When configuration read is successful, write the same config value back to the device
         var writeResult = device.ControlWrite(
+            [],
+            out var bytesWritten,
             ControlRequestRecipient.Device,
             ControlRequestType.Standard,
             SetConfigurationRequest,
             readBuffer[0],
-            DescriptorIndex,
-            [],
-            out var bytesWritten
+            0 // Always zero for Device, SetConfigurationRequest
         );
 
         using var scope = new AssertionScope();
