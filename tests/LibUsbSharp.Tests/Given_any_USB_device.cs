@@ -232,7 +232,7 @@ public sealed class Given_any_USB_device : IDisposable
             0, // Always zero for Device, GetConfigurationRequest
             0 // Always zero for Device, GetConfigurationRequest
         );
-        if (readResult != LibUsbResult.Success && bytesRead == 1)
+        if (readResult != LibUsbResult.Success || bytesRead != 1)
         {
             throw new SkipException($"ControlRead result '{readResult}', {bytesRead} bytes read.");
         }
