@@ -1,5 +1,7 @@
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Threading;
 using LibUsbSharp.Descriptor;
 using LibUsbSharp.Internal;
 using LibUsbSharp.Internal.Hotplug;
@@ -18,7 +20,7 @@ public sealed class LibUsb : ILibUsb
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger<LibUsb> _logger;
     private readonly ConcurrentDictionary<string, UsbDevice> _openDevices = new();
-    private nint? _context;
+    private IntPtr _context;
     private LibUsbEventLoop? _eventLoop;
     private int _hotplugCallbackHandle;
     private bool _disposed;
@@ -40,59 +42,66 @@ public sealed class LibUsb : ILibUsb
     /// <param name="loggerFactory">
     /// Logger factory for libusb logging. If null, logging is disabled.
     /// </param>
-    public LibUsb(ILoggerFactory? loggerFactory)
+    /// <param name="context"></param>
+    internal LibUsb(ILoggerFactory? loggerFactory, IntPtr context)
+    {
+        _loggerFactory = loggerFactory ?? new NullLoggerFactory();
+        _logger = _loggerFactory.CreateLogger<LibUsb>();
+        _staticLogger = _logger;
+        _context = context;
+        _eventLoop = new LibUsbEventLoop(_loggerFactory, context);
+        _eventLoop.Start();
+    }
+
+    /// <summary>
+    /// Initialized the LibUsb library, attaches log callback and starts the
+    /// background thread that handles LibUsb events and drives async transfers.
+    /// </summary>
+    /// <param name="loggerFactory"></param>
+    /// <param name="logLevel">The desired LibUsb library log level.</param>
+    public static LibUsb Initialize(ILoggerFactory? loggerFactory, LogLevel logLevel = LogLevel.Warning)
     {
         if (Interlocked.CompareExchange(ref _instances, 1, 0) != 0)
         {
             throw new InvalidOperationException("Only one LibUsb instance allowed.");
         }
+
+        loggerFactory ??= new NullLoggerFactory();
+        var logger = loggerFactory.CreateLogger<LibUsb>();
+
+        var result = libusb_init(out var context);
+        if (result != 0 || context == IntPtr.Zero)
+        {
+            throw LibUsbException.FromError(result, $"Failed to initialize {LibraryName}.");
+        }
+
         try
         {
-            _loggerFactory = loggerFactory ?? new NullLoggerFactory();
-            _logger = _loggerFactory.CreateLogger<LibUsb>();
-            _staticLogger = _logger;
+            InitializeLogging(logger, context, logLevel);
+            logger.LogInformation("LibUsb v{LibUsbVersion} initialized.", GetVersion());
+
+            var libusb = new LibUsb(loggerFactory, context);
+            return libusb;
         }
-        catch (Exception)
+        catch
         {
+            libusb_exit(context);
             _ = Interlocked.Exchange(ref _instances, 0);
             throw;
         }
     }
 
-    /// <inheritdoc />
-    public void Initialize(LogLevel logLevel = LogLevel.Warning)
-    {
-        lock (_lock)
-        {
-            CheckDisposed();
-            if (_context is not null)
-            {
-                throw new InvalidOperationException($"{LibraryName} already initialized.");
-            }
-            var result = libusb_init(out var context);
-            if (result != 0 || context == IntPtr.Zero)
-            {
-                throw LibUsbException.FromError(result, $"Failed to initialize {LibraryName}.");
-            }
-            _context = context;
-            _logger.LogInformation("LibUsb v{LibUsbVersion} initialized.", GetVersion());
-
-            InitializeLogging(context, logLevel);
-            _eventLoop = new LibUsbEventLoop(_loggerFactory, context);
-            _eventLoop.Start();
-        }
-    }
-
-    private void InitializeLogging(nint context, LogLevel logLevel)
+    private static void InitializeLogging(ILogger logger, IntPtr context, LogLevel logLevel)
     {
         if (logLevel == LogLevel.None)
         {
             return;
         }
         var callbackResult = libusb_set_option(context, LibUsbOption.LogCallback, LibUsbLogHandler);
+
         if (callbackResult != 0)
         {
-            _logger.LogWarning(
+            logger.LogWarning(
                 "Failed to set LibUsbOption.LogCallback. {ErrorMessage}",
                 ((LibUsbResult)callbackResult).GetMessage()
             );
@@ -102,7 +111,7 @@ public sealed class LibUsb : ILibUsb
         var levelResult = libusb_set_option(context, LibUsbOption.LogLevel, (nint)libUsbLogLevel);
         if (levelResult != 0)
         {
-            _logger.LogWarning(
+            logger.LogWarning(
                 "Failed to set LibUsbOption.LogLevel. {ErrorMessage}",
                 ((LibUsbResult)levelResult).GetMessage()
             );
@@ -131,7 +140,7 @@ public sealed class LibUsb : ILibUsb
             // This should not have any adverse effects as long as we register callback with the
             // LibUsbHotplugFlag.Enumerate flag, as it will allow catching up with current devices.
             var result = libusb_hotplug_register_callback(
-                GetInitializedContextOrThrow(),
+                _context,
                 LibUsbHotplugEvent.DeviceArrived | LibUsbHotplugEvent.DeviceLeft,
                 // Set flag LibUsbHotplugFlag.Enumerate to immediately invoke the
                 // HotplugEventCallback method for currently attached devices on register
@@ -197,7 +206,7 @@ public sealed class LibUsb : ILibUsb
         lock (_lock)
         {
             CheckDisposed();
-            return LibUsbDeviceEnum.GetDeviceList(_logger, GetInitializedContextOrThrow(), vendorId, productIds);
+            return LibUsbDeviceEnum.GetDeviceList(_logger, _context, vendorId, productIds);
         }
     }
 
@@ -211,8 +220,7 @@ public sealed class LibUsb : ILibUsb
             {
                 return openDevice.GetSerialNumber();
             }
-            var context = GetInitializedContextOrThrow();
-            using var device = OpenDeviceUnlocked(context, deviceKey);
+            using var device = OpenDeviceUnlocked(_context, deviceKey);
             return device.GetSerialNumber();
         }
     }
@@ -227,8 +235,7 @@ public sealed class LibUsb : ILibUsb
             {
                 throw new InvalidOperationException($"Device '{LibraryName}' already open.");
             }
-            var context = GetInitializedContextOrThrow();
-            return OpenDeviceUnlocked(context, deviceKey);
+            return OpenDeviceUnlocked(_context, deviceKey);
         }
     }
 
@@ -290,7 +297,6 @@ public sealed class LibUsb : ILibUsb
         lock (_lock)
         {
             CheckDisposed();
-            _ = GetInitializedContextOrThrow();
             if (!_openDevices.TryRemove(key, out _))
             {
                 throw new InvalidOperationException($"Device not found in the list of open devices.");
@@ -311,16 +317,6 @@ public sealed class LibUsb : ILibUsb
     }
 
     /// <summary>
-    /// Throw InvalidOperationException when LibUsb is not initialized.
-    /// </summary>
-    private nint GetInitializedContextOrThrow()
-    {
-        return _context is null || _context.Value == IntPtr.Zero
-            ? throw new InvalidOperationException($"{LibraryName} not initialized.")
-            : _context.Value;
-    }
-
-    /// <summary>
     /// Disposes this LibUsb context and closes associated devices that remain open. Ongoing
     /// transfers are canceled, any claimed interfaces are released and allocated memory is freed.
     /// </summary>
@@ -332,33 +328,30 @@ public sealed class LibUsb : ILibUsb
             {
                 return;
             }
-            if (_context is not null)
+            // Disabling hotplug here makes most sense, although done differently in sample code.
+            // To ensure event loop exit, libusb_interrupt_event_handler is called on dispose.
+            // See: https://libusb.sourceforge.io/api-1.0/group__libusb__asyncio.html#eventthread
+            if (_hotplugCallbackHandle != 0)
             {
-                // Disabling hotplug here makes most sense, although done differently in sample code.
-                // To ensure event loop exit, libusb_interrupt_event_handler is called on dispose.
-                // See: https://libusb.sourceforge.io/api-1.0/group__libusb__asyncio.html#eventthread
-                if (_hotplugCallbackHandle != 0)
-                {
-                    // NOTE: Callbacks for a context are automatically deregistered by libusb_exit()
-                    libusb_hotplug_deregister_callback(_context.Value, _hotplugCallbackHandle);
-                }
-                _eventLoop?.Dispose();
-                // Close any devices, interfaces and transfers that remain open or are ongoing
-                foreach (var device in _openDevices)
-                {
-                    _logger.LogDebug("Auto disposing device '{DeviceKey}' on LibUsb dispose.", device.Key);
-                    // Device dispose calls LibUsb.CloseDevice, which removes it from the
-                    // _openDevices dictionary. This works without deadlock or race conditions since
-                    // the C# Monitor lock is re-entrant and the ConcurrentDictionary is designed to
-                    // allow modification during iteration.
-                    device.Value.Dispose();
-                }
-
-                // If "libusb: warning [libusb_exit] device 1.0 still referenced" or similar appears
-                // in logs on libusb_exit, see https://github.com/libusb/libusb/issues/988 for info.
-                libusb_exit(_context.Value);
-                _context = null;
+                // NOTE: Callbacks for a context are automatically deregistered by libusb_exit()
+                libusb_hotplug_deregister_callback(_context, _hotplugCallbackHandle);
             }
+            _eventLoop?.Dispose();
+            // Close any devices, interfaces and transfers that remain open or are ongoing
+            foreach (var device in _openDevices)
+            {
+                _logger.LogDebug("Auto disposing device '{DeviceKey}' on LibUsb dispose.", device.Key);
+                // Device dispose calls LibUsb.CloseDevice, which removes it from the
+                // _openDevices dictionary. This works without deadlock or race conditions since
+                // the C# Monitor lock is re-entrant and the ConcurrentDictionary is designed to
+                // allow modification during iteration.
+                device.Value.Dispose();
+            }
+
+            // If "libusb: warning [libusb_exit] device 1.0 still referenced" or similar appears
+            // in logs on libusb_exit, see https://github.com/libusb/libusb/issues/988 for info.
+            libusb_exit(_context);
+
             _staticLogger = null;
             _logger.LogDebug("LibUsb disposed.");
             _ = Interlocked.Exchange(ref _instances, 0);

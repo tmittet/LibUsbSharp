@@ -6,13 +6,6 @@ namespace LibUsbSharp;
 public interface ILibUsb : IDisposable
 {
     /// <summary>
-    /// Initialized the LibUsb library, attaches log callback and starts the
-    /// background thread that handles LibUsb events and drives async transfers.
-    /// </summary>
-    /// <param name="logLevel">The desired LibUsb library log level.</param>
-    void Initialize(LogLevel logLevel = LogLevel.Warning);
-
-    /// <summary>
     /// Hotplug events are supported on macOS, Linux and Windows.
     /// https://libusb.sourceforge.io/api-1.0/libusb_hotplug.html
     /// </summary>
