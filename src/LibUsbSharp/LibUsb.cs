@@ -225,7 +225,7 @@ public sealed class LibUsb : ILibUsb
             CheckDisposed();
             if (_openDevices.ContainsKey(deviceKey))
             {
-                throw new InvalidOperationException($"Device '{LibraryName}' already open.");
+                throw new InvalidOperationException($"Device '{deviceKey}' already open.");
             }
             var context = GetInitializedContextOrThrow();
             return OpenDeviceUnlocked(context, deviceKey);

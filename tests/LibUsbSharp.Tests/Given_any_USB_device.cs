@@ -43,6 +43,61 @@ public sealed class Given_any_USB_device : IDisposable
     }
 
     [SkippableFact]
+    public void OpenDevice_throws_LibUsbException_given_invalid_device_key()
+    {
+        var invalidDeviceKey = UsbDeviceDescriptor.GetKey(0xFFFF, 0xFFFF, 255, 255);
+        var act = () => _libUsb.OpenDevice(invalidDeviceKey);
+        act.Should()
+            .Throw<LibUsbException>()
+            .WithMessage("Failed to get device from list. LibUsb error code -5: Entity not found.");
+    }
+
+    [SkippableFact]
+    public void OpenDevice_throws_InvalidOperationException_when_device_is_already_open()
+    {
+        using var device = _deviceSource.OpenUsbDeviceOrSkip();
+        var deviceDescriptor = device.Descriptor;
+        var act = () => _libUsb.OpenDevice(deviceDescriptor);
+        act.Should()
+            .Throw<InvalidOperationException>()
+            .WithMessage($"Device '{deviceDescriptor.DeviceKey}' already open.");
+    }
+
+    [SkippableFact]
+    public void OpenDevice_is_able_to_find_device_based_on_device_key()
+    {
+        using var device = _deviceSource.OpenUsbDeviceOrSkip();
+        var deviceDescriptor = device.Descriptor;
+
+        // This is expected to throw InvalidOperationException; since the device is already open.
+        // The test proves OpenDevice finds the device; another exception type with a different
+        // error message would be thrown if the device key was invalid or device was not found.
+        var act = () => _libUsb.OpenDevice(deviceDescriptor.DeviceKey);
+        act.Should()
+            .Throw<InvalidOperationException>()
+            .WithMessage($"Device '{deviceDescriptor.DeviceKey}' already open.");
+    }
+
+    [SkippableFact]
+    public void OpenDevice_is_able_to_find_device_based_on_VID_PID_bus_number_and_address()
+    {
+        using var device = _deviceSource.OpenUsbDeviceOrSkip();
+        var deviceDescriptor = device.Descriptor;
+        var validDeviceKey = UsbDeviceDescriptor.GetKey(
+            deviceDescriptor.VendorId,
+            deviceDescriptor.ProductId,
+            deviceDescriptor.BusNumber,
+            deviceDescriptor.BusAddress
+        );
+
+        // This is expected to throw InvalidOperationException; since the device is already open.
+        // The test proves OpenDevice finds the device; another exception type with a different
+        // error message would be thrown if the device key was invalid or device was not found.
+        var act = () => _libUsb.OpenDevice(validDeviceKey);
+        act.Should().Throw<InvalidOperationException>().WithMessage($"Device '{validDeviceKey}' already open.");
+    }
+
+    [SkippableFact]
     public void GetDeviceSerial_returns_serial_given_a_device_descriptor_when_device_is_not_open()
     {
         IUsbDeviceDescriptor deviceDescriptor;
