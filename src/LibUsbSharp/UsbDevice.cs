@@ -210,7 +210,7 @@ public sealed class UsbDevice : IUsbDevice
         {
             if (_claimedInterfaces.TryGetValue(descriptor.InterfaceNumber, out var existing))
             {
-                throw new ArgumentException($"USB interface {existing} already claimed.");
+                throw new InvalidOperationException($"USB interface {existing} already claimed.");
             }
 
             // TODO: libusb_set_auto_detach_kernel_driver on Linux?

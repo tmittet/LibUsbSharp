@@ -49,6 +49,15 @@ public sealed class Given_a_vendor_class_USB_device : IDisposable
     }
 
     [SkippableFact]
+    public void Device_throws_InvalidOperationException_when_trying_to_claim_interface_twice()
+    {
+        using var device = _deviceSource.OpenUsbDeviceOrSkip();
+        using var usbInterface = device.ClaimInterface(UsbClass.VendorSpecific);
+        var act = () => device.ClaimInterface(UsbClass.VendorSpecific);
+        act.Should().Throw<InvalidOperationException>().WithMessage("*already claimed*");
+    }
+
+    [SkippableFact]
     public void Device_is_able_to_claim_interface_and_get_an_output_endpoint()
     {
         using var device = _deviceSource.OpenUsbDeviceOrSkip();
