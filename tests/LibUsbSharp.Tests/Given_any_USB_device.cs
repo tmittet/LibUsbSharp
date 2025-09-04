@@ -232,10 +232,8 @@ public sealed class Given_any_USB_device : IDisposable
             0, // Always zero for Device, GetConfigurationRequest
             0 // Always zero for Device, GetConfigurationRequest
         );
-        if (readResult != LibUsbResult.Success || bytesRead != 1)
-        {
-            throw new SkipException($"ControlRead result '{readResult}', {bytesRead} bytes read.");
-        }
+        readResult.Should().Be(LibUsbResult.Success, "The write test can't continue when read is unsuccessful.");
+        bytesRead.Should().Be(1, "The write test can't continue when an invalid number of bytes are read.");
 
         // When configuration read is successful, write the same config value back to the device
         var writeResult = device.ControlWrite(
