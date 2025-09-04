@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net6.0</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="libusb-1.0.dll">
+      <PackagePath>runtimes/win-x64/native/</PackagePath>
+      <Pack>true</Pack>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <PropertyGroup>
+    <EnableUnsafeBinaryFormatterSerialization>false</EnableUnsafeBinaryFormatterSerialization>
+    <EnableUnsafeBinaryFormatterSerialization>false</EnableUnsafeBinaryFormatterSerialization>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="LibUsbNative.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <EditorConfigFiles Remove="C:\git\LibUsbSharp2\LibUsbNative\.editorconfig" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\git\LibUsbSharp2\LibUsbNative\.editorconfig" />
+  </ItemGroup>
+</Project>

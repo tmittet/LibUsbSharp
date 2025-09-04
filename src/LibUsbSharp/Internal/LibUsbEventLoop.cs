@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using LibUsbNative.SafeHandles;
 using Microsoft.Extensions.Logging;
 
 namespace LibUsbSharp.Internal;
@@ -12,13 +13,13 @@ internal sealed class LibUsbEventLoop : IDisposable
     private readonly object _lock = new();
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger<LibUsbEventLoop> _logger;
-    private readonly IntPtr _context;
+    private readonly ISafeContext _context;
     private readonly CancellationTokenSource _cts;
     private readonly IntPtr _completedPtr;
     private Thread? _thread;
     private bool _disposed;
 
-    public LibUsbEventLoop(ILoggerFactory loggerFactory, nint context)
+    public LibUsbEventLoop(ILoggerFactory loggerFactory, ISafeContext context)
     {
         _loggerFactory = loggerFactory;
         _logger = _loggerFactory.CreateLogger<LibUsbEventLoop>();
