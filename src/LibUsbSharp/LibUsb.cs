@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
+using LibUsbNative.SafeHandles;
 using LibUsbSharp.Descriptor;
 using LibUsbSharp.Internal;
 using LibUsbSharp.Internal.Hotplug;
@@ -18,7 +19,7 @@ public sealed class LibUsb : ILibUsb
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger<LibUsb> _logger;
     private readonly ConcurrentDictionary<string, UsbDevice> _openDevices = new();
-    private nint? _context;
+    private ISafeContext? _context;
     private LibUsbEventLoop? _eventLoop;
     private int _hotplugCallbackHandle;
     private bool _disposed;
@@ -69,27 +70,27 @@ public sealed class LibUsb : ILibUsb
             {
                 throw new InvalidOperationException($"{LibraryName} already initialized.");
             }
-            var result = libusb_init(out var context);
-            if (result != 0 || context == IntPtr.Zero)
-            {
-                throw LibUsbException.FromError(result, $"Failed to initialize {LibraryName}.");
-            }
-            _context = context;
+
+            _context = LibUsbNative.LibUsb.CreateContext();
             _logger.LogInformation("LibUsb v{LibUsbVersion} initialized.", GetVersion());
 
-            InitializeLogging(context, logLevel);
-            _eventLoop = new LibUsbEventLoop(_loggerFactory, context);
+            InitializeLogging(_context!, logLevel);
+            _eventLoop = new LibUsbEventLoop(_loggerFactory, _context!);
             _eventLoop.Start();
         }
     }
 
-    private void InitializeLogging(nint context, LogLevel logLevel)
+    private void InitializeLogging(ISafeContext context, LogLevel logLevel)
     {
         if (logLevel == LogLevel.None)
         {
             return;
         }
-        var callbackResult = libusb_set_option(context, LibUsbOption.LogCallback, LibUsbLogHandler);
+
+        var callbackResult = context.RegisterLogCallback(
+            (level, message) => LibUsbLogHandler((LibUsbLogLevel)level, message)
+        );
+
         if (callbackResult != 0)
         {
             _logger.LogWarning(
@@ -99,7 +100,7 @@ public sealed class LibUsb : ILibUsb
             return; // Only attempt to set log level if callback registration succeeded
         }
         var libUsbLogLevel = logLevel.ToLibUsbLogLevel();
-        var levelResult = libusb_set_option(context, LibUsbOption.LogLevel, (nint)libUsbLogLevel);
+        var levelResult = context.SetOption((int)LibUsbOption.LogLevel, (nint)libUsbLogLevel);
         if (levelResult != 0)
         {
             _logger.LogWarning(
@@ -366,7 +367,7 @@ public sealed class LibUsb : ILibUsb
         }
     }
 
-    private static void LibUsbLogHandler(nint _, LibUsbLogLevel level, string message)
+    private static void LibUsbLogHandler(LibUsbLogLevel level, string message)
     {
         switch (level)
         {
@@ -407,66 +408,4 @@ public sealed class LibUsb : ILibUsb
         LibUsbHotplugEvent eventType,
         IntPtr user_data
     );
-
-    // LibraryImportAttribute not available in .NET6, silence warning
-#pragma warning disable SYSLIB1054 // Use 'LibraryImportAttribute' instead of 'DllImportAttribute'
-
-    [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)]
-    private static extern IntPtr libusb_get_version();
-
-    [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)]
-    private static extern int libusb_init(out IntPtr context);
-
-    [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)]
-    private static extern void libusb_exit(IntPtr context);
-
-    [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)]
-    private static extern int libusb_set_option(IntPtr context, LibUsbOption option, IntPtr value);
-
-    [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)]
-    private static extern int libusb_set_option(
-        IntPtr context,
-        LibUsbOption option,
-        LibUsbLogCallback callbackFunction
-    );
-
-    [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)]
-    private static extern int libusb_get_device_list(IntPtr context, out IntPtr listPtr);
-
-    [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)]
-    private static extern void libusb_free_device_list(IntPtr listPtr, int unrefDevices);
-
-    /// <summary>
-    /// Open a device and obtain a device handle. Allows you to perform I/O on the device.
-    /// </summary>
-    [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)]
-    private static extern int libusb_open(IntPtr deviceDescriptorPtr, out IntPtr deviceHandle);
-
-    /// <summary>
-    /// Close a device handle. Should be called on all open handles before your application exits.
-    /// Internally, this function destroys the reference that was added by libusb_open().
-    /// </summary>
-    [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)]
-    private static extern void libusb_close(IntPtr deviceHandle);
-
-    [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)]
-    private static extern int libusb_has_capability(uint capability);
-
-    [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)]
-    private static extern int libusb_hotplug_register_callback(
-        IntPtr context,
-        LibUsbHotplugEvent events,
-        LibUsbHotplugFlag flags,
-        int vendorId,
-        int productId,
-        int deviceClass,
-        LibUsbHotplugCallback callbackFunction,
-        IntPtr user_data,
-        out int callbackHandle
-    );
-
-    [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)]
-    private static extern void libusb_hotplug_deregister_callback(IntPtr context, int callbackHandle);
-
-#pragma warning restore SYSLIB1054 // Use 'LibraryImportAttribute' instead of 'DllImportAttribute'
 }
