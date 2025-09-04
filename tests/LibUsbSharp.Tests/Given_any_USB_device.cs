@@ -178,7 +178,8 @@ public sealed class Given_any_USB_device : IDisposable
     [SkippableFact]
     public void ControlRead_returns_expected_descriptor_given_correct_Device_GetDescriptor_params()
     {
-        const byte DescriptorTypeDevice = 0x01;
+        const byte GetDescriptorRequest = 0x06;
+        const byte DeviceDescriptorType = 0x01;
         const ushort DescriptorIndex = 0x00;
 
         using var device = _deviceSource.OpenUsbDeviceOrSkip();
@@ -188,12 +189,13 @@ public sealed class Given_any_USB_device : IDisposable
         var descriptorBuffer = new byte[32];
 
         var result = device.ControlRead(
-            ControlRequestRecipient.Device,
-            ControlRequestStandard.GetDescriptor,
-            (DescriptorTypeDevice << 8) | DescriptorIndex,
-            DescriptorIndex,
             descriptorBuffer,
-            out var bytesRead
+            out var bytesRead,
+            ControlRequestRecipient.Device,
+            ControlRequestType.Standard,
+            GetDescriptorRequest,
+            (DeviceDescriptorType << 8) | DescriptorIndex,
+            0 // Always zero for Device, GetDescriptor
         );
 
         using var scope = new AssertionScope();
@@ -214,33 +216,34 @@ public sealed class Given_any_USB_device : IDisposable
     [SkippableFact]
     public void ControlWrite_is_successfull_given_params_to_set_current_Configuration()
     {
-        const ushort DescriptorIndex = 0;
+        const byte GetConfigurationRequest = 0x08;
+        const byte SetConfigurationRequest = 0x09;
 
         using var device = _deviceSource.OpenUsbDeviceOrSkip();
 
         // Start by getting current device configuration
         var readBuffer = new byte[1];
         var readResult = device.ControlRead(
-            ControlRequestRecipient.Device,
-            ControlRequestStandard.GetConfiguration,
-            0,
-            0,
             readBuffer,
-            out var bytesRead
+            out var bytesRead,
+            ControlRequestRecipient.Device,
+            ControlRequestType.Standard,
+            GetConfigurationRequest,
+            0, // Always zero for Device, GetConfigurationRequest
+            0 // Always zero for Device, GetConfigurationRequest
         );
-        if (readResult != LibUsbResult.Success && bytesRead == 1)
-        {
-            throw new SkipException($"ControlRead result '{readResult}', {bytesRead} bytes read.");
-        }
+        readResult.Should().Be(LibUsbResult.Success, "The write test can't continue when read is unsuccessful.");
+        bytesRead.Should().Be(1, "The write test can't continue when an invalid number of bytes are read.");
 
         // When configuration read is successful, write the same config value back to the device
         var writeResult = device.ControlWrite(
-            ControlRequestRecipient.Device,
-            ControlRequestStandard.SetConfiguration,
-            readBuffer[0],
-            DescriptorIndex,
             [],
-            out var bytesWritten
+            out var bytesWritten,
+            ControlRequestRecipient.Device,
+            ControlRequestType.Standard,
+            SetConfigurationRequest,
+            readBuffer[0],
+            0 // Always zero for Device, SetConfigurationRequest
         );
 
         using var scope = new AssertionScope();

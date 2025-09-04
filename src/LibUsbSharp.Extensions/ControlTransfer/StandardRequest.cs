@@ -1,10 +1,12 @@
-﻿namespace LibUsbSharp.Transfer;
+﻿using LibUsbSharp.Transfer;
+
+namespace LibUsbSharp.Extensions.ControlTransfer;
 
 /// <summary>
 /// Standard control requests (USB spec Chapter 9.4) and USB 3.x additions.
 /// Use in combination with ControlRead/ControlWrite <see cref="ControlRequestType.Standard"/>.
 /// </summary>
-public enum ControlRequestStandard : byte
+public enum StandardRequest : byte
 {
     GetStatus = 0x00,
     ClearFeature = 0x01,

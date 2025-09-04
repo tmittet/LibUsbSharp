@@ -47,13 +47,13 @@ public interface IUsbDevice : IDisposable
     /// <summary>
     /// Send a ControlRead request. Data is read Device -> Host.
     /// </summary>
+    /// <param name="destination">A destination span for read bytes</param>
+    /// <param name="bytesRead">The number of bytes read</param>
     /// <param name="recipient">The recipient of the control request</param>
     /// <param name="type">The control request type; standard, class or vendor</param>
     /// <param name="request">The USB standard spec, class spec or vendor defined request</param>
     /// <param name="value">The value field for the setup packet</param>
     /// <param name="index">The index field for the setup packet</param>
-    /// <param name="destination">A destination span for read bytes</param>
-    /// <param name="bytesRead">The number of bytes read</param>
     /// <param name="timeout">Timeout before giving up due to no response being received</param>
     /// <exception cref="ArgumentException">Thrown when the destination buffer is too large.</exception>
     /// <returns>
@@ -68,27 +68,27 @@ public interface IUsbDevice : IDisposable
     /// NotSupported = The transfer flags are not supported by the operating system.<br />
     /// </returns>
     LibUsbResult ControlRead(
+        Span<byte> destination,
+        out ushort bytesRead,
         ControlRequestRecipient recipient,
         ControlRequestType type,
         byte request,
         ushort value,
         ushort index,
-        Span<byte> destination,
-        out ushort bytesRead,
         int timeout = Timeout.Infinite
     );
 
     /// <summary>
     /// Send a ControlWrite request. Data is written Host -> Device.
     /// </summary>
+    /// <param name="source">The payload to send to the device (max. 65.535 bytes)</param>
+    /// <param name="bytesWritten">The actual number of bytes written to the device</param>
     /// <param name="recipient">The recipient of the control request</param>
     /// <param name="type">The control request type; standard, class or vendor</param>
     /// <param name="request">The USB standard spec, class spec or vendor defined request</param>
     /// <param name="value">The value field for the setup packet</param>
     /// <param name="index">The index field for the setup packet</param>
-    /// <param name="source">The payload to send to the device (max. 65.535 bytes)</param>
     /// <param name="timeout">Timeout before giving up due to no response being received</param>
-    /// <param name="bytesWritten">The actual number of bytes written to the device</param>
     /// <exception cref="ArgumentException">Thrown when the source payload is too large.</exception>
     /// <returns>
     /// Success = The write operation completed successfully.<br />
@@ -102,13 +102,13 @@ public interface IUsbDevice : IDisposable
     /// NotSupported = The transfer flags are not supported by the operating system.<br />
     /// </returns>
     LibUsbResult ControlWrite(
+        ReadOnlySpan<byte> source,
+        out int bytesWritten,
         ControlRequestRecipient recipient,
         ControlRequestType type,
         byte request,
         ushort value,
         ushort index,
-        ReadOnlySpan<byte> source,
-        out int bytesWritten,
         int timeout = Timeout.Infinite
     );
 

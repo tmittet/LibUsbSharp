@@ -99,13 +99,13 @@ public sealed class UsbDevice : IUsbDevice
 
     /// <inheritdoc />
     public LibUsbResult ControlRead(
+        Span<byte> destination,
+        out ushort bytesRead,
         ControlRequestRecipient recipient,
         ControlRequestType type,
         byte request,
         ushort value,
         ushort index,
-        Span<byte> destination,
-        out ushort bytesRead,
         int timeout
     )
     {
@@ -153,13 +153,13 @@ public sealed class UsbDevice : IUsbDevice
 
     /// <inheritdoc />
     public LibUsbResult ControlWrite(
+        ReadOnlySpan<byte> source,
+        out int bytesWritten,
         ControlRequestRecipient recipient,
         ControlRequestType type,
         byte request,
         ushort value,
         ushort index,
-        ReadOnlySpan<byte> source,
-        out int bytesWritten,
         int timeout
     )
     {
