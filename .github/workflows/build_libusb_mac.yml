@@ -1,4 +1,5 @@
 name: Build libusb (macOS)
+
 on:
   workflow_dispatch:
     inputs:
@@ -7,6 +8,9 @@ on:
         default: "v1.0.29"
         type: string
         required: true
+
+permissions:
+  contents: read
 
 jobs:
   build:
@@ -45,9 +49,9 @@ jobs:
 
     env:
       LIBUSB_REF: ${{ github.event.inputs.libusb_ref }}
+      SRC_DIR:   ${{ github.workspace }}/libusb
       BUILD_DIR: ${{ github.workspace }}/build
       STAGE_DIR: ${{ github.workspace }}/stage
-      SRC_DIR:   ${{ github.workspace }}/libusb
 
     steps:
       - name: Checkout (this repo)
@@ -55,8 +59,11 @@ jobs:
 
       - name: Fetch libusb source
         run: |
-          git clone --depth 1 --branch "$LIBUSB_REF" https://github.com/libusb/libusb.git "$SRC_DIR"
-          echo "libusb ref:"; (cd "$SRC_DIR" && git rev-parse --short HEAD)
+          git init "$SRC_DIR" && cd "$SRC_DIR"
+          git remote add origin https://github.com/libusb/libusb.git
+          git fetch --depth=1 origin "$LIBUSB_REF" || git fetch origin "$LIBUSB_REF"
+          git checkout FETCH_HEAD
+          echo "libusb ref:"; git rev-parse --short HEAD
 
       - name: Print tool versions
         run: |
@@ -72,7 +79,7 @@ jobs:
           brew update || brew update-reset
           brew install autoconf automake libtool pkg-config || true
 
-      - name: Prepare folders
+      - name: Prepare build folders
         run: |
           rm -rf "$BUILD_DIR" "$STAGE_DIR"
           mkdir -p "$BUILD_DIR" "$STAGE_DIR"
