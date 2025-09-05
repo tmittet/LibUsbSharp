@@ -1,0 +1,81 @@
+name: Build libusb (android)
+
+on:
+  workflow_dispatch:
+    inputs:
+      libusb_ref:
+        description: "git ref for libusb (tag/branch/commit)"
+        default: "v1.0.29"
+        type: string
+        required: true
+      app_platform:
+        description: "Android API level"
+        default: "android-26"
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: android arm64
+            app_abi: arm64-v8a
+          - name: android arm32
+            app_abi: armeabi-v7a
+          - name: android x64
+            app_abi: x86_64
+
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-latest
+
+    env:
+      LIBUSB_REF: ${{ github.event.inputs.libusb_ref }}
+      APP_PLATFORM: ${{ github.event.inputs.app_platform }}
+      SRC_DIR:   ${{ github.workspace }}/libusb
+      NDK_OUT_DIR: ${{ github.workspace }}/out/${{ matrix.app_abi }}
+      NDK_LIBS_DIR: ${{ github.workspace }}/libs/${{ matrix.app_abi }}
+
+    steps:
+      - name: Checkout (this repo)
+        uses: actions/checkout@v4
+
+      - name: Fetch libusb source
+        run: |
+          git init "$SRC_DIR" && cd "$SRC_DIR"
+          git remote add origin https://github.com/libusb/libusb.git
+          git fetch --depth=1 origin "$LIBUSB_REF" || git fetch origin "$LIBUSB_REF"
+          git checkout FETCH_HEAD
+          echo "libusb ref:"; git rev-parse --short HEAD
+
+      - name: Print NDK and tool versions
+        run: |
+          echo "ANDROID_NDK_ROOT=${ANDROID_NDK_ROOT}"
+          test -d "${ANDROID_NDK_ROOT}" || (echo "ANDROID_NDK_ROOT not set or invalid" && exit 1)
+          grep Pkg.Revision "${ANDROID_NDK_ROOT}/source.properties" || true
+          "${ANDROID_NDK_ROOT}/ndk-build" --version
+
+      - name: Prepare build out folders
+        run: |
+          rm -rf "${NDK_OUT_DIR}" "${NDK_LIBS_DIR}"
+          mkdir -p "${NDK_OUT_DIR}" "${NDK_LIBS_DIR}"
+
+      - name: Build libusb (${{ matrix.app_abi }}, ${{ env.APP_PLATFORM }})
+        working-directory: ${{ env.SRC_DIR }}/android/jni
+        run: |
+          "${ANDROID_NDK_ROOT}/ndk-build" -j \
+            APP_ABI="${{ matrix.app_abi }}" \
+            APP_PLATFORM="${APP_PLATFORM}" \
+            NDK_OUT="${NDK_OUT_DIR}" \
+            NDK_LIBS_OUT="${NDK_LIBS_DIR}"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: libusb-android-${{ matrix.app_abi }}-${{ env.APP_PLATFORM }}
+          path: ${{ env.NDK_LIBS_DIR }}/
+          if-no-files-found: error
