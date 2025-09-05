@@ -77,5 +77,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: libusb-android-${{ matrix.app_abi }}-${{ env.APP_PLATFORM }}
-          path: libs/${{ matrix.app_abi }}/
+          path: ${{ env.NDK_LIBS_DIR }}/
           if-no-files-found: error
