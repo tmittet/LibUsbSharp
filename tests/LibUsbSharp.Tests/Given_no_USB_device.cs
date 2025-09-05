@@ -20,41 +20,23 @@ public sealed class Given_no_USB_device : IDisposable
     [Fact]
     public void Creating_two_active_instances_of_LibUsb_is_not_allowed()
     {
-        using var libUsb1 = new LibUsb(_loggerFactory);
-        var act = () => new LibUsb(_loggerFactory);
+        using var libUsb1 = LibUsb.Initialize(_loggerFactory);
+        var act = () => LibUsb.Initialize(_loggerFactory);
         act.Should().Throw<InvalidOperationException>().WithMessage("Only one LibUsb instance allowed.");
     }
 
     [Fact]
     public void Creating_a_second_instance_of_LibUsb_is_allowed_after_disposal_of_first()
     {
-        var libUsb1 = new LibUsb(_loggerFactory);
+        var libUsb1 = LibUsb.Initialize(_loggerFactory);
         libUsb1.Dispose();
-        using var libUsb2 = new LibUsb(_loggerFactory);
-    }
-
-    [Fact]
-    public void Initialize_throws_when_called_a_second_time()
-    {
-        using var libUsb = new LibUsb(_loggerFactory);
-        libUsb.Initialize();
-        var act = () => libUsb.Initialize();
-        act.Should().Throw<InvalidOperationException>().WithMessage("libusb-1.0 already initialized.");
-    }
-
-    [Fact]
-    public void GetDeviceList_throws_when_called_without_Initialize()
-    {
-        using var libUsb = new LibUsb(_loggerFactory);
-        var act = () => libUsb.GetDeviceList();
-        act.Should().Throw<InvalidOperationException>();
+        using var libUsb2 = LibUsb.Initialize(_loggerFactory);
     }
 
     [Fact]
     public void GetDeviceList_throws_when_called_after_Dispose()
     {
-        using var libUsb = new LibUsb(_loggerFactory);
-        libUsb.Initialize(LogLevel.Information);
+        using var libUsb = LibUsb.Initialize(_loggerFactory, LogLevel.Information);
         libUsb.Dispose();
         var act = () => libUsb.GetDeviceList();
         act.Should().Throw<ObjectDisposedException>();
@@ -67,7 +49,7 @@ public sealed class Given_no_USB_device : IDisposable
         {
             return;
         }
-        using var libUsb = new LibUsb(_loggerFactory);
+        using var libUsb = LibUsb.Initialize(_loggerFactory);
         var act = () => libUsb.RegisterHotplug(vendorId: 0x2BD9);
         act.Should().Throw<InvalidOperationException>();
     }
@@ -79,8 +61,7 @@ public sealed class Given_no_USB_device : IDisposable
         {
             return;
         }
-        using var libUsb = new LibUsb(_loggerFactory);
-        libUsb.Initialize(LogLevel.Information);
+        using var libUsb = LibUsb.Initialize(_loggerFactory, LogLevel.Information);
         var success = libUsb.RegisterHotplug(vendorId: 0x2BD9);
         success.Should().BeTrue();
     }
@@ -92,8 +73,7 @@ public sealed class Given_no_USB_device : IDisposable
         {
             return;
         }
-        using var libUsb = new LibUsb(_loggerFactory);
-        libUsb.Initialize(LogLevel.Information);
+        using var libUsb = LibUsb.Initialize(_loggerFactory, LogLevel.Information);
         var success = libUsb.RegisterHotplug(vendorId: 0x2BD9);
         success.Should().BeFalse();
     }
