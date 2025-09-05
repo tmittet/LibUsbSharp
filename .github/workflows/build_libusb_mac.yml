@@ -74,10 +74,13 @@ jobs:
       - name: Install build deps (autotools, libtool, pkg-config)
         env:
           HOMEBREW_NO_AUTO_UPDATE: 1  # makes installs faster & less flaky on runners
+          HOMEBREW_NO_INSTALL_CLEANUP: 1
         run: |
           set -euxo pipefail
-          brew update || brew update-reset
-          brew install autoconf automake libtool pkg-config || true
+          brew list autoconf    >/dev/null 2>&1 || brew install autoconf
+          brew list automake    >/dev/null 2>&1 || brew install automake
+          brew list libtool     >/dev/null 2>&1 || brew install libtool
+          brew list pkg-config  >/dev/null 2>&1 || brew install pkg-config
 
       - name: Prepare build folders
         run: |
@@ -97,12 +100,12 @@ jobs:
           export CC="clang -arch ${{ matrix.arch }}"
           export CFLAGS="-O2 -pipe"
           export LDFLAGS="-Wl,-headerpad_max_install_names -Wl,-install_name,@rpath/libusb-1.0.dylib"
-          ./configure --disable-dependency-tracking --prefix="$STAGE_DIR/macos-${{ matrix.arch }}"
-          make -j"$(sysctl -n hw.ncpu)"
+          ./configure --disable-dependency-tracking --prefix="${STAGE_DIR}/macos-${{ matrix.arch }}"
+          make -j"$(sysctl -n hw.logicalcpu)"
           make install
 
           # Package headers + dynamic lib (and static if produced)
-          tar -czf "$BUILD_DIR/libusb-macos-${{ matrix.arch }}.tar.gz" -C "$STAGE_DIR" "macos-${{ matrix.arch }}"
+          tar -czf "${BUILD_DIR}/libusb-macos-${{ matrix.arch }}.tar.gz" -C "${STAGE_DIR}" "macos-${{ matrix.arch }}"
 
       # ---------- Mac Catalyst (macabi -> dynamic .dylib) ----------
       - name: Build libusb Catalyst (${{ matrix.arch }}) dynamic
