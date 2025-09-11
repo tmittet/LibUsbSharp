@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using LibUsbNative.SafeHandles;
 using LibUsbSharp.Descriptor;
 using LibUsbSharp.Internal.Descriptor;
 using Microsoft.Extensions.Logging;
@@ -16,16 +17,18 @@ internal static class LibUsbDeviceEnum
     /// <param name="productIds">Optional product ID filter; only return matching devices.</param>
     internal static List<IUsbDeviceDescriptor> GetDeviceList(
         ILogger logger,
-        nint libusbContext,
+        ISafeContext libusbContext,
         ushort? vendorId,
         HashSet<ushort>? productIds
     )
     {
-        var result = libusb_get_device_list(libusbContext, out var listPtr);
+        (var deviceList, var count) = libusbContext.GetDeviceList();
+
+        var result = LibUsbResult.Success;
         try
         {
             return result >= 0
-                ? GetDeviceDescriptors(logger, listPtr)
+                ? GetDeviceDescriptors(logger, deviceList.Devices.ToList())
                     .Select(d => d.Descriptor)
                     .Where(d =>
                         (vendorId is null || vendorId == d.VendorId)
@@ -33,11 +36,11 @@ internal static class LibUsbDeviceEnum
                     )
                     .Cast<IUsbDeviceDescriptor>()
                     .ToList()
-                : throw LibUsbException.FromError(result, "Failed to get device list.");
+                : throw LibUsbException.FromResult(result, "Failed to get device list.");
         }
         finally
         {
-            libusb_free_device_list(listPtr, 1);
+            deviceList.Dispose();
         }
     }
 
@@ -45,17 +48,15 @@ internal static class LibUsbDeviceEnum
     /// Get cached USB device descriptors for a given, alrady in memory, device descriptor list.
     /// </summary>
     /// <param name="logger">A logger.</param>
-    /// <param name="listPtr">Pointer to device list returned by libusb_get_device_list.</param>
-    internal static IEnumerable<(nint DescriptorPtr, UsbDeviceDescriptor Descriptor)> GetDeviceDescriptors(
+    /// <param name="devices">Pointer to device list returned by libusb_get_device_list.</param>
+    internal static IEnumerable<(ISafeDevice device, UsbDeviceDescriptor Descriptor)> GetDeviceDescriptors(
         ILogger logger,
-        nint listPtr
+        List<ISafeDevice> devices
     )
     {
-        var offset = 0;
-        nint descriptorPtr;
-        while ((descriptorPtr = Marshal.ReadIntPtr(listPtr, offset)) != IntPtr.Zero)
+        foreach (var device in devices)
         {
-            var result = TryGetDeviceDescriptor(descriptorPtr, out var descriptor);
+            var result = TryGetDeviceDescriptor(device, out var descriptor);
             if (result != LibUsbResult.Success)
             {
                 logger.LogWarning(
@@ -66,9 +67,8 @@ internal static class LibUsbDeviceEnum
             }
             else if (descriptor!.Value.BcdUsb > 0)
             {
-                yield return (descriptorPtr, descriptor!.Value);
+                yield return (device, descriptor!.Value);
             }
-            offset += IntPtr.Size;
         }
     }
 
@@ -76,100 +76,38 @@ internal static class LibUsbDeviceEnum
     /// Get the cached USB device descriptor for a given, alrady in memory, device descriptor.
     /// NOTE: since libusb-1.0.16, LIBUSBX_API_VERSION >= 0x01000102, this function always succeeds.
     /// </summary>
-    internal static LibUsbResult TryGetDeviceDescriptor(nint deviceDescriptorPtr, out UsbDeviceDescriptor? descriptor)
+    internal static LibUsbResult TryGetDeviceDescriptor(ISafeDevice device, out UsbDeviceDescriptor? descriptor)
     {
-        descriptor = null;
-        var result = libusb_get_device_descriptor(deviceDescriptorPtr, out var partialDescriptor);
-        if (result == 0)
-        {
-            descriptor = new UsbDeviceDescriptor(
-                partialDescriptor,
-                libusb_get_bus_number(deviceDescriptorPtr),
-                libusb_get_device_address(deviceDescriptorPtr),
-                libusb_get_port_number(deviceDescriptorPtr)
-            );
-        }
-        return (LibUsbResult)result;
+        //var partialDescriptor = device.GetActiveConfigDescriptorPtr().DangerousGetHandle();
+        var partialDescriptor = device.GetDeviceDescriptor();
+
+        descriptor = new UsbDeviceDescriptor(
+            partialDescriptor,
+            device.GetBusNumber(),
+            device.GetDeviceAddress(),
+            device.GetPortNumber()
+        );
+        return LibUsbResult.Success;
     }
 
     /// <summary>
     /// Get the USB configuration descriptor for the currently active device configuration. This
     /// is a non-blocking function which does not involve any requests being sent to the device.
     /// </summary>
-    internal static LibUsbResult TryGetConfigDescriptor(nint deviceDescriptorPtr, out IUsbConfigDescriptor? descriptor)
+    internal static LibUsbResult TryGetConfigDescriptor(ISafeDevice device, out IUsbConfigDescriptor? descriptor)
     {
         descriptor = null;
-        var result = libusb_get_active_config_descriptor(deviceDescriptorPtr, out var configPtr);
-        if (result != 0)
-        {
-            return (LibUsbResult)result;
-        }
         try
         {
-            descriptor = Marshal.PtrToStructure<LibUsbConfigDescriptor>(configPtr).ToUsbInterfaceDescriptor();
+            using var safeConfigDescriptorPtr = device.GetActiveConfigDescriptorPtr();
+            descriptor = Marshal
+                .PtrToStructure<LibUsbConfigDescriptor>(safeConfigDescriptorPtr.DangerousGetHandle())
+                .ToUsbInterfaceDescriptor();
+            return LibUsbResult.Success;
         }
-        finally
+        catch (LibUsbNative.LibUsbException ex)
         {
-            libusb_free_config_descriptor(configPtr);
+            return (LibUsbResult)ex.Error;
         }
-        return LibUsbResult.Success;
     }
-
-    // LibraryImportAttribute not available in .NET6, silence warning
-#pragma warning disable SYSLIB1054 // Use 'LibraryImportAttribute' instead of 'DllImportAttribute'
-
-    [DllImport(LibUsb.LibraryName, CallingConvention = CallingConvention.Cdecl)]
-    private static extern int libusb_get_device_list(IntPtr context, out IntPtr listPtr);
-
-    [DllImport(LibUsb.LibraryName, CallingConvention = CallingConvention.Cdecl)]
-    private static extern void libusb_free_device_list(IntPtr listPtr, int unrefDevices);
-
-    [DllImport(LibUsb.LibraryName, CallingConvention = CallingConvention.Cdecl)]
-    private static extern int libusb_get_device_descriptor(
-        IntPtr deviceDescriptorPtr,
-        out LibUsbDeviceDescriptor deviceDescriptor
-    );
-
-    /// <summary>
-    /// Get the number of the bus that a device is connected to.
-    /// </summary>
-    [DllImport(LibUsb.LibraryName, CallingConvention = CallingConvention.Cdecl)]
-    private static extern byte libusb_get_bus_number(IntPtr deviceDescriptorPtr);
-
-    /// <summary>
-    /// Get the address of the device on the bus it is connected to.
-    /// </summary>
-    [DllImport(LibUsb.LibraryName, CallingConvention = CallingConvention.Cdecl)]
-    private static extern byte libusb_get_device_address(IntPtr deviceDescriptorPtr);
-
-    /// <summary>
-    /// Get the number of the port that a device is connected to.
-    ///
-    /// The number returned by this call is usually guaranteed to be uniquely tied to a physical
-    /// port, meaning that different devices plugged on the same physical port should return the
-    /// same port number. But there is no guarantee that the port number returned by this call will
-    /// remain the same, or even match the order in which ports are numbered on the HUB/HCD.
-    /// </summary>
-    [DllImport(LibUsb.LibraryName, CallingConvention = CallingConvention.Cdecl)]
-    private static extern byte libusb_get_port_number(IntPtr deviceDescriptorPtr);
-
-    /// <summary>
-    /// Get the USB configuration descriptor for the currently active configuration. This is
-    /// a non-blocking function which does not involve any requests being sent to the device.
-    /// </summary>
-    [DllImport(LibUsb.LibraryName, CallingConvention = CallingConvention.Cdecl)]
-    private static extern int libusb_get_active_config_descriptor(
-        IntPtr deviceDescriptorPtr,
-        out IntPtr deviceConfigPtr
-    );
-
-    /// <summary>
-    /// Free a configuration descriptor obtained from
-    /// libusb_get_active_config_descriptor() or libusb_get_config_descriptor()
-    /// </summary>
-    /// <param name="configPtr"></param>
-    [DllImport(LibUsb.LibraryName, CallingConvention = CallingConvention.Cdecl)]
-    private static extern void libusb_free_config_descriptor(IntPtr configPtr);
-
-#pragma warning restore SYSLIB1054 // Use 'LibraryImportAttribute' instead of 'DllImportAttribute'
 }
