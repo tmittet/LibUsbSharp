@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using LibUsbNative.SafeHandles;
 using Microsoft.Extensions.Logging;
 
 namespace LibUsbSharp.Internal.Transfer;
@@ -12,7 +13,7 @@ internal static class LibUsbTransfer
     /// </summary>
     public static LibUsbResult ExecuteSync(
         ILogger logger,
-        nint deviceHandle,
+        ISafeDeviceHandle deviceHandle,
         LibUsbTransferType transferType,
         byte endpointAddress,
         GCHandle bufferHandle,
@@ -47,7 +48,9 @@ internal static class LibUsbTransfer
             callbackHandle = GCHandle.Alloc(nativeCallback);
 
             // Allocate and initialize the libusb transfer
-            transferPtr = libusb_alloc_transfer(0);
+            using var transferBuffer = ISafeTransfer.Allocate(0);
+            transferPtr = transferBuffer.GetBufferPtr();
+
             // libusb_alloc_transfer returns zero pointer on error
             if (transferPtr == IntPtr.Zero)
             {
@@ -69,7 +72,7 @@ internal static class LibUsbTransfer
 #endif
             // Submit the USB transfer and then return immediately.
             // The registered LibUsbTransferCallback is invoked on completion.
-            var submitResult = (LibUsbResult)libusb_submit_transfer(transferPtr);
+            var submitResult = (LibUsbResult)transferBuffer.Submit();
             if (submitResult is not LibUsbResult.Success)
             {
                 return submitResult;
@@ -81,7 +84,7 @@ internal static class LibUsbTransfer
             {
                 // Tell libusb to cancel the transfer, the final transfer status
                 // is received through the LibUsbTransferCallback.
-                var cancelResult = (LibUsbResult)libusb_cancel_transfer(transferPtr);
+                var cancelResult = (LibUsbResult)transferBuffer.Cancel();
                 if (
                     cancelResult is not LibUsbResult.NoDevice and not LibUsbResult.NotFound and not LibUsbResult.Success
                 )
@@ -96,7 +99,7 @@ internal static class LibUsbTransfer
             }
 
             Debug.Assert(
-                libusb_cancel_transfer(transferPtr) == (int)LibUsbResult.NotFound,
+                (int)transferBuffer.Cancel() == (int)LibUsbResult.NotFound,
                 "libusb_cancel_transfer should return NotFound, after transfer complete event."
             );
 
@@ -106,65 +109,10 @@ internal static class LibUsbTransfer
         }
         finally
         {
-            // Free native transfer and unpin the callback
-            if (transferPtr != IntPtr.Zero)
-            {
-                libusb_free_transfer(transferPtr);
-            }
             if (callbackHandle.IsAllocated)
             {
                 callbackHandle.Free();
             }
         }
     }
-
-    // LibraryImportAttribute not available in .NET6, silence warning
-#pragma warning disable SYSLIB1054 // Use 'LibraryImportAttribute' instead of 'DllImportAttribute'
-
-    [DllImport(LibUsb.LibraryName, CallingConvention = CallingConvention.Cdecl)]
-    private static extern nint libusb_alloc_transfer(int isoPackets);
-
-    /// <summary>
-    /// Asynchronously cancel a previously submitted transfer. This function returns immediately,
-    /// but this does not indicate cancellation is complete.Your callback function will be invoked
-    /// at some later time with a transfer status of LIBUSB_TRANSFER_CANCELLED.
-    ///
-    /// NOTE: This function behaves differently on Darwin-based systems (macOS and iOS):
-    /// Calling this function for one transfer will cause all transfers on the same endpoint to be
-    /// cancelled. Your callback function will be invoked with a transfer status of
-    /// LIBUSB_TRANSFER_CANCELLED for each transfer that was cancelled.
-    /// </summary>
-    /// <returns>
-    /// LIBUSB_ERROR_NOT_FOUND if the transfer is not in progress, already complete, or already
-    /// cancelled. A LIBUSB_ERROR code on failure.
-    /// </returns>
-    [DllImport(LibUsb.LibraryName, CallingConvention = CallingConvention.Cdecl)]
-    private static extern int libusb_cancel_transfer(nint transfer);
-
-    /// <summary>
-    /// Free a transfer structure. This should be called for all transfers allocated with
-    /// libusb_alloc_transfer(). If the LIBUSB_TRANSFER_FREE_BUFFER flag is set and the transfer
-    /// buffer is non-NULL, this function will also free the transfer buffer using the standard
-    /// system memory allocator(e.g.free()). It is legal to call this function with a NULL transfer.
-    /// In this case, the function will simply return safely. It is not legal to free an active
-    /// transfer (one which has been submitted and has not yet completed).
-    /// </summary>
-    [DllImport(LibUsb.LibraryName, CallingConvention = CallingConvention.Cdecl)]
-    private static extern void libusb_free_transfer(nint transfer);
-
-    /// <summary>
-    /// Submit a transfer. This function will fire off the USB transfer and then return immediately.
-    /// </summary>
-    /// <returns>
-    /// 0 on success<br />
-    /// LIBUSB_ERROR_NO_DEVICE if the device has been disconnected.<br />
-    /// LIBUSB_ERROR_BUSY if the transfer has already been submitted.<br />
-    /// LIBUSB_ERROR_NOT_SUPPORTED if the transfer flags are not supported by the OS.<br />
-    /// LIBUSB_ERROR_INVALID_PARAM if the transfer size is larger than the OS and/or hardware can
-    /// support (see Transfer length limitations) another LIBUSB_ERROR code on other failure.<br />
-    /// </returns>
-    [DllImport(LibUsb.LibraryName, CallingConvention = CallingConvention.Cdecl)]
-    private static extern int libusb_submit_transfer(nint transfer);
-
-#pragma warning restore SYSLIB1054 // Use 'LibraryImportAttribute' instead of 'DllImportAttribute'
 }

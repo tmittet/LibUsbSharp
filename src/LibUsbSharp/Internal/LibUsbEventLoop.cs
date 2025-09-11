@@ -58,7 +58,7 @@ internal sealed class LibUsbEventLoop : IDisposable
             {
                 // libusb does not write to completed, so there is no reason to check it
                 // See: https://github.com/libusb/libusb/blob/master/libusb/io.c
-                var result = libusb_handle_events_completed(_context, _completedPtr);
+                var result = (int)_context.HandleEventsCompleted(_completedPtr);
                 // libusb_handle_events can return LibUsbResult.Interrupted transiently;
                 // do not exit the loop on LibUsbResult.Interrupted.
                 if (result != 0 && result != (int)LibUsbResult.Interrupted)
@@ -114,7 +114,7 @@ internal sealed class LibUsbEventLoop : IDisposable
                 // and: https://libusb.sourceforge.io/api-1.0/group__libusb__poll.html#ga188b6c50944b49f122ccfd45b93fa9f2
                 // We deregister hotplug events, which wakes up libusb_handle_events, first then
                 // stop the event loop; hence the event handler would block forever.
-                _ = libusb_interrupt_event_handler(_context);
+                _context.InterruptEventHandler();
                 // Wait for libusb_handle_events_completed and the HandleEventsLoop to stop
                 _thread.Join();
             }
@@ -122,23 +122,4 @@ internal sealed class LibUsbEventLoop : IDisposable
             _cts.Dispose();
         }
     }
-
-    // LibraryImportAttribute not available in .NET6, silence warning
-#pragma warning disable SYSLIB1054 // Use 'LibraryImportAttribute' instead of 'DllImportAttribute'
-
-    /// <summary>
-    /// Handle any pending events in blocking mode. Like libusb_handle_events(), With a completed
-    /// parameter to allow for race free waiting for the completion of a specific transfer.
-    /// </summary>
-    [DllImport(LibUsb.LibraryName, CallingConvention = CallingConvention.Cdecl)]
-    private static extern unsafe int libusb_handle_events_completed(IntPtr context, IntPtr completed);
-
-    /// <summary>
-    /// Interrupt any active thread that is handling events. This is mainly useful for interrupting
-    /// a dedicated event handling thread when an application wishes to call libusb_exit().
-    /// </summary>
-    [DllImport(LibUsb.LibraryName, CallingConvention = CallingConvention.Cdecl)]
-    private static extern int libusb_interrupt_event_handler(IntPtr context);
-
-#pragma warning restore SYSLIB1054 // Use 'LibraryImportAttribute' instead of 'DllImportAttribute'
 }
