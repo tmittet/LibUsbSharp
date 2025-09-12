@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using LibUsbNative.SafeHandles;
 
 namespace LibUsbSharp.Internal.Transfer;
 
@@ -9,7 +10,7 @@ internal delegate void LibUsbTransferCallback(nint transferPtr);
 internal struct LibUsbTransferTemplate
 {
     public static LibUsbTransferTemplate Create(
-        nint deviceHandle,
+        ISafeDeviceHandle deviceHandle,
         byte endpoint,
         GCHandle bufferHandle,
         int bufferLength,
@@ -20,7 +21,7 @@ internal struct LibUsbTransferTemplate
     {
         return new LibUsbTransferTemplate
         {
-            DeviceHandle = deviceHandle,
+            DeviceHandle = deviceHandle.DangerousGetHandle(),
             Endpoint = endpoint,
             Type = type,
             Timeout = timeout,

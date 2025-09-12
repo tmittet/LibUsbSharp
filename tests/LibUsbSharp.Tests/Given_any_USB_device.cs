@@ -49,7 +49,7 @@ public sealed class Given_any_USB_device : IDisposable
         var act = () => _libUsb.OpenDevice(invalidDeviceKey);
         act.Should()
             .Throw<LibUsbException>()
-            .WithMessage("Failed to get device from list. LibUsb error code -5: Entity not found.");
+            .WithMessage("Failed to get device from list. LibUsb error code NotFound: Entity not found.");
     }
 
     [SkippableFact]

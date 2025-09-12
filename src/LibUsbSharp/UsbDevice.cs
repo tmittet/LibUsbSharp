@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
 using System.Text;
+using LibUsbNative.SafeHandles;
 using LibUsbSharp.Descriptor;
 using LibUsbSharp.Internal;
 using LibUsbSharp.Internal.Transfer;
@@ -14,7 +15,7 @@ public sealed class UsbDevice : IUsbDevice
     private const byte ControlRequestEndpoint = 0x00;
 
     private readonly LibUsb _libUsb;
-    private readonly nint _context;
+    private readonly ISafeContext _context;
     private readonly UsbDeviceDescriptor _descriptor;
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger<UsbDevice> _logger;
@@ -25,7 +26,7 @@ public sealed class UsbDevice : IUsbDevice
     private readonly object _interfaceLock = new();
     private readonly CancellationTokenSource _disposeCts = new();
 
-    internal nint Handle { get; init; }
+    internal ISafeDeviceHandle Handle { get; init; }
 
     /// <inheritdoc />
     public IUsbDeviceDescriptor Descriptor => _descriptor;
@@ -36,8 +37,8 @@ public sealed class UsbDevice : IUsbDevice
     internal UsbDevice(
         ILoggerFactory loggerFactory,
         LibUsb libUsb,
-        nint context,
-        IntPtr handle,
+        ISafeContext context,
+        ISafeDeviceHandle handle,
         UsbDeviceDescriptor descriptor,
         IUsbConfigDescriptor configDescriptor
     )
@@ -91,10 +92,8 @@ public sealed class UsbDevice : IUsbDevice
         using var token = _rundownGuard.AcquireSharedToken();
 
         var buffer = new byte[256];
-        var result = libusb_get_string_descriptor_ascii(Handle, descriptorIndex, buffer, buffer.Length);
-        return result >= 0
-            ? Encoding.ASCII.GetString(buffer, 0, result)
-            : throw LibUsbException.FromError(result, "Failed to read device serial.");
+
+        return Handle.GetStringDescriptorAscii(descriptorIndex);
     }
 
     /// <inheritdoc />
@@ -214,13 +213,9 @@ public sealed class UsbDevice : IUsbDevice
             }
 
             // TODO: libusb_set_auto_detach_kernel_driver on Linux?
-            var claimResult = libusb_claim_interface(Handle, descriptor.InterfaceNumber);
-            if (claimResult != 0)
-            {
-                throw LibUsbException.FromError(claimResult, $"Failed to claim USB interface {descriptor}.");
-            }
+            var claimedInterface = Handle.ClaimInterface(descriptor.InterfaceNumber);
 
-            var usbInterface = new UsbInterface(_loggerFactory, this, descriptor);
+            var usbInterface = new UsbInterface(_loggerFactory, this, descriptor, claimedInterface);
             // No need to check if already added, checked in TryGetValue above
             _claimedInterfaces[descriptor.InterfaceNumber] = usbInterface;
             _logger.LogDebug("USB interface {UsbInterface} claimed.", usbInterface);
@@ -251,12 +246,6 @@ public sealed class UsbDevice : IUsbDevice
                 );
             }
 
-            var releaseResult = libusb_release_interface(Handle, interfaceNumber);
-            if (releaseResult != 0)
-            {
-                throw LibUsbException.FromError(releaseResult, $"Failed to release USB interface {usbInterface}.");
-            }
-
             if (_claimedInterfaces.TryRemove(interfaceNumber, out var _))
             {
                 _logger.LogDebug("USB interface {UsbInterface} released.", usbInterface);
@@ -276,7 +265,7 @@ public sealed class UsbDevice : IUsbDevice
     {
         using var token = _rundownGuard.AcquireExclusiveToken();
 
-        var resetResult = libusb_reset_device(Handle);
+        var resetResult = (int)Handle.ResetDevice();
         if (resetResult != 0)
         {
             throw LibUsbException.FromError(resetResult, $"Failed to reset USB device port.");
@@ -327,48 +316,4 @@ public sealed class UsbDevice : IUsbDevice
             _logger.LogError("UsbDevice dispose failed. {ErrorType}: {ErrorMessage}", ex.GetType().Name, ex.Message);
         }
     }
-
-    // LibraryImportAttribute not available in .NET6, silence warning
-#pragma warning disable SYSLIB1054 // Use 'LibraryImportAttribute' instead of 'DllImportAttribute'
-
-    /// <summary>
-    /// Wrapper around libusb_get_string_descriptor(). Uses the first language supported by the
-    /// device. The function formulates the appropriate control message to retrieve the descriptor,
-    /// and converts the Unicode string returned by the device to ASCII.
-    /// </summary>
-    [DllImport(LibUsb.LibraryName, CallingConvention = CallingConvention.Cdecl)]
-    private static extern int libusb_get_string_descriptor_ascii(
-        IntPtr deviceHandle,
-        byte descIndex,
-        byte[] data,
-        int length
-    );
-
-    /// <summary>
-    /// Claim an interface on a given device handle. You must claim the interface you wish to use
-    /// before you can perform I/O on any of its endpoints. It is legal to attempt to claim an
-    /// already-claimed interface, in which case libusb just returns 0 without doing anything.
-    /// If auto_detach_kernel_driver is set to 1 for dev, the kernel driver will be detached
-    /// if necessary, on failure the detach error is returned. Claiming of interfaces is a purely
-    /// logical operation; it does not cause any requests to be sent over the bus.Interface claiming
-    /// is used to instruct the underlying operating system that your application wishes to take
-    /// ownership of the interface.
-    /// </summary>
-    [DllImport(LibUsb.LibraryName, CallingConvention = CallingConvention.Cdecl)]
-    private static extern int libusb_claim_interface(IntPtr deviceHandle, int interfaceNumber);
-
-    /// <summary>
-    /// Release an interface previously claimed with libusb_claim_interface(). You should release
-    /// all claimed interfaces before closing a device handle. This is a blocking function.
-    /// A SET_INTERFACE control request will be sent to the device, resetting interface state to the
-    /// first alternate setting. If auto_detach_kernel_driver is set to 1 for dev, the kernel driver
-    /// will be re-attached after releasing the interface.
-    /// </summary>
-    [DllImport(LibUsb.LibraryName, CallingConvention = CallingConvention.Cdecl)]
-    private static extern int libusb_release_interface(IntPtr deviceHandle, int interfaceNumber);
-
-    [DllImport(LibUsb.LibraryName, CallingConvention = CallingConvention.Cdecl)]
-    private static extern int libusb_reset_device(IntPtr deviceHandle);
-
-#pragma warning restore SYSLIB1054 // Use 'LibraryImportAttribute' instead of 'DllImportAttribute'
 }

@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
+using LibUsbNative.SafeHandles;
 using LibUsbSharp.Descriptor;
 using LibUsbSharp.Internal.Transfer;
 using Microsoft.Extensions.Logging;
@@ -17,6 +18,7 @@ public sealed class UsbInterface : IUsbInterface
     private readonly ILogger<UsbInterface> _logger;
     private readonly UsbDevice _device;
     private readonly IUsbInterfaceDescriptor _descriptor;
+    private readonly ISafeDeviceInterface _claimedInterface;
     private readonly byte[] _bulkReadBuffer;
     private readonly GCHandle _bulkReadBufferHandle;
     private readonly Lazy<IUsbEndpointDescriptor> _readEndpoint;
@@ -38,6 +40,7 @@ public sealed class UsbInterface : IUsbInterface
     /// <param name="loggerFactory">An optional logger factory.</param>
     /// <param name="device">The parent USB device.</param>
     /// <param name="descriptor">The USB interface descriptor.</param>
+    /// <param name="claimedInterface"></param>
     /// <param name="readEndpoint">
     /// Optional read endpoint. When nothing is specified and a read operation is attempted,
     /// an attempt is made to pick the first available "input" endpoint for this interface.
@@ -50,6 +53,7 @@ public sealed class UsbInterface : IUsbInterface
         ILoggerFactory loggerFactory,
         UsbDevice device,
         IUsbInterfaceDescriptor descriptor,
+        ISafeDeviceInterface claimedInterface,
         IUsbEndpointDescriptor? readEndpoint = default,
         IUsbEndpointDescriptor? writeEndpoint = default
     )
@@ -58,6 +62,7 @@ public sealed class UsbInterface : IUsbInterface
         _logger = _loggerFactory.CreateLogger<UsbInterface>();
         _device = device;
         _descriptor = descriptor;
+        _claimedInterface = claimedInterface;
         _bulkReadBuffer = new byte[ReadBufferSize];
         _bulkReadBufferHandle = GCHandle.Alloc(_bulkReadBuffer, GCHandleType.Pinned);
         _readEndpoint = readEndpoint is null
@@ -238,6 +243,7 @@ public sealed class UsbInterface : IUsbInterface
             {
                 // Ask UsbDevice to close interface and remove it from list of open interfaces
                 _device.ReleaseInterface(_descriptor.InterfaceNumber);
+                _claimedInterface.Dispose();
                 // Free read and write buffers
                 _bulkReadBufferHandle.Free();
                 _bulkWriteBufferHandle.Free();
