@@ -13,23 +13,16 @@ public interface ISafeTransfer : IDisposable
     LibUsbError Submit();
     LibUsbError Cancel();
     IntPtr GetBufferPtr();
-    static ISafeTransfer Allocate(int isoPackets = 0)
-    {
-        {
-            var ptr = LibUsbNative.Api.libusb_alloc_transfer(isoPackets);
-            if (ptr == IntPtr.Zero)
-                throw new LibUsbException(LibUsbError.NoMem, "Failed to allocate libusb transfer buffer.");
-
-            return new SafeTransfer(ptr);
-        }
-    }
 }
 
 internal sealed class SafeTransfer : SafeHandle, ISafeTransfer
 {
-    public SafeTransfer(IntPtr ptr)
+    private readonly SafeContext _context;
+
+    public SafeTransfer(SafeContext context, IntPtr ptr)
         : base(ptr, true)
     {
+        _context = context;
         SetHandle(ptr);
     }
 
@@ -40,7 +33,7 @@ internal sealed class SafeTransfer : SafeHandle, ISafeTransfer
         if (IsInvalid)
             return true;
 
-        LibUsbNative.Api.libusb_free_transfer(handle);
+        _context.api.libusb_free_transfer(handle);
         return true;
     }
 
@@ -53,12 +46,12 @@ internal sealed class SafeTransfer : SafeHandle, ISafeTransfer
     public LibUsbError Submit()
     {
         SafeHelpers.ThrowIfClosed(this);
-        return LibUsbNative.Api.libusb_submit_transfer(handle);
+        return _context.api.libusb_submit_transfer(handle);
     }
 
     public LibUsbError Cancel()
     {
         SafeHelpers.ThrowIfClosed(this);
-        return LibUsbNative.Api.libusb_cancel_transfer(handle);
+        return _context.api.libusb_cancel_transfer(handle);
     }
 }

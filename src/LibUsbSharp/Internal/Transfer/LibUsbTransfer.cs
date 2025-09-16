@@ -48,7 +48,7 @@ internal static class LibUsbTransfer
             callbackHandle = GCHandle.Alloc(nativeCallback);
 
             // Allocate and initialize the libusb transfer
-            using var transferBuffer = ISafeTransfer.Allocate(0);
+            using var transferBuffer = deviceHandle.AllocateTransfer(0);
             transferPtr = transferBuffer.GetBufferPtr();
 
             // libusb_alloc_transfer returns zero pointer on error

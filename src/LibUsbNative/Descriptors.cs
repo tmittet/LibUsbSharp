@@ -7,7 +7,7 @@ using System.Text.Json.Serialization;
 
 [assembly: InternalsVisibleTo("LibUsbNative.Tests")]
 
-namespace LibUsbNative;
+namespace LibUsbNative.Descriptors;
 
 #pragma warning disable IDE0079 // Remove unnecessary suppression
 #pragma warning disable SYSLIB1037

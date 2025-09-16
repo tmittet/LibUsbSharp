@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 using LibUsbNative;
+using LibUsbNative.Descriptors;
 
 namespace LibUsbNative.Tests.Fakes;
 
@@ -181,6 +183,14 @@ internal sealed class FakeLibusbApi : ILibUsbApi, IDisposable
     }
 
     public void libusb_exit(IntPtr ctx) { }
+
+    public LibUsbError libusb_set_option(IntPtr ctx, LibusbOption option, int value)
+    {
+        if (MaybeFail(nameof(libusb_set_option), out var err) != LibUsbError.Success)
+            return err;
+        _options[option] = (IntPtr)value;
+        return LibUsbError.Success;
+    }
 
     public LibUsbError libusb_set_option(IntPtr ctx, LibusbOption option, IntPtr value)
     {

@@ -1,6 +1,7 @@
 ﻿using System;
 using FluentAssertions;
 using LibUsbNative;
+using LibUsbNative.Descriptors;
 using LibUsbNative.Extensions;
 using LibUsbNative.SafeHandles;
 using LibUsbNative.Tests.Fakes;
@@ -9,22 +10,23 @@ using Xunit.Abstractions;
 
 namespace LibUsbNative.Tests;
 
-public class SafeDeviceHandleTests
+public class SafeDeviceTests
 {
     private readonly ITestOutputHelper output;
     private readonly ISafeContext context;
-    private readonly List<string> stdout = [];
+    private readonly List<string> stdout = new();
     private static readonly ReaderWriterLockSlim rw_lock = new();
+    private readonly LibUsbNative libUsb;
 
-    public SafeDeviceHandleTests(ITestOutputHelper output)
+    public SafeDeviceTests(ITestOutputHelper output)
     {
         this.output = output;
-        LibUsbNative.Api = new FakeLibusbApi();
+        libUsb = new LibUsbNative(new PInvokeLibUsbApi());
 
-        var version = LibUsbNative.GetVersion();
+        var version = libUsb.GetVersion();
         output.WriteLine(version.ToString());
 
-        context = LibUsbNative.CreateContext();
+        context = libUsb.CreateContext();
 
         context.RegisterLogCallback(
             (level, message) =>
@@ -64,42 +66,34 @@ public class SafeDeviceHandleTests
     }
 
     [Fact]
-    public void TestOpenDeviceHandle()
+    public void TestGetDeviceDescriptor()
     {
         EnterReadLock(() =>
         {
             var (list, count) = context.GetDeviceList();
             count.Should().BePositive();
+
             var device = list.Devices.ToList()[0];
-            var deviceHandle = device.Open();
-            _ = deviceHandle.IsClosed.Should().BeFalse();
+            var descriptor = device.GetDeviceDescriptor();
+            descriptor.BDescriptorType.Should().Be(UsbDescriptorType.Device);
 
             list.Dispose();
-            context.Dispose();
-            deviceHandle.Dispose();
         });
     }
 
     [Fact]
-    public void TestReadSerialNumber()
+    public void TestGetActiveConfigDescriptor()
     {
         EnterReadLock(() =>
         {
             var (list, count) = context.GetDeviceList();
             count.Should().BePositive();
-            var device = list.Devices.ToList()[0];
-            var deviceHandle = device.Open();
-            _ = deviceHandle.IsClosed.Should().BeFalse();
-            var serialNumber = deviceHandle.GetStringDescriptorAscii(
-                deviceHandle.Device.GetDeviceDescriptor().ISerialNumber
-            );
-            _ = serialNumber.Should().NotBeNullOrEmpty();
 
-            output.WriteLine($"Serial Number: {serialNumber}");
+            var device = list.Devices.ToList()[0];
+            var descriptor = device.GetActiveConfigDescriptor();
+            descriptor.BDescriptorType.Should().Be(UsbDescriptorType.Configuration);
 
             list.Dispose();
-            deviceHandle.Dispose();
-            context.Dispose();
         });
     }
 
@@ -111,22 +105,25 @@ public class SafeDeviceHandleTests
             var (list, count) = context.GetDeviceList();
             count.Should().BePositive();
 
-            var deviceHandle = list.Devices.ToList()[0].Open();
-            deviceHandle.Dispose();
+            var device = list.Devices.ToList()[0];
+            list.Dispose();
 
-            Action act = () => deviceHandle.ClaimInterface(1);
+            Action act = () => device.GetActiveConfigDescriptor();
             act.Should().Throw<ObjectDisposedException>();
 
-            act = () =>
-            {
-                var d = deviceHandle.Device;
-            };
+            act = () => device.Open();
             act.Should().Throw<ObjectDisposedException>();
 
-            act = () => deviceHandle.GetStringDescriptorAscii(1);
+            act = () => device.GetBusNumber();
             act.Should().Throw<ObjectDisposedException>();
 
-            act = () => deviceHandle.ResetDevice();
+            act = () => device.GetDeviceAddress();
+            act.Should().Throw<ObjectDisposedException>();
+
+            act = () => device.GetPortNumber();
+            act.Should().Throw<ObjectDisposedException>();
+
+            act = () => device.GetDeviceDescriptor();
             act.Should().Throw<ObjectDisposedException>();
         });
     }

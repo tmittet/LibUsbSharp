@@ -12,16 +12,26 @@ namespace LibUsbNative;
 /// <summary>
 /// Singleton-style access to libusb API. Swap in tests if needed.
 /// </summary>
-public static class LibUsbNative
+internal partial class LibUsbNative : ILibUsbNative
 {
-    internal static ILibUsbApi Api { get; set; } = new PInvokeLibUsbApi();
+    private readonly ILibUsbApi _api;
 
-    public static ISafeContext CreateContext()
+    public LibUsbNative()
     {
-        return new SafeContext();
+        _api = new PInvokeLibUsbApi();
     }
 
-    public static bool HasCapability(uint capability) => Api.libusb_has_capability((uint)capability) != 0;
+    public LibUsbNative(ILibUsbApi api)
+    {
+        _api = api;
+    }
+
+    public ISafeContext CreateContext()
+    {
+        return new SafeContext(_api);
+    }
+
+    public bool HasCapability(uint capability) => _api.libusb_has_capability((uint)capability) != 0;
 
     /// <summary>
     /// Native layout for libusb_version (libusb.h)
@@ -43,32 +53,11 @@ public static class LibUsbNative
     }
 
     /// <summary>
-    /// Managed projection of libusb_version.
-    /// </summary>
-    public readonly record struct LibUsbVersion(
-        ushort Major,
-        ushort Minor,
-        ushort Micro,
-        ushort Nano,
-        string Rc,
-        string Describe
-    )
-    {
-        public override string ToString()
-        {
-            var baseVer = $"{Major}.{Minor}.{Micro}.{Nano}";
-            var rcPart = string.IsNullOrWhiteSpace(Rc) ? "" : $" ({Rc})";
-            var descPart = string.IsNullOrWhiteSpace(Describe) ? "" : $" - {Describe}";
-            return $"libusb {baseVer}{rcPart}{descPart}";
-        }
-    }
-
-    /// <summary>
     /// Returns the full libusb version structure.
     /// </summary>
-    public static LibUsbVersion GetVersion()
+    public LibUsbVersion GetVersion()
     {
-        var p = Api.libusb_get_version();
+        var p = _api.libusb_get_version();
         if (p == IntPtr.Zero)
             throw new LibUsbException(LibUsbError.Other, "libusb_get_version returned null pointer");
 
@@ -87,9 +76,9 @@ public static class LibUsbNative
         );
     }
 
-    public static string StrError(LibUsbError error)
+    public string StrError(LibUsbError error)
     {
-        var ptr = LibUsbNative.Api.libusb_strerror(error);
+        var ptr = _api.libusb_strerror(error);
         Debug.Assert(ptr != IntPtr.Zero, "libusb_strerror returned null pointer");
 
         var detail = Marshal.PtrToStringAnsi(ptr);

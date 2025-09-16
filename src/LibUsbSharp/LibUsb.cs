@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
 using System.Transactions;
+using LibUsbNative;
 using LibUsbNative.SafeHandles;
 using LibUsbSharp.Descriptor;
 using LibUsbSharp.Internal;
@@ -12,7 +13,6 @@ namespace LibUsbSharp;
 
 public sealed class LibUsb : ILibUsb
 {
-    internal const string LibraryName = "libusb-1.0";
     private static int _instances;
     private static ILogger<LibUsb>? _staticLogger;
 
@@ -20,6 +20,7 @@ public sealed class LibUsb : ILibUsb
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger<LibUsb> _logger;
     private readonly ConcurrentDictionary<string, UsbDevice> _openDevices = new();
+    private ILibUsbNative _libUsbNative;
     private ISafeContext? _context;
     private LibUsbEventLoop? _eventLoop;
     private int _hotplugCallbackHandle;
@@ -28,9 +29,9 @@ public sealed class LibUsb : ILibUsb
     /// <summary>
     /// Get the LibUsb library version.
     /// </summary>
-    public static Version GetVersion()
+    public Version GetVersion()
     {
-        var version = LibUsbNative.LibUsbNative.GetVersion();
+        var version = _libUsbNative.GetVersion();
         return new Version(version.Major, version.Minor, version.Micro, version.Nano);
     }
 
@@ -52,6 +53,7 @@ public sealed class LibUsb : ILibUsb
             _loggerFactory = loggerFactory ?? new NullLoggerFactory();
             _logger = _loggerFactory.CreateLogger<LibUsb>();
             _staticLogger = _logger;
+            _libUsbNative = LibUsbNative.ILibUsbNative.Init();
         }
         catch (Exception)
         {
@@ -68,10 +70,10 @@ public sealed class LibUsb : ILibUsb
             CheckDisposed();
             if (_context is not null)
             {
-                throw new InvalidOperationException($"{LibraryName} already initialized.");
+                throw new InvalidOperationException($"{nameof(LibUsb)} already initialized.");
             }
 
-            _context = LibUsbNative.LibUsbNative.CreateContext();
+            _context = _libUsbNative.CreateContext();
             _logger.LogInformation("LibUsb v{LibUsbVersion} initialized.", GetVersion());
 
             InitializeLogging(_context!, logLevel);
@@ -87,25 +89,29 @@ public sealed class LibUsb : ILibUsb
             return;
         }
 
-        var callbackResult = context.RegisterLogCallback(
-            (level, message) => LibUsbLogHandler((LibUsbLogLevel)level, message)
-        );
-
-        if (callbackResult != 0)
+        try
+        {
+            context.RegisterLogCallback((level, message) => LibUsbLogHandler((LibUsbLogLevel)level, message));
+        }
+        catch (LibUsbNative.LibUsbException ex)
         {
             _logger.LogWarning(
                 "Failed to set LibUsbOption.LogCallback. {ErrorMessage}",
-                ((LibUsbResult)callbackResult).GetMessage()
+                ((LibUsbResult)ex.Error).GetMessage()
             );
             return; // Only attempt to set log level if callback registration succeeded
         }
+
         var libUsbLogLevel = logLevel.ToLibUsbLogLevel();
-        var levelResult = context.SetOption((int)LibUsbOption.LogLevel, (nint)libUsbLogLevel);
-        if (levelResult != 0)
+        try
+        {
+            context.SetOption((int)LibUsbOption.LogLevel, (int)libUsbLogLevel);
+        }
+        catch (LibUsbNative.LibUsbException ex)
         {
             _logger.LogWarning(
                 "Failed to set LibUsbOption.LogLevel. {ErrorMessage}",
-                ((LibUsbResult)levelResult).GetMessage()
+                ((LibUsbResult)ex.Error).GetMessage()
             );
         }
     }
@@ -118,7 +124,7 @@ public sealed class LibUsb : ILibUsb
     )
     {
         const int HotPlugMatchAny = -1;
-        var supported = LibUsbNative.LibUsbNative.HasCapability((uint)LibUsbCapability.HasHotplug);
+        var supported = _libUsbNative.HasCapability((uint)LibUsbCapability.HasHotplug);
         if (!supported)
         {
             _logger.LogDebug("Hotplug not supported or unimplemented on this platform.");
@@ -180,11 +186,7 @@ public sealed class LibUsb : ILibUsb
         var result = LibUsbDeviceEnum.TryGetDeviceDescriptor(device, out var deviceDescriptor);
         if (result != LibUsbResult.Success)
         {
-            _logger.LogWarning(
-                "{LibUsb} get device descriptor failed. {ErrorMessage}",
-                LibraryName,
-                result.GetMessage()
-            );
+            _logger.LogWarning("Failed to get device descriptor. {ErrorMessage}", result.GetMessage());
             return LibUsbHotplugReturn.Rearm;
         }
         var descriptor = deviceDescriptor!.Value;
@@ -323,7 +325,7 @@ public sealed class LibUsb : ILibUsb
     /// </summary>
     private ISafeContext GetInitializedContextOrThrow()
     {
-        return _context is null ? throw new InvalidOperationException($"{LibraryName} not initialized.") : _context;
+        return _context is null ? throw new InvalidOperationException($"No context.") : _context;
     }
 
     /// <summary>
@@ -392,8 +394,7 @@ public sealed class LibUsb : ILibUsb
             // Catch the unlikely case that libusb adds another log level in a future version
             default:
                 _staticLogger?.LogError(
-                    "Unexpected {LibraryName} log level {LibUsbLogLevel}. {LibUsbMessage}",
-                    LibraryName,
+                    "Unexpected libusb log level {LibUsbLogLevel}. {LibUsbMessage}",
                     level,
                     message.TrimEnd()
                 );

@@ -7,6 +7,6 @@ public static class LibUsbResultExtension
 {
     public static string GetMessage(this LibUsbResult result)
     {
-        return LibUsbNative.LibUsbNative.StrError((LibUsbError)result);
+        return LibUsbNative.LibUsbErrorMessages.Get((LibUsbError)result);
     }
 }

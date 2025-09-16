@@ -1,6 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using LibUsbNative.SafeHandles;
 using LibUsbSharp.Descriptor;
+//using LibUsbSharp.Descriptor;
 using LibUsbSharp.Internal.Descriptor;
 using Microsoft.Extensions.Logging;
 
@@ -59,11 +60,7 @@ internal static class LibUsbDeviceEnum
             var result = TryGetDeviceDescriptor(device, out var descriptor);
             if (result != LibUsbResult.Success)
             {
-                logger.LogWarning(
-                    "{LibUsb} get device descriptor failed. {ErrorMessage}",
-                    LibUsb.LibraryName,
-                    result.GetMessage()
-                );
+                logger.LogWarning("Get device descriptor failed. {ErrorMessage}", result.GetMessage());
             }
             else if (descriptor!.Value.BcdUsb > 0)
             {

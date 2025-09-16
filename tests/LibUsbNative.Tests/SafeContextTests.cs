@@ -25,21 +25,22 @@ public class SafeContextTests_Real : SafeContextTests
 public abstract class SafeContextTests
 {
     private readonly ITestOutputHelper output;
-    private readonly List<string> stdout = [];
+    private readonly List<string> stdout = new();
     private static readonly ReaderWriterLockSlim rw_lock = new();
+    private readonly LibUsbNative libUsb;
 
     public SafeContextTests(ITestOutputHelper output, ILibUsbApi api)
     {
         this.output = output;
-        LibUsbNative.Api = api;
+        libUsb = new LibUsbNative(api);
 
-        var version = LibUsbNative.GetVersion();
+        var version = libUsb.GetVersion();
         output.WriteLine(version.ToString());
     }
 
     internal ISafeContext GetContext()
     {
-        var context = LibUsbNative.CreateContext();
+        var context = libUsb.CreateContext();
 
         context.RegisterLogCallback(
             (level, message) =>
@@ -188,7 +189,7 @@ public abstract class SafeContextTests
                     0,
                     0,
                     0,
-                    0,
+                    (IntPtr)0,
                     (p1, p2, p3, p4) =>
                     {
                         return true;
@@ -197,7 +198,7 @@ public abstract class SafeContextTests
             };
             act.Should().Throw<ObjectDisposedException>();
 
-            act = () => context.HotplugDeregisterCallback(0);
+            act = () => context.HotplugDeregisterCallback((IntPtr)0);
             act.Should().Throw<ObjectDisposedException>();
 
             act = () => context.SetOption(0, 0);
@@ -206,7 +207,7 @@ public abstract class SafeContextTests
             act = () => context.SetOption((LibusbOption)0, 0);
             act.Should().Throw<ObjectDisposedException>();
 
-            act = () => context.HandleEventsCompleted(0);
+            act = () => context.HandleEventsCompleted((IntPtr)0);
             act.Should().Throw<ObjectDisposedException>();
         });
     }

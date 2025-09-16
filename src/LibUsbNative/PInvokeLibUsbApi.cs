@@ -2,6 +2,7 @@
 using System.Reflection.Metadata;
 using System.Runtime.InteropServices;
 using LibUsbNative;
+using LibUsbNative.Descriptors;
 
 namespace LibUsbNative;
 
@@ -19,6 +20,9 @@ public sealed class PInvokeLibUsbApi : ILibUsbApi
 
     [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
     private static extern void libusb_exit(IntPtr ctx);
+
+    [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
+    private static extern LibUsbError libusb_set_option(IntPtr ctx, int option, int value);
 
     [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
     private static extern LibUsbError libusb_set_option(IntPtr ctx, int option, IntPtr value);
@@ -233,6 +237,9 @@ public sealed class PInvokeLibUsbApi : ILibUsbApi
     LibUsbError ILibUsbApi.libusb_init(out IntPtr ctx) => libusb_init(out ctx);
 
     void ILibUsbApi.libusb_exit(IntPtr ctx) => libusb_exit(ctx);
+
+    LibUsbError ILibUsbApi.libusb_set_option(IntPtr ctx, LibusbOption option, int value) =>
+        libusb_set_option(ctx, (int)option, value);
 
     LibUsbError ILibUsbApi.libusb_set_option(IntPtr ctx, LibusbOption option, IntPtr value) =>
         libusb_set_option(ctx, (int)option, value);

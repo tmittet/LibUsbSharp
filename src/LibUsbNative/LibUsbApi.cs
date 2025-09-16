@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using LibUsbNative.Descriptors;
 
 namespace LibUsbNative;
 
@@ -13,6 +14,7 @@ public interface ILibUsbApi
 {
     LibUsbError libusb_init(out IntPtr ctx);
     void libusb_exit(IntPtr ctx);
+    LibUsbError libusb_set_option(IntPtr ctx, LibusbOption option, int value);
     LibUsbError libusb_set_option(IntPtr ctx, LibusbOption option, IntPtr value);
 
     LibUsbError libusb_handle_events_completed(IntPtr ctx, IntPtr completed);

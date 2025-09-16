@@ -17,13 +17,21 @@ public sealed class Given_a_supported_Huddly_USB_device : IDisposable
         _loggerFactory = new TestLoggerFactory(output);
         _logger = _loggerFactory.CreateLogger<Given_a_supported_Huddly_USB_device>();
         _libUsb = new LibUsb(_loggerFactory);
-        _libUsb.Initialize(LogLevel.Information);
-        _deviceSource = new TestDeviceSource(_logger, _libUsb);
-        _deviceSource.SetRequiredVendorId(HuddlyVendorId);
-        _deviceSource.SetRequiredInterfaceClass(
-            UsbClass.VendorSpecific,
-            TestDeviceAccess.BulkRead | TestDeviceAccess.BulkWrite
-        );
+        try
+        {
+            _libUsb.Initialize(LogLevel.Information);
+            _deviceSource = new TestDeviceSource(_logger, _libUsb);
+            _deviceSource.SetRequiredVendorId(HuddlyVendorId);
+            _deviceSource.SetRequiredInterfaceClass(
+                UsbClass.VendorSpecific,
+                TestDeviceAccess.BulkRead | TestDeviceAccess.BulkWrite
+            );
+        }
+        catch
+        {
+            _libUsb.Dispose();
+            throw;
+        }
     }
 
     [SkippableFact]

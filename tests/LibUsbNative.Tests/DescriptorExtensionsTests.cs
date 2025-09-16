@@ -3,6 +3,7 @@ using System.Text.Json;
 using FluentAssertions;
 using LibUsbNative;
 using LibUsbNative.Descriptor;
+using LibUsbNative.Descriptors;
 using LibUsbNative.Extensions;
 using LibUsbNative.SafeHandles;
 using LibUsbNative.Tests.Fakes;
@@ -15,18 +16,19 @@ public class DescriptorExtensionsTests
 {
     private readonly ITestOutputHelper output;
     private readonly ISafeContext context;
-    private readonly List<string> stdout = [];
+    private readonly List<string> stdout = new();
     private static readonly ReaderWriterLockSlim rw_lock = new();
+    private readonly LibUsbNative libUsb;
 
     public DescriptorExtensionsTests(ITestOutputHelper output)
     {
         this.output = output;
-        LibUsbNative.Api = new FakeLibusbApi();
+        libUsb = new LibUsbNative(new PInvokeLibUsbApi());
 
-        var version = LibUsbNative.GetVersion();
+        var version = libUsb.GetVersion();
         output.WriteLine(version.ToString());
 
-        context = LibUsbNative.CreateContext();
+        context = libUsb.CreateContext();
 
         context.RegisterLogCallback(
             (level, message) =>

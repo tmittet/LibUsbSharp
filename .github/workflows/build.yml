@@ -111,7 +111,8 @@ jobs:
         dotnet test tests/LibUsbSharp.Tests/LibUsbSharp.Tests.csproj \
           --no-build \
           --runtime ${{ matrix.config.runtime }} \
-          --logger junit \
+          --settings LibUsbSharp.runsettings \
+          --logger "junit;LogFilePath=TestResults/results.xml" \
           --verbosity normal
 
     - name: Run LibUsbSharp.Extensions.Tests
@@ -120,14 +121,20 @@ jobs:
         dotnet test tests/LibUsbSharp.Extensions.Tests/LibUsbSharp.Extensions.Tests.csproj \
           --no-build \
           --runtime ${{ matrix.config.runtime }} \
-          --logger junit \
+          --settings LibUsbSharp.runsettings \
+          --logger "junit;LogFilePath=TestResults/results.xml" \
           --verbosity normal
 
-    - name: Publish Test Results
-      uses: EnricoMi/publish-unit-test-result-action@v2
-      id: test-results
-      if: always() && startsWith(matrix.config.runtime, 'linux-x64')
+    - name: Publish Test Report
+      uses: mikepenz/action-junit-report@v5
+      if: success() || failure()
       with:
-        comment_mode: off
-        files: |
-          tests/**/TestResults/*.xml
+        report_paths: tests/**/TestResults/*.xml
+        check_name: XUnit Test Report - ${{ matrix.config.runtime }}
+        detailed_summary: true
+        annotate_notice: true
+        annotate_warning: true
+        annotate_failure: true
+        fail_on_error: true
+
+

@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFrameworks>net8.0;net6.0</TargetFrameworks>
+        <Platforms>AnyCPU;x64;arm64</Platforms>
+        <RuntimeIdentifiers>linux-arm64;linux-x64;maccatalyst-arm64;maccatalyst-x64;osx-arm64;osx-x64;win-arm64;win-x64;win-x86</RuntimeIdentifiers>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+    <ItemGroup>
+        <InternalsVisibleTo Include="LubUsbNative.Tests" />
+    </ItemGroup>
+    <PropertyGroup>
+        <EffectiveRuntimeIdentifier Condition="'$(RuntimeIdentifier)' != ''"
+            >$(RuntimeIdentifier)</EffectiveRuntimeIdentifier
+        >
+        <EffectiveRuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''"
+            >$(NETCoreSdkRuntimeIdentifier)</EffectiveRuntimeIdentifier
+        >
+    </PropertyGroup>
+    <!-- Copy ONLY the native binary for the effective RID into the output ROOT (no runtimes/* subfolder). -->
+    <ItemGroup Condition="'$(EffectiveRuntimeIdentifier)' != ''">
+        <None Include="runtimes\$(EffectiveRuntimeIdentifier)\native\libusb-1.0.*">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+            <!-- Force destination file name (strip source path). -->
+            <TargetPath>libusb-1.0%(Extension)</TargetPath>
+        </None>
+    </ItemGroup>
+    <PropertyGroup>
+        <EnableUnsafeBinaryFormatterSerialization>false</EnableUnsafeBinaryFormatterSerialization>
+        <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+        <AnalysisLevel>latest-recommended</AnalysisLevel>
+    </PropertyGroup>
+    <ItemGroup>
+        <EditorConfigFiles Remove="C:\git\LibUsbSharp2\LibUsbNative\.editorconfig" />
+    </ItemGroup>
+    <ItemGroup>
+        <None Include="C:\git\LibUsbSharp2\LibUsbNative\.editorconfig" />
+    </ItemGroup>
+</Project>
