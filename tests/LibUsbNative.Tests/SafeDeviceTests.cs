@@ -1,5 +1,5 @@
 ﻿using FluentAssertions;
-using LibUsbNative.Descriptors;
+using LibUsbNative.Enums;
 using LibUsbNative.SafeHandles;
 using Xunit.Abstractions;
 

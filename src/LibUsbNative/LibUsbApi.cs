@@ -7,7 +7,7 @@ namespace LibUsbNative;
 #pragma warning disable CA1707 // Identifiers should not contain underscores
 
 /// <summary>
-/// Swappable facade for libusb 1.x. Default impl: <see cref="PInvokeLibusbApi"/>.
+/// Swappable facade for libusb 1.x. Default impl: <see cref="PInvokeLibUsbApi"/>.
 /// </summary>
 public interface ILibUsbApi
 {

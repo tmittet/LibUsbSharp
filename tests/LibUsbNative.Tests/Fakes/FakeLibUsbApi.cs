@@ -1,6 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using System.Text;
 using LibUsbNative.Descriptors;
+using LibUsbNative.Enums;
 
 namespace LibUsbNative.Tests.Fakes;
 
@@ -599,8 +600,10 @@ internal sealed class FakeLibusbApi : ILibUsbApi, IDisposable
 
     public void libusb_hotplug_deregister_callback(IntPtr ctx, IntPtr callbackHandle)
     {
+#pragma warning disable CA2020 // Prevent behavioral change
         if ((int)callbackHandle == LastCbHandle)
             LastCb = null;
+#pragma warning restore CA2020 // Prevent behavioral change
     }
 
     public void FireHotplugArrived(IntPtr ctx, IntPtr dev) => LastCb?.Invoke(ctx, dev, 0x01, IntPtr.Zero);

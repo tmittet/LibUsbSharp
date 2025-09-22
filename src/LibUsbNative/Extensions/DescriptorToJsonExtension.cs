@@ -2,6 +2,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using LibUsbNative.Descriptors;
+using LibUsbNative.Enums;
 
 namespace LibUsbNative.Extensions;
 
@@ -75,16 +76,20 @@ public static class DescriptorToJsonExtension
     private static string Serialize<T>(T value, bool indented, bool hexExtras, bool raw)
     {
         var options = raw
-            ? 
-                indented
-                    ? hexExtras ? RawIndentedHexOptions : RawIndentedOptions
-                    : hexExtras ? RawCompactHexOptions : RawCompactOptions
-            
-            : 
-                indented
-                    ? hexExtras ? FancyIndentedHexOptions : FancyIndentedOptions
-                    : hexExtras ? FancyCompactHexOptions : FancyCompactOptions
-            ;
+            ? indented
+                ? hexExtras
+                    ? RawIndentedHexOptions
+                    : RawIndentedOptions
+                : hexExtras
+                    ? RawCompactHexOptions
+                    : RawCompactOptions
+            : indented
+                ? hexExtras
+                    ? FancyIndentedHexOptions
+                    : FancyIndentedOptions
+                : hexExtras
+                    ? FancyCompactHexOptions
+                    : FancyCompactOptions;
 
         return JsonSerializer.Serialize(value, typeof(T), options);
     }

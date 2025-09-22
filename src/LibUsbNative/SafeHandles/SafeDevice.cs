@@ -1,5 +1,6 @@
 using System.Runtime.InteropServices;
 using LibUsbNative.Descriptors;
+using LibUsbNative.Enums;
 
 namespace LibUsbNative.SafeHandles;
 
@@ -103,7 +104,7 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
         }
         try
         {
-            var config = LibusbConfigMarshaler.FromPointer(descriptor);
+            var config = FromPointer(descriptor);
             return config;
         }
         finally
@@ -144,7 +145,7 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
         }
         try
         {
-            var config = LibusbConfigMarshaler.FromPointer(descriptor);
+            var config = FromPointer(descriptor);
             return config;
         }
         finally
@@ -188,5 +189,117 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
         }
 
         return new SafeDeviceHandle(_context, ptr, new SafeDevice(_context, handle));
+    }
+
+    private static UsbConfigDescriptor FromPointer(IntPtr pConfigDescriptor)
+    {
+        if (pConfigDescriptor == IntPtr.Zero)
+            throw new ArgumentNullException(nameof(pConfigDescriptor));
+
+        var cfg = Marshal.PtrToStructure<native_libusb_config_descriptor>(pConfigDescriptor);
+
+        var interfaces = ReadArray(
+            cfg.interfacePtr,
+            cfg.bNumInterfaces,
+            elemPtr =>
+            {
+                var nIf = Marshal.PtrToStructure<native_libusb_interface>(elemPtr);
+
+                var alt = ReadArray(
+                    nIf.altsetting,
+                    nIf.num_altsetting,
+                    ifDescPtr =>
+                    {
+                        var id = Marshal.PtrToStructure<native_libusb_interface_descriptor>(ifDescPtr);
+
+                        var endpoints = ReadArray(
+                            id.endpoint,
+                            id.bNumEndpoints,
+                            epPtr =>
+                            {
+                                var ep = Marshal.PtrToStructure<native_libusb_endpoint_descriptor>(epPtr);
+                                var extraEp = ReadExtra(ep.extra, ep.extra_length);
+
+                                return new UsbEndpointDescriptor(
+                                    ep.bLength,
+                                    (UsbDescriptorType)ep.bDescriptorType,
+                                    new UsbEndpointAddress(ep.bEndpointAddress),
+                                    new UsbEndpointAttributes(ep.bmAttributes),
+                                    ep.wMaxPacketSize,
+                                    ep.bInterval,
+                                    ep.bRefresh,
+                                    ep.bSynchAddress,
+                                    extraEp
+                                );
+                            },
+                            Marshal.SizeOf<native_libusb_endpoint_descriptor>()
+                        );
+
+                        var extraIf = ReadExtra(id.extra, id.extra_length);
+
+                        return new UsbInterfaceDescriptor(
+                            id.bLength,
+                            (UsbDescriptorType)id.bDescriptorType,
+                            id.bInterfaceNumber,
+                            id.bAlternateSetting,
+                            id.bNumEndpoints,
+                            (UsbClass)id.bInterfaceClass,
+                            id.bInterfaceSubClass,
+                            id.bInterfaceProtocol,
+                            id.iInterface,
+                            endpoints,
+                            extraIf
+                        );
+                    },
+                    Marshal.SizeOf<native_libusb_interface_descriptor>()
+                );
+
+                return new UsbInterface(alt);
+            },
+            Marshal.SizeOf<native_libusb_interface>()
+        );
+
+        var extraCfg = ReadExtra(cfg.extra, cfg.extra_length);
+
+        return new UsbConfigDescriptor(
+            cfg.bLength,
+            (UsbDescriptorType)cfg.bDescriptorType,
+            cfg.wTotalLength,
+            cfg.bNumInterfaces,
+            cfg.bConfigurationValue,
+            cfg.iConfiguration,
+            (UsbConfigAttributes)cfg.bmAttributes,
+            cfg.MaxPower,
+            interfaces,
+            extraCfg
+        );
+    }
+
+    private static TManaged[] ReadArray<TManaged>(
+        IntPtr basePtr,
+        int count,
+        Func<IntPtr, TManaged> projector,
+        int elementSize
+    )
+    {
+        if (count <= 0 || basePtr == IntPtr.Zero)
+            return Array.Empty<TManaged>();
+
+        var arr = new TManaged[count];
+        for (int i = 0; i < count; i++)
+        {
+            var elemPtr = IntPtr.Add(basePtr, i * elementSize);
+            arr[i] = projector(elemPtr);
+        }
+        return arr;
+    }
+
+    private static byte[] ReadExtra(IntPtr p, int length)
+    {
+        if (p == IntPtr.Zero || length <= 0)
+            return Array.Empty<byte>();
+        var bytes = new byte[length];
+        Marshal.Copy(p, bytes, 0, length);
+        return bytes;
     }
 }

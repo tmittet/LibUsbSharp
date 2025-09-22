@@ -1,5 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 using LibUsbNative.Descriptors;
+using LibUsbNative.Enums;
 
 namespace LibUsbNative;
 
