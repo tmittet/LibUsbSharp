@@ -1,7 +1,4 @@
-using System;
-using System.Collections.Generic;
 using System.Text;
-using LibUsbNative;
 using LibUsbNative.Descriptor;
 using LibUsbNative.Descriptors;
 using LibUsbNative.SafeHandles;
@@ -9,7 +6,7 @@ using LibUsbNative.SafeHandles;
 // ------------------------------------------------------------
 // Program
 // ------------------------------------------------------------
-var libusb = ILibUsbNative.Init();
+var libusb = new LibUsbNative.LibUsbNative();
 var context = libusb.CreateContext();
 
 Console.WriteLine($"LibUsb version: {libusb.GetVersion()}");

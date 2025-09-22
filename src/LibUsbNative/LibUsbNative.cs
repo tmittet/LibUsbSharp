@@ -1,29 +1,21 @@
 ﻿using System.Diagnostics;
 using System.Runtime.InteropServices;
-using LibUsbNative;
 using LibUsbNative.SafeHandles;
 
 namespace LibUsbNative;
 
-#pragma warning disable IDE0079 // Remove unnecessary suppression
 #pragma warning disable IDE1006 // Naming Styles
-#pragma warning disable CA1707 // Identifiers should not contain underscores
 
 /// <summary>
 /// Singleton-style access to libusb API. Swap in tests if needed.
 /// </summary>
-internal partial class LibUsbNative : ILibUsbNative
+public class LibUsbNative : ILibUsbNative
 {
     private readonly ILibUsbApi _api;
 
-    public LibUsbNative()
+    public LibUsbNative(ILibUsbApi? api = default)
     {
-        _api = new PInvokeLibUsbApi();
-    }
-
-    public LibUsbNative(ILibUsbApi api)
-    {
-        _api = api;
+        _api = api ?? new PInvokeLibUsbApi();
     }
 
     public ISafeContext CreateContext()
@@ -87,5 +79,3 @@ internal partial class LibUsbNative : ILibUsbNative
 }
 
 #pragma warning restore IDE1006 // Naming Styles
-#pragma warning restore CA1707 // Identifiers should not contain underscores
-#pragma warning restore IDE0079 // Remove unnecessary suppression

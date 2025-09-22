@@ -1,7 +1,4 @@
 using System.Collections.Concurrent;
-using System.Runtime.InteropServices;
-using System.Transactions;
-using LibUsbNative;
 using LibUsbNative.SafeHandles;
 using LibUsbSharp.Descriptor;
 using LibUsbSharp.Internal;
@@ -20,7 +17,7 @@ public sealed class LibUsb : ILibUsb
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger<LibUsb> _logger;
     private readonly ConcurrentDictionary<string, UsbDevice> _openDevices = new();
-    private ILibUsbNative _libUsbNative;
+    private readonly LibUsbNative.LibUsbNative _libUsbNative;
     private ISafeContext? _context;
     private LibUsbEventLoop? _eventLoop;
     private int _hotplugCallbackHandle;
@@ -53,7 +50,7 @@ public sealed class LibUsb : ILibUsb
             _loggerFactory = loggerFactory ?? new NullLoggerFactory();
             _logger = _loggerFactory.CreateLogger<LibUsb>();
             _staticLogger = _logger;
-            _libUsbNative = LibUsbNative.ILibUsbNative.Init();
+            _libUsbNative = new LibUsbNative.LibUsbNative();
         }
         catch (Exception)
         {
