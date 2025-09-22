@@ -7,10 +7,7 @@ using System.Text.Json.Serialization;
 
 namespace LibUsbNative.Descriptors;
 
-#pragma warning disable IDE0079 // Remove unnecessary suppression
-#pragma warning disable SYSLIB1037
 #pragma warning disable IDE1006 // Naming Styles
-#pragma warning disable CA1720 // Identifier contains type name
 
 // ---------------------------------------------
 // New enums replacing previous native (byte) fields
@@ -669,7 +666,4 @@ internal sealed class UsbEndpointAttributesFlexibleJsonConverter : JsonConverter
     }
 }
 
-#pragma warning restore SYSLIB1037
-#pragma warning restore CA1720 // Identifier contains type name
 #pragma warning restore IDE1006 // Naming Styles
-#pragma warning restore IDE0079 // Remove unnecessary suppression

@@ -1,9 +1,5 @@
 ﻿namespace LibUsbNative;
 
-#pragma warning disable IDE0079 // Remove unnecessary suppression
-#pragma warning disable IDE1006 // Naming Styles
-#pragma warning disable CA1707 // Identifiers should not contain underscores
-
 public static class UsbRequestType
 {
     // bmRequestType (USB 2.0 spec)
@@ -39,7 +35,3 @@ public static class Hotplug
     public const int LIBUSB_HOTPLUG_NO_FLAGS = 0x00;
     public const int LIBUSB_HOTPLUG_MATCH_ANY = -1;
 }
-
-#pragma warning restore IDE1006 // Naming Styles
-#pragma warning restore CA1707 // Identifiers should not contain underscores
-#pragma warning restore IDE0079 // Remove unnecessary suppression
