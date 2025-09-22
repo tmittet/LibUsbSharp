@@ -1,21 +1,21 @@
 ﻿using System.Text.Json;
 using FluentAssertions;
-using LibUsbNative.Descriptor;
 using LibUsbNative.Descriptors;
+using LibUsbNative.Extensions;
 using LibUsbNative.SafeHandles;
 using Xunit.Abstractions;
 
-namespace LibUsbNative.Tests;
+namespace LibUsbNative.Tests.Extensions;
 
-public class DescriptorExtensionsTests
+public class DescriptorToJsonExtensionTests
 {
     private readonly ITestOutputHelper output;
     private readonly ISafeContext context;
-    private readonly List<string> stdout = new();
+    private readonly List<string> stdout = [];
     private static readonly ReaderWriterLockSlim rw_lock = new();
     private readonly LibUsbNative libUsb;
 
-    public DescriptorExtensionsTests(ITestOutputHelper output)
+    public DescriptorToJsonExtensionTests(ITestOutputHelper output)
     {
         this.output = output;
         libUsb = new LibUsbNative(new PInvokeLibUsbApi());
@@ -63,36 +63,6 @@ public class DescriptorExtensionsTests
     }
 
     [Fact]
-    public void TestDeviceDescriptorTreeString()
-    {
-        EnterReadLock(() =>
-        {
-            var (list, count) = context.GetDeviceList();
-            count.Should().BePositive();
-            var device = list.Devices.ToList()[0];
-            var descriptor = device.GetDeviceDescriptor();
-            output.WriteLine(descriptor.ToTreeString());
-
-            list.Dispose();
-        });
-    }
-
-    [Fact]
-    public void TestActiveConfigTreeString()
-    {
-        EnterReadLock(() =>
-        {
-            var (list, count) = context.GetDeviceList();
-            count.Should().BePositive();
-            var device = list.Devices.ToList()[0];
-            var descriptor = device.GetActiveConfigDescriptor();
-            output.WriteLine(descriptor.ToTreeString());
-
-            list.Dispose();
-        });
-    }
-
-    [Fact]
     public void TestDeviceDescriptorToJsonRaw()
     {
         EnterReadLock(() =>
@@ -103,7 +73,7 @@ public class DescriptorExtensionsTests
             var json = device.GetDeviceDescriptor().ToJson(raw: true);
             output.WriteLine(json);
 
-            UsbDeviceDescriptor deserialized = JsonSerializer.Deserialize<UsbDeviceDescriptor>(json)!;
+            var deserialized = JsonSerializer.Deserialize<UsbDeviceDescriptor>(json)!;
             deserialized.ToJson(raw: true).Should().Be(json);
 
             list.Dispose();
@@ -122,7 +92,7 @@ public class DescriptorExtensionsTests
             output.WriteLine("orginal:");
             output.WriteLine(json);
 
-            UsbConfigDescriptor deserialized = JsonSerializer.Deserialize<UsbConfigDescriptor>(json)!;
+            var deserialized = JsonSerializer.Deserialize<UsbConfigDescriptor>(json)!;
             output.WriteLine("new:");
             output.WriteLine(deserialized.ToJson(raw: true));
 

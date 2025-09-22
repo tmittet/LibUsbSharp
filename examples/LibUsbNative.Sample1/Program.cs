@@ -1,6 +1,6 @@
 using System.Text;
-using LibUsbNative.Descriptor;
 using LibUsbNative.Descriptors;
+using LibUsbNative.Extensions;
 using LibUsbNative.SafeHandles;
 
 // ------------------------------------------------------------
