@@ -53,12 +53,3 @@ public sealed class LibUsbException : Exception
         throw new LibUsbException(rc, msg);
     }
 }
-
-public static class LibUsbErrorExtensions
-{
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool IsSuccess(this int rc) => rc == 0;
-
-    public static bool IsTransient(this LibUsbError e) =>
-        e is LibUsbError.Timeout or LibUsbError.Interrupted or LibUsbError.Busy or LibUsbError.Io;
-}

@@ -144,7 +144,6 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
             vendorId,
             productId,
             deviceClass,
-            //Marshal.GetFunctionPointerForDelegate(callback)
             callback,
             userData,
             out var callbackHandle

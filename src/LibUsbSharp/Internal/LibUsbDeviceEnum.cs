@@ -1,7 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 using LibUsbNative.SafeHandles;
 using LibUsbSharp.Descriptor;
-//using LibUsbSharp.Descriptor;
 using LibUsbSharp.Internal.Descriptor;
 using Microsoft.Extensions.Logging;
 
@@ -24,7 +23,6 @@ internal static class LibUsbDeviceEnum
     )
     {
         (var deviceList, var count) = libusbContext.GetDeviceList();
-
         var result = LibUsbResult.Success;
         try
         {
@@ -75,7 +73,6 @@ internal static class LibUsbDeviceEnum
     /// </summary>
     internal static LibUsbResult TryGetDeviceDescriptor(ISafeDevice device, out UsbDeviceDescriptor? descriptor)
     {
-        //var partialDescriptor = device.GetActiveConfigDescriptorPtr().DangerousGetHandle();
         var partialDescriptor = device.GetDeviceDescriptor();
 
         descriptor = new UsbDeviceDescriptor(
