@@ -4,7 +4,6 @@
         <Platforms>AnyCPU;x64;arm64</Platforms>
         <RuntimeIdentifiers>linux-arm64;linux-x64;maccatalyst-arm64;maccatalyst-x64;osx-arm64;osx-x64;win-arm64;win-x64</RuntimeIdentifiers>
         <RootNamespace>LibUsbSharp</RootNamespace>
-        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <Authors>Thomas Mittet</Authors>
