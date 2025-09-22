@@ -1,11 +1,6 @@
-﻿using System;
-using FluentAssertions;
-using LibUsbNative;
+﻿using FluentAssertions;
 using LibUsbNative.Descriptors;
-using LibUsbNative.Extensions;
 using LibUsbNative.SafeHandles;
-using LibUsbNative.Tests.Fakes;
-using Xunit;
 using Xunit.Abstractions;
 
 namespace LibUsbNative.Tests;

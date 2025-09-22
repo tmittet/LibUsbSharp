@@ -1,13 +1,8 @@
-﻿using System;
-using System.Text.Json;
+﻿using System.Text.Json;
 using FluentAssertions;
-using LibUsbNative;
 using LibUsbNative.Descriptor;
 using LibUsbNative.Descriptors;
-using LibUsbNative.Extensions;
 using LibUsbNative.SafeHandles;
-using LibUsbNative.Tests.Fakes;
-using Xunit;
 using Xunit.Abstractions;
 
 namespace LibUsbNative.Tests;
