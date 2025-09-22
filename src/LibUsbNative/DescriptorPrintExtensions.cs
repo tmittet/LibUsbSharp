@@ -1,18 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using LibUsbNative;
 using LibUsbNative.Descriptors;
 
 namespace LibUsbNative.Descriptor;
 
-#pragma warning disable CA1305 // Specify IFormatProvider
-
 public static class DescriptorPrintExtensions
 {
+    private static readonly CultureInfo _culture = CultureInfo.InvariantCulture;
+
     // -----------------------
     // Tree/structured printing (unchanged – still rich / human readable)
     // -----------------------
@@ -20,20 +17,20 @@ public static class DescriptorPrintExtensions
     {
         var sb = new StringBuilder();
         sb.AppendLine("Device Descriptor:");
-        sb.AppendLine($"  bLength              : {d.BLength}");
-        sb.AppendLine($"  bDescriptorType      : {Fmt(d.BDescriptorType)}");
-        sb.AppendLine($"  bcdUSB               : 0x{d.BcdUSB:X4}");
-        sb.AppendLine($"  bDeviceClass         : {Fmt(d.BDeviceClass)}");
-        sb.AppendLine($"  bDeviceSubClass      : 0x{d.BDeviceSubClass:X2}");
-        sb.AppendLine($"  bDeviceProtocol      : 0x{d.BDeviceProtocol:X2}");
-        sb.AppendLine($"  bMaxPacketSize0      : {d.BMaxPacketSize0}");
-        sb.AppendLine($"  idVendor             : 0x{d.IdVendor:X4}");
-        sb.AppendLine($"  idProduct            : 0x{d.IdProduct:X4}");
-        sb.AppendLine($"  bcdDevice            : 0x{d.BcdDevice:X4}");
-        sb.AppendLine($"  iManufacturer        : {d.IManufacturer}");
-        sb.AppendLine($"  iProduct             : {d.IProduct}");
-        sb.AppendLine($"  iSerialNumber        : {d.ISerialNumber}");
-        sb.AppendLine($"  bNumConfigurations   : {d.BNumConfigurations}");
+        sb.AppendLine(_culture, $"  bLength              : {d.BLength}");
+        sb.AppendLine(_culture, $"  bDescriptorType      : {Fmt(d.BDescriptorType)}");
+        sb.AppendLine(_culture, $"  bcdUSB               : 0x{d.BcdUSB:X4}");
+        sb.AppendLine(_culture, $"  bDeviceClass         : {Fmt(d.BDeviceClass)}");
+        sb.AppendLine(_culture, $"  bDeviceSubClass      : 0x{d.BDeviceSubClass:X2}");
+        sb.AppendLine(_culture, $"  bDeviceProtocol      : 0x{d.BDeviceProtocol:X2}");
+        sb.AppendLine(_culture, $"  bMaxPacketSize0      : {d.BMaxPacketSize0}");
+        sb.AppendLine(_culture, $"  idVendor             : 0x{d.IdVendor:X4}");
+        sb.AppendLine(_culture, $"  idProduct            : 0x{d.IdProduct:X4}");
+        sb.AppendLine(_culture, $"  bcdDevice            : 0x{d.BcdDevice:X4}");
+        sb.AppendLine(_culture, $"  iManufacturer        : {d.IManufacturer}");
+        sb.AppendLine(_culture, $"  iProduct             : {d.IProduct}");
+        sb.AppendLine(_culture, $"  iSerialNumber        : {d.ISerialNumber}");
+        sb.AppendLine(_culture, $"  bNumConfigurations   : {d.BNumConfigurations}");
         return sb.ToString().TrimEnd();
     }
 
@@ -51,23 +48,25 @@ public static class DescriptorPrintExtensions
 
     public static string ToTreeString(this IUsbConfigDescriptor cfg)
     {
-        var sb = new StringBuilder();
-        sb.AppendLine("Configuration Descriptor:");
-        sb.AppendLine($"  bLength             : {cfg.BLength}");
-        sb.AppendLine($"  bDescriptorType     : {Fmt(cfg.BDescriptorType)}");
-        sb.AppendLine($"  wTotalLength        : {cfg.WTotalLength}");
-        sb.AppendLine($"  bNumInterfaces      : {cfg.BNumInterfaces}");
-        sb.AppendLine($"  bConfigurationValue : {cfg.BConfigurationValue}");
-        sb.AppendLine($"  iConfiguration      : {cfg.IConfiguration}");
-        sb.AppendLine($"  bmAttributes        : {Fmt(cfg.BmAttributes)}");
-        sb.AppendLine($"  MaxPower            : {cfg.MaxPower} (units of 2mA)");
+        var sb = new StringBuilder()
+            .AppendLine("Configuration Descriptor:")
+            .AppendLine(_culture, $"  bLength             : {cfg.BLength}")
+            .AppendLine(_culture, $"  bDescriptorType     : {Fmt(cfg.BDescriptorType)}")
+            .AppendLine(_culture, $"  wTotalLength        : {cfg.WTotalLength}")
+            .AppendLine(_culture, $"  bNumInterfaces      : {cfg.BNumInterfaces}")
+            .AppendLine(_culture, $"  bConfigurationValue : {cfg.BConfigurationValue}")
+            .AppendLine(_culture, $"  iConfiguration      : {cfg.IConfiguration}")
+            .AppendLine(_culture, $"  bmAttributes        : {Fmt(cfg.BmAttributes)}")
+            .AppendLine(_culture, $"  MaxPower            : {cfg.MaxPower} (units of 2mA)");
         if (cfg.Extra is { Length: > 0 })
-            sb.AppendLine($"  Extra               : {cfg.Extra.Length} bytes");
+        {
+            sb.AppendLine(_culture, $"  Extra               : {cfg.Extra.Length} bytes");
+        }
         for (int i = 0; i < cfg.Interfaces.Count; i++)
         {
             var iface = cfg.Interfaces[i];
             sb.AppendLine();
-            sb.AppendLine($"  Interface[{i}]:");
+            sb.AppendLine(_culture, $"  Interface[{i}]:");
             for (int a = 0; a < iface.AlternateSettings.Count; a++)
             {
                 var alt = iface.AlternateSettings[a];
@@ -81,17 +80,17 @@ public static class DescriptorPrintExtensions
     {
         var sb = new StringBuilder();
         sb.AppendLine("Interface Descriptor:");
-        sb.AppendLine($"  bLength           : {id.BLength}");
-        sb.AppendLine($"  bDescriptorType   : {Fmt(id.BDescriptorType)}");
-        sb.AppendLine($"  bInterfaceNumber  : {id.BInterfaceNumber}");
-        sb.AppendLine($"  bAlternateSetting : {id.BAlternateSetting}");
-        sb.AppendLine($"  bNumEndpoints     : {id.BNumEndpoints}");
-        sb.AppendLine($"  bInterfaceClass   : {Fmt(id.BInterfaceClass)}");
-        sb.AppendLine($"  bInterfaceSubClass: 0x{id.BInterfaceSubClass:X2}");
-        sb.AppendLine($"  bInterfaceProtocol: 0x{id.BInterfaceProtocol:X2}");
-        sb.AppendLine($"  iInterface        : {id.IInterface}");
+        sb.AppendLine(_culture, $"  bLength           : {id.BLength}");
+        sb.AppendLine(_culture, $"  bDescriptorType   : {Fmt(id.BDescriptorType)}");
+        sb.AppendLine(_culture, $"  bInterfaceNumber  : {id.BInterfaceNumber}");
+        sb.AppendLine(_culture, $"  bAlternateSetting : {id.BAlternateSetting}");
+        sb.AppendLine(_culture, $"  bNumEndpoints     : {id.BNumEndpoints}");
+        sb.AppendLine(_culture, $"  bInterfaceClass   : {Fmt(id.BInterfaceClass)}");
+        sb.AppendLine(_culture, $"  bInterfaceSubClass: 0x{id.BInterfaceSubClass:X2}");
+        sb.AppendLine(_culture, $"  bInterfaceProtocol: 0x{id.BInterfaceProtocol:X2}");
+        sb.AppendLine(_culture, $"  iInterface        : {id.IInterface}");
         if (id.Extra is { Length: > 0 })
-            sb.AppendLine($"  Extra             : {id.Extra.Length} bytes");
+            sb.AppendLine(_culture, $"  Extra             : {id.Extra.Length} bytes");
         foreach (var ep in id.Endpoints)
         {
             sb.AppendLine();
@@ -104,20 +103,22 @@ public static class DescriptorPrintExtensions
     {
         var sb = new StringBuilder();
         sb.AppendLine("Endpoint Descriptor:");
-        sb.AppendLine($"  bLength          : {ep.BLength}");
-        sb.AppendLine($"  bDescriptorType  : {Fmt(ep.BDescriptorType)}");
+        sb.AppendLine(_culture, $"  bLength          : {ep.BLength}");
+        sb.AppendLine(_culture, $"  bDescriptorType  : {Fmt(ep.BDescriptorType)}");
         sb.AppendLine(
+            _culture,
             $"  bEndpointAddress : 0x{ep.BEndpointAddress.Raw:X2} ({ep.BEndpointAddress.Direction}, {ep.BEndpointAddress.Number})"
         );
         sb.AppendLine(
+            _culture,
             $"  bmAttributes     : 0x{ep.BmAttributes.Raw:X2} ({ep.BmAttributes.TransferType}/{ep.BmAttributes.SyncType}/{ep.BmAttributes.UsageType})"
         );
-        sb.AppendLine($"  wMaxPacketSize   : {ep.WMaxPacketSize}");
-        sb.AppendLine($"  bInterval        : {ep.BInterval}");
-        sb.AppendLine($"  bRefresh         : {ep.BRefresh}");
-        sb.AppendLine($"  bSynchAddress    : {ep.BSynchAddress}");
+        sb.AppendLine(_culture, $"  wMaxPacketSize   : {ep.WMaxPacketSize}");
+        sb.AppendLine(_culture, $"  bInterval        : {ep.BInterval}");
+        sb.AppendLine(_culture, $"  bRefresh         : {ep.BRefresh}");
+        sb.AppendLine(_culture, $"  bSynchAddress    : {ep.BSynchAddress}");
         if (ep.Extra is { Length: > 0 })
-            sb.AppendLine($"  Extra            : {ep.Extra.Length} bytes");
+            sb.AppendLine(_culture, $"  Extra            : {ep.Extra.Length} bytes");
         return sb.ToString().TrimEnd();
     }
 
@@ -241,7 +242,7 @@ public static class DescriptorPrintExtensions
     private static string Fmt<TEnum>(TEnum value)
         where TEnum : struct, Enum
     {
-        ulong raw = Convert.ToUInt64(value);
+        ulong raw = Convert.ToUInt64(value, _culture);
         string rawStr =
             raw <= 0xFF ? $"0x{raw:X2}"
             : raw <= 0xFFFF ? $"0x{raw:X4}"
@@ -284,7 +285,7 @@ public static class DescriptorPrintExtensions
 
         public override void Write(Utf8JsonWriter writer, TEnum value, JsonSerializerOptions options)
         {
-            ulong raw = Convert.ToUInt64(value);
+            ulong raw = Convert.ToUInt64(value, _culture);
             string rawStr =
                 raw <= 0xFF ? $"0x{raw:X2}"
                 : raw <= 0xFFFF ? $"0x{raw:X4}"
@@ -330,12 +331,16 @@ public static class DescriptorPrintExtensions
                     if (name == "raw")
                     {
                         if (reader.TokenType == JsonTokenType.Number)
+                        {
                             raw = reader.GetByte();
+                        }
                         else if (
                             reader.TokenType == JsonTokenType.String
                             && TryParseByteFlexible(reader.GetString()!, out var rb)
                         )
+                        {
                             raw = rb;
+                        }
                     }
                 }
                 return new UsbEndpointAddress(raw ?? 0);
@@ -384,12 +389,16 @@ public static class DescriptorPrintExtensions
                     if (name == "raw")
                     {
                         if (reader.TokenType == JsonTokenType.Number)
+                        {
                             raw = reader.GetByte();
+                        }
                         else if (
                             reader.TokenType == JsonTokenType.String
                             && TryParseRaw(reader.GetString()!, out var rv)
                         )
+                        {
                             raw = rv;
+                        }
                     }
                 }
                 return new UsbEndpointAttributes(raw ?? 0);
@@ -484,5 +493,3 @@ public static class DescriptorPrintExtensions
         return string.Join(Environment.NewLine, lines);
     }
 }
-
-#pragma warning restore CA1305 // Specify IFormatProvider
