@@ -1,12 +1,9 @@
-﻿using System;
-using System.Reflection.Metadata;
-using System.Runtime.InteropServices;
-using LibUsbNative;
+﻿using System.Runtime.InteropServices;
 using LibUsbNative.Descriptors;
 
 namespace LibUsbNative;
 
-#pragma warning disable IDE0079 // Remove unnecessary suppression
+// LibraryImportAttribute not available in .NET6, silence warning until removal of .NET6 support
 #pragma warning disable SYSLIB1054 // Use 'LibraryImportAttribute' instead of 'DllImportAttribute' to generate P/Invoke marshalling code at compile time
 
 /// <summary>Concrete ILibUsbApi using direct DllImports.</summary>
@@ -14,7 +11,8 @@ public sealed class PInvokeLibUsbApi : ILibUsbApi
 {
     private const string Lib = "libusb-1.0";
 
-    // --- Context/Options ---
+    #region Context/Options
+
     [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
     private static extern LibUsbError libusb_init(out IntPtr ctx);
 
@@ -45,7 +43,10 @@ public sealed class PInvokeLibUsbApi : ILibUsbApi
     [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
     private static extern IntPtr libusb_strerror(LibUsbError errcode);
 
-    // --- Device list/refs ---
+    #endregion
+
+    #region Device list/refs
+
     [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
     private static extern LibUsbError libusb_get_device_list(IntPtr ctx, out IntPtr list);
 
@@ -58,7 +59,10 @@ public sealed class PInvokeLibUsbApi : ILibUsbApi
     [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
     private static extern void libusb_unref_device(IntPtr dev);
 
-    // --- Device metadata ---
+    #endregion
+
+    #region Device metadata
+
     [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
     private static extern LibUsbError libusb_get_device_descriptor(IntPtr dev, out native_libusb_device_descriptor d);
 
@@ -95,14 +99,21 @@ public sealed class PInvokeLibUsbApi : ILibUsbApi
     [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
     private static extern int libusb_get_max_iso_packet_size(IntPtr dev, byte endpoint);
 
-    // --- Open/close ---
+    #endregion
+
+    #region Open/close
+
+
     [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
     private static extern LibUsbError libusb_open(IntPtr dev, out IntPtr handle);
 
     [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
     private static extern void libusb_close(IntPtr handle);
 
-    // --- Config/Interfaces ---
+    #endregion
+
+    #region Config/Interfaces
+
     [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
     private static extern LibUsbError libusb_set_configuration(IntPtr h, int cfg);
 
@@ -118,7 +129,10 @@ public sealed class PInvokeLibUsbApi : ILibUsbApi
     [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
     private static extern LibUsbError libusb_set_interface_alt_setting(IntPtr h, int iface, int alt);
 
-    // --- Kernel driver ---
+    #endregion
+
+    #region Kernel driver
+
     [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
     private static extern LibUsbError libusb_kernel_driver_active(IntPtr h, int iface);
 
@@ -131,7 +145,10 @@ public sealed class PInvokeLibUsbApi : ILibUsbApi
     [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
     private static extern LibUsbError libusb_set_auto_detach_kernel_driver(IntPtr h, int enable);
 
-    // --- Strings ---
+    #endregion
+
+    #region Strings
+
     [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
     private static extern LibUsbError libusb_get_string_descriptor_ascii(IntPtr h, byte idx, byte[] data, int len);
 
@@ -144,7 +161,10 @@ public sealed class PInvokeLibUsbApi : ILibUsbApi
         int len
     );
 
-    // --- Sync I/O ---
+    #endregion
+
+    #region Sync I/O
+
     [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
     private static extern LibUsbError libusb_control_transfer(
         IntPtr h,
@@ -177,14 +197,20 @@ public sealed class PInvokeLibUsbApi : ILibUsbApi
         uint timeout
     );
 
-    // --- Halt/Reset ---
+    #endregion
+
+    #region Halt/Reset
+
     [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
     private static extern LibUsbError libusb_clear_halt(IntPtr h, byte ep);
 
     [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
     private static extern LibUsbError libusb_reset_device(IntPtr h);
 
-    // --- Events / Async ---
+    #endregion
+
+    #region Events/Async
+
     [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
     private static extern LibUsbError libusb_handle_events_timeout(IntPtr ctx, ref TimeVal tv);
 
@@ -216,7 +242,10 @@ public sealed class PInvokeLibUsbApi : ILibUsbApi
     [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
     private static extern LibUsbError libusb_cancel_transfer(IntPtr t);
 
-    // --- Hotplug ---
+    #endregion
+
+    #region Hotplug
+
     [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
     private static extern LibUsbError libusb_hotplug_register_callback(
         IntPtr ctx,
@@ -233,7 +262,10 @@ public sealed class PInvokeLibUsbApi : ILibUsbApi
     [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
     private static extern void libusb_hotplug_deregister_callback(IntPtr ctx, IntPtr callbackHandle);
 
-    // Expose via interface
+    #endregion
+
+    #region Expose via interface
+
     LibUsbError ILibUsbApi.libusb_init(out IntPtr ctx) => libusb_init(out ctx);
 
     void ILibUsbApi.libusb_exit(IntPtr ctx) => libusb_exit(ctx);
@@ -385,7 +417,8 @@ public sealed class PInvokeLibUsbApi : ILibUsbApi
 
     void ILibUsbApi.libusb_hotplug_deregister_callback(IntPtr ctx, IntPtr handle) =>
         libusb_hotplug_deregister_callback(ctx, handle);
+
+    #endregion
 }
 
 #pragma warning restore SYSLIB1054 // Use 'LibraryImportAttribute' instead of 'DllImportAttribute' to generate P/Invoke marshalling code at compile time
-#pragma warning restore IDE0079 // Remove unnecessary suppression
