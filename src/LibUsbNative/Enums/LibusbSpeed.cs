@@ -1,4 +1,4 @@
-﻿namespace LibUsbNative;
+﻿namespace LibUsbNative.Enums;
 
 public enum LibusbSpeed
 {
