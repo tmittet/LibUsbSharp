@@ -75,22 +75,22 @@ public static class DescriptorToStringExtension
         return sb.ToString().TrimEnd();
     }
 
-    public static string ToTreeString(this UsbInterfaceDescriptor id)
+    public static string ToTreeString(this libusb_interface_descriptor id)
     {
         var sb = new StringBuilder();
         sb.AppendLine("Interface Descriptor:");
-        sb.AppendLine(_culture, $"  bLength           : {id.BLength}");
-        sb.AppendLine(_culture, $"  bDescriptorType   : {Fmt(id.BDescriptorType)}");
-        sb.AppendLine(_culture, $"  bInterfaceNumber  : {id.BInterfaceNumber}");
-        sb.AppendLine(_culture, $"  bAlternateSetting : {id.BAlternateSetting}");
-        sb.AppendLine(_culture, $"  bNumEndpoints     : {id.BNumEndpoints}");
-        sb.AppendLine(_culture, $"  bInterfaceClass   : {Fmt(id.BInterfaceClass)}");
-        sb.AppendLine(_culture, $"  bInterfaceSubClass: 0x{id.BInterfaceSubClass:X2}");
-        sb.AppendLine(_culture, $"  bInterfaceProtocol: 0x{id.BInterfaceProtocol:X2}");
-        sb.AppendLine(_culture, $"  iInterface        : {id.IInterface}");
-        if (id.Extra is { Length: > 0 })
-            sb.AppendLine(_culture, $"  Extra             : {id.Extra.Length} bytes");
-        foreach (var ep in id.Endpoints)
+        sb.AppendLine(_culture, $"  bLength           : {id.bLength}");
+        sb.AppendLine(_culture, $"  bDescriptorType   : {Fmt(id.bDescriptorType)}");
+        sb.AppendLine(_culture, $"  bInterfaceNumber  : {id.bInterfaceNumber}");
+        sb.AppendLine(_culture, $"  bAlternateSetting : {id.bAlternateSetting}");
+        sb.AppendLine(_culture, $"  bNumEndpoints     : {id.bNumEndpoints}");
+        sb.AppendLine(_culture, $"  bInterfaceClass   : {Fmt(id.bInterfaceClass)}");
+        sb.AppendLine(_culture, $"  bInterfaceSubClass: 0x{id.bInterfaceSubClass:X2}");
+        sb.AppendLine(_culture, $"  bInterfaceProtocol: 0x{id.bInterfaceProtocol:X2}");
+        sb.AppendLine(_culture, $"  iInterface        : {id.iInterface}");
+        if (id.extra is { Length: > 0 })
+            sb.AppendLine(_culture, $"  Extra             : {id.extra.Length} bytes");
+        foreach (var ep in id.endpoints)
         {
             sb.AppendLine();
             sb.Append(ep.ToTreeString().Indent(2));

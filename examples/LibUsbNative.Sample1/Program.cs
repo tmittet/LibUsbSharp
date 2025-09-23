@@ -101,12 +101,12 @@ static class SamplePrinter
                     var iface = cfg.Interfaces[i];
                     foreach (var alt in iface.AlternateSettings)
                     {
-                        if (alt.IInterface == 0)
+                        if (alt.iInterface == 0)
                             continue;
                         AddStringLine(
                             "Interface",
-                            alt.IInterface,
-                            $"(cfg={cfg.BConfigurationValue}, if={alt.BInterfaceNumber}, alt={alt.BAlternateSetting})"
+                            alt.iInterface,
+                            $"(cfg={cfg.BConfigurationValue}, if={alt.bInterfaceNumber}, alt={alt.bAlternateSetting})"
                         );
                     }
                 }

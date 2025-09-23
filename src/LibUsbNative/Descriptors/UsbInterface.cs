@@ -4,10 +4,10 @@ namespace LibUsbNative.Descriptors;
 
 public readonly record struct UsbInterface
 {
-    public IReadOnlyList<UsbInterfaceDescriptor> AlternateSettings { get; }
+    public IReadOnlyList<libusb_interface_descriptor> AlternateSettings { get; }
 
     [JsonConstructor]
-    public UsbInterface(IReadOnlyList<UsbInterfaceDescriptor> alternateSettings)
+    public UsbInterface(IReadOnlyList<libusb_interface_descriptor> alternateSettings)
     {
         AlternateSettings = alternateSettings;
     }

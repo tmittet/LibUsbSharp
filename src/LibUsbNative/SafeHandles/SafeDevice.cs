@@ -220,7 +220,7 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
 
                         var extraIf = ReadExtra(id.extra, id.extra_length);
 
-                        return new UsbInterfaceDescriptor(
+                        return new libusb_interface_descriptor(
                             id.bLength,
                             (libusb_descriptor_type)id.bDescriptorType,
                             id.bInterfaceNumber,

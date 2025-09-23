@@ -26,7 +26,7 @@ namespace LibUsbNative;
 [JsonSerializable(typeof(UsbInterface))]
 [JsonSerializable(typeof(UsbInterface[]))]
 [JsonSerializable(typeof(IReadOnlyList<UsbInterface>))]
-[JsonSerializable(typeof(UsbInterfaceDescriptor))]
-[JsonSerializable(typeof(UsbInterfaceDescriptor[]))]
-[JsonSerializable(typeof(IReadOnlyList<UsbInterfaceDescriptor>))]
+[JsonSerializable(typeof(libusb_interface_descriptor))]
+[JsonSerializable(typeof(libusb_interface_descriptor[]))]
+[JsonSerializable(typeof(IReadOnlyList<libusb_interface_descriptor>))]
 internal partial class SerializationContext : JsonSerializerContext { }
