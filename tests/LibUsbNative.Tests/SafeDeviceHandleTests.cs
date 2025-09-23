@@ -72,6 +72,8 @@ public class SafeDeviceHandleTests
             var (list, count) = context.GetDeviceList();
             count.Should().BePositive();
             var device = list.Devices.ToList()[0];
+            // TODO: Picks random device to open and fails. In some cases this results in:
+            // Failed to open USB device. Operation not supported or unimplemented on this platform.
             var deviceHandle = device.Open();
             _ = deviceHandle.IsClosed.Should().BeFalse();
 
@@ -89,6 +91,8 @@ public class SafeDeviceHandleTests
             var (list, count) = context.GetDeviceList();
             count.Should().BePositive();
             var device = list.Devices.ToList()[0];
+            // TODO: Picks random device to open and fails. In some cases this results in:
+            // Failed to open USB device. Operation not supported or unimplemented on this platform.
             var deviceHandle = device.Open();
             _ = deviceHandle.IsClosed.Should().BeFalse();
             var serialNumber = deviceHandle.GetStringDescriptorAscii(
@@ -112,6 +116,8 @@ public class SafeDeviceHandleTests
             var (list, count) = context.GetDeviceList();
             count.Should().BePositive();
 
+            // TODO: Picks random device to open and fails. In some cases this results in:
+            // Failed to open USB device. Operation not supported or unimplemented on this platform.
             var deviceHandle = list.Devices.ToList()[0].Open();
             deviceHandle.Dispose();
 

@@ -139,6 +139,8 @@ public abstract class SafeContextTests
             var context = GetContext();
             var (list, count) = context.GetDeviceList();
             count.Should().BePositive();
+            // TODO: Picks random device to open and fails. In some cases this results in:
+            // Failed to open USB device. Operation not supported or unimplemented on this platform.
             var deviceHandle = list.Devices.ToList()[0].Open();
             context.Dispose();
             _ = stdout.Should().NotContain(s => s.Contains("still referenced"));
@@ -153,6 +155,8 @@ public abstract class SafeContextTests
             var context = GetContext();
             var (list, count) = context.GetDeviceList();
             count.Should().BePositive();
+            // TODO: Picks random device to open and fails. In some cases this results in:
+            // Failed to open USB device. Operation not supported or unimplemented on this platform.
             var deviceHandle = list.Devices.ToList()[0].Open();
 
             context.Dispose();

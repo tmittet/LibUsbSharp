@@ -111,6 +111,8 @@ public class SafeDeviceTests
             Action act = () => device.GetActiveConfigDescriptor();
             act.Should().Throw<ObjectDisposedException>();
 
+            // TODO: Picks random device to open and fails. In some cases this results in:
+            // Failed to open USB device. Operation not supported or unimplemented on this platform.
             act = () => device.Open();
             act.Should().Throw<ObjectDisposedException>();
 
