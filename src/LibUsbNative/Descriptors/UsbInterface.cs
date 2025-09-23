@@ -1,11 +1,7 @@
 ﻿namespace LibUsbNative.Descriptors;
 
-// TODO: Fix this
-#pragma warning disable SYSLIB1037
-
-public record UsbInterface(UsbInterfaceDescriptor[] AlternateSettings) : IUsbInterface
+public record class UsbInterface() : IUsbInterface
 {
-    IReadOnlyList<IUsbInterfaceDescriptor> IUsbInterface.AlternateSettings => Array.AsReadOnly(AlternateSettings);
+    public IReadOnlyList<IUsbInterfaceDescriptor> AlternateSettings { get; set; } =
+        Array.Empty<UsbInterfaceDescriptor>();
 }
-
-#pragma warning restore SYSLIB1037

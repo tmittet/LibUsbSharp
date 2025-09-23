@@ -2,19 +2,15 @@
 
 namespace LibUsbNative.Descriptors;
 
-// TODO: Fix this
-#pragma warning disable SYSLIB1037
-
-public record UsbEndpointDescriptor(
-    byte BLength,
-    UsbDescriptorType BDescriptorType,
-    UsbEndpointAddress BEndpointAddress,
-    UsbEndpointAttributes BmAttributes,
-    ushort WMaxPacketSize,
-    byte BInterval,
-    byte BRefresh,
-    byte BSynchAddress,
-    byte[] Extra
-) : IUsbEndpointDescriptor;
-
-#pragma warning restore SYSLIB1037
+public record class UsbEndpointDescriptor() : IUsbEndpointDescriptor
+{
+    public byte BLength { get; set; }
+    public UsbDescriptorType BDescriptorType { get; set; }
+    public UsbEndpointAddress BEndpointAddress { get; set; }
+    public UsbEndpointAttributes BmAttributes { get; set; }
+    public ushort WMaxPacketSize { get; set; }
+    public byte BInterval { get; set; }
+    public byte BRefresh { get; set; }
+    public byte BSynchAddress { get; set; }
+    public byte[] Extra { get; set; } = Array.Empty<byte>();
+}

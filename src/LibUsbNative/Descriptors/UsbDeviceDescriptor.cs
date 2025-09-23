@@ -2,24 +2,20 @@
 
 namespace LibUsbNative.Descriptors;
 
-// TODO: Fix this
-#pragma warning disable SYSLIB1037
-
-public record UsbDeviceDescriptor(
-    byte BLength,
-    UsbDescriptorType BDescriptorType,
-    ushort BcdUSB,
-    UsbClass BDeviceClass,
-    byte BDeviceSubClass,
-    byte BDeviceProtocol,
-    byte BMaxPacketSize0,
-    ushort IdVendor,
-    ushort IdProduct,
-    ushort BcdDevice,
-    byte IManufacturer,
-    byte IProduct,
-    byte ISerialNumber,
-    byte BNumConfigurations
-) : IUsbDeviceDescriptor;
-
-#pragma warning restore SYSLIB1037
+public record class UsbDeviceDescriptor() : IUsbDeviceDescriptor
+{
+    public byte BLength { get; set; }
+    public UsbDescriptorType BDescriptorType { get; set; }
+    public ushort BcdUSB { get; set; }
+    public UsbClass BDeviceClass { get; set; }
+    public byte BDeviceSubClass { get; set; }
+    public byte BDeviceProtocol { get; set; }
+    public byte BMaxPacketSize0 { get; set; }
+    public ushort IdVendor { get; set; }
+    public ushort IdProduct { get; set; }
+    public ushort BcdDevice { get; set; }
+    public byte IManufacturer { get; set; }
+    public byte IProduct { get; set; }
+    public byte ISerialNumber { get; set; }
+    public byte BNumConfigurations { get; set; }
+}

@@ -37,22 +37,23 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
         var result = _context.api.libusb_get_device_descriptor(handle, out var d);
         LibUsbException.ThrowIfError(result);
 
-        return new UsbDeviceDescriptor(
-            d.bLength,
-            (UsbDescriptorType)d.bDescriptorType,
-            d.bcdUSB,
-            (UsbClass)d.bDeviceClass,
-            d.bDeviceSubClass,
-            d.bDeviceProtocol,
-            d.bMaxPacketSize0,
-            d.idVendor,
-            d.idProduct,
-            d.bcdDevice,
-            d.iManufacturer,
-            d.iProduct,
-            d.iSerialNumber,
-            d.bNumConfigurations
-        );
+        return new UsbDeviceDescriptor
+        {
+            BLength = d.bLength,
+            BDescriptorType = (UsbDescriptorType)d.bDescriptorType,
+            BcdUSB = d.bcdUSB,
+            BDeviceClass = (UsbClass)d.bDeviceClass,
+            BDeviceSubClass = d.bDeviceSubClass,
+            BDeviceProtocol = d.bDeviceProtocol,
+            BMaxPacketSize0 = d.bMaxPacketSize0,
+            IdVendor = d.idVendor,
+            IdProduct = d.idProduct,
+            BcdDevice = d.bcdDevice,
+            IManufacturer = d.iManufacturer,
+            IProduct = d.iProduct,
+            ISerialNumber = d.iSerialNumber,
+            BNumConfigurations = d.bNumConfigurations,
+        };
     }
 
     public ISafeConfigDescriptorPtr GetActiveConfigDescriptorPtr()
@@ -203,59 +204,62 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
                                 var ep = Marshal.PtrToStructure<native_libusb_endpoint_descriptor>(epPtr);
                                 var extraEp = ReadExtra(ep.extra, ep.extra_length);
 
-                                return new UsbEndpointDescriptor(
-                                    ep.bLength,
-                                    (UsbDescriptorType)ep.bDescriptorType,
-                                    new UsbEndpointAddress(ep.bEndpointAddress),
-                                    new UsbEndpointAttributes(ep.bmAttributes),
-                                    ep.wMaxPacketSize,
-                                    ep.bInterval,
-                                    ep.bRefresh,
-                                    ep.bSynchAddress,
-                                    extraEp
-                                );
+                                return new UsbEndpointDescriptor
+                                {
+                                    BLength = ep.bLength,
+                                    BDescriptorType = (UsbDescriptorType)ep.bDescriptorType,
+                                    BEndpointAddress = new UsbEndpointAddress(ep.bEndpointAddress),
+                                    BmAttributes = new UsbEndpointAttributes(ep.bmAttributes),
+                                    WMaxPacketSize = ep.wMaxPacketSize,
+                                    BInterval = ep.bInterval,
+                                    BRefresh = ep.bRefresh,
+                                    BSynchAddress = ep.bSynchAddress,
+                                    Extra = extraEp,
+                                };
                             },
                             Marshal.SizeOf<native_libusb_endpoint_descriptor>()
                         );
 
                         var extraIf = ReadExtra(id.extra, id.extra_length);
 
-                        return new UsbInterfaceDescriptor(
-                            id.bLength,
-                            (UsbDescriptorType)id.bDescriptorType,
-                            id.bInterfaceNumber,
-                            id.bAlternateSetting,
-                            id.bNumEndpoints,
-                            (UsbClass)id.bInterfaceClass,
-                            id.bInterfaceSubClass,
-                            id.bInterfaceProtocol,
-                            id.iInterface,
-                            endpoints,
-                            extraIf
-                        );
+                        return new UsbInterfaceDescriptor
+                        {
+                            BLength = id.bLength,
+                            BDescriptorType = (UsbDescriptorType)id.bDescriptorType,
+                            BInterfaceNumber = id.bInterfaceNumber,
+                            BAlternateSetting = id.bAlternateSetting,
+                            BNumEndpoints = id.bNumEndpoints,
+                            BInterfaceClass = (UsbClass)id.bInterfaceClass,
+                            BInterfaceSubClass = id.bInterfaceSubClass,
+                            BInterfaceProtocol = id.bInterfaceProtocol,
+                            IInterface = id.iInterface,
+                            Endpoints = endpoints,
+                            Extra = extraIf,
+                        };
                     },
                     Marshal.SizeOf<native_libusb_interface_descriptor>()
                 );
 
-                return new UsbInterface(alt);
+                return new UsbInterface { AlternateSettings = alt };
             },
             Marshal.SizeOf<native_libusb_interface>()
         );
 
         var extraCfg = ReadExtra(cfg.extra, cfg.extra_length);
 
-        return new UsbConfigDescriptor(
-            cfg.bLength,
-            (UsbDescriptorType)cfg.bDescriptorType,
-            cfg.wTotalLength,
-            cfg.bNumInterfaces,
-            cfg.bConfigurationValue,
-            cfg.iConfiguration,
-            (UsbConfigAttributes)cfg.bmAttributes,
-            cfg.MaxPower,
-            interfaces,
-            extraCfg
-        );
+        return new UsbConfigDescriptor
+        {
+            BLength = cfg.bLength,
+            BDescriptorType = (UsbDescriptorType)cfg.bDescriptorType,
+            WTotalLength = cfg.wTotalLength,
+            BNumInterfaces = cfg.bNumInterfaces,
+            BConfigurationValue = cfg.bConfigurationValue,
+            IConfiguration = cfg.iConfiguration,
+            BmAttributes = (UsbConfigAttributes)cfg.bmAttributes,
+            MaxPower = cfg.MaxPower,
+            Interfaces = interfaces,
+            Extra = extraCfg,
+        };
     }
 
     private static TManaged[] ReadArray<TManaged>(

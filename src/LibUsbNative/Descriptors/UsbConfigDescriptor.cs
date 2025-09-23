@@ -2,23 +2,16 @@
 
 namespace LibUsbNative.Descriptors;
 
-// TODO: Fix this
-#pragma warning disable SYSLIB1037
-
-public record UsbConfigDescriptor(
-    byte BLength,
-    UsbDescriptorType BDescriptorType,
-    ushort WTotalLength,
-    byte BNumInterfaces,
-    byte BConfigurationValue,
-    byte IConfiguration,
-    UsbConfigAttributes BmAttributes,
-    byte MaxPower,
-    UsbInterface[] Interfaces,
-    byte[] Extra
-) : IUsbConfigDescriptor
+public record class UsbConfigDescriptor : IUsbConfigDescriptor
 {
-    IReadOnlyList<IUsbInterface> IUsbConfigDescriptor.Interfaces => Array.AsReadOnly(Interfaces);
+    public byte BLength { get; set; }
+    public UsbDescriptorType BDescriptorType { get; set; }
+    public ushort WTotalLength { get; set; }
+    public byte BNumInterfaces { get; set; }
+    public byte BConfigurationValue { get; set; }
+    public byte IConfiguration { get; set; }
+    public UsbConfigAttributes BmAttributes { get; set; }
+    public byte MaxPower { get; set; }
+    public IReadOnlyList<IUsbInterface> Interfaces { get; set; } = Array.Empty<IUsbInterface>();
+    public byte[] Extra { get; set; } = Array.Empty<byte>();
 }
-
-#pragma warning restore SYSLIB1037
