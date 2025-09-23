@@ -272,7 +272,7 @@ internal sealed class FakeLibusbApi : ILibUsbApi, IDisposable
             var ep = new native_libusb_endpoint_descriptor
             {
                 bLength = 7,
-                bDescriptorType = (byte)UsbDescriptorType.Endpoint,
+                bDescriptorType = (byte)libusb_descriptor_type.LIBUSB_DT_ENDPOINT,
                 bEndpointAddress = address,
                 bmAttributes = attrs,
                 wMaxPacketSize = maxPacket,
@@ -291,7 +291,7 @@ internal sealed class FakeLibusbApi : ILibUsbApi, IDisposable
         var ifDesc = new native_libusb_interface_descriptor
         {
             bLength = 9,
-            bDescriptorType = (byte)UsbDescriptorType.Interface,
+            bDescriptorType = (byte)libusb_descriptor_type.LIBUSB_DT_INTERFACE,
             bInterfaceNumber = 0,
             bAlternateSetting = 0,
             bNumEndpoints = (byte)epCount,
@@ -320,7 +320,7 @@ internal sealed class FakeLibusbApi : ILibUsbApi, IDisposable
         var cfg = new native_libusb_config_descriptor
         {
             bLength = 9,
-            bDescriptorType = (byte)UsbDescriptorType.Configuration,
+            bDescriptorType = (byte)libusb_descriptor_type.LIBUSB_DT_CONFIG,
             wTotalLength = totalLength,
             bNumInterfaces = 1,
             bConfigurationValue = 1,

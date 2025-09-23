@@ -39,7 +39,7 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
 
         return new UsbDeviceDescriptor(
             d.bLength,
-            (UsbDescriptorType)d.bDescriptorType,
+            (libusb_descriptor_type)d.bDescriptorType,
             d.bcdUSB,
             (libusb_class_code)d.bDeviceClass,
             d.bDeviceSubClass,
@@ -205,7 +205,7 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
 
                                 return new UsbEndpointDescriptor(
                                     ep.bLength,
-                                    (UsbDescriptorType)ep.bDescriptorType,
+                                    (libusb_descriptor_type)ep.bDescriptorType,
                                     new UsbEndpointAddress(ep.bEndpointAddress),
                                     new UsbEndpointAttributes(ep.bmAttributes),
                                     ep.wMaxPacketSize,
@@ -222,7 +222,7 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
 
                         return new UsbInterfaceDescriptor(
                             id.bLength,
-                            (UsbDescriptorType)id.bDescriptorType,
+                            (libusb_descriptor_type)id.bDescriptorType,
                             id.bInterfaceNumber,
                             id.bAlternateSetting,
                             id.bNumEndpoints,
@@ -246,7 +246,7 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
 
         return new UsbConfigDescriptor(
             cfg.bLength,
-            (UsbDescriptorType)cfg.bDescriptorType,
+            (libusb_descriptor_type)cfg.bDescriptorType,
             cfg.wTotalLength,
             cfg.bNumInterfaces,
             cfg.bConfigurationValue,

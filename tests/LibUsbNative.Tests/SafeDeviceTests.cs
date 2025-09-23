@@ -70,7 +70,7 @@ public class SafeDeviceTests
 
             var device = list.Devices.ToList()[0];
             var descriptor = device.GetDeviceDescriptor();
-            descriptor.BDescriptorType.Should().Be(UsbDescriptorType.Device);
+            descriptor.BDescriptorType.Should().Be(libusb_descriptor_type.LIBUSB_DT_DEVICE);
 
             list.Dispose();
         });
@@ -86,7 +86,7 @@ public class SafeDeviceTests
 
             var device = list.Devices.ToList()[0];
             var descriptor = device.GetActiveConfigDescriptor();
-            descriptor.BDescriptorType.Should().Be(UsbDescriptorType.Configuration);
+            descriptor.BDescriptorType.Should().Be(libusb_descriptor_type.LIBUSB_DT_CONFIG);
 
             list.Dispose();
         });

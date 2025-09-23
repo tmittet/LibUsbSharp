@@ -6,7 +6,7 @@ namespace LibUsbNative.Descriptors;
 public readonly record struct UsbConfigDescriptor
 {
     public byte BLength { get; }
-    public UsbDescriptorType BDescriptorType { get; }
+    public libusb_descriptor_type BDescriptorType { get; }
     public ushort WTotalLength { get; }
     public byte BNumInterfaces { get; }
     public byte BConfigurationValue { get; }
@@ -19,7 +19,7 @@ public readonly record struct UsbConfigDescriptor
     [JsonConstructor]
     public UsbConfigDescriptor(
         byte bLength,
-        UsbDescriptorType bDescriptorType,
+        libusb_descriptor_type bDescriptorType,
         ushort wTotalLength,
         byte bNumInterfaces,
         byte bConfigurationValue,

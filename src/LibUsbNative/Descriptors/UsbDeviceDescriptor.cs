@@ -6,7 +6,7 @@ namespace LibUsbNative.Descriptors;
 public readonly record struct UsbDeviceDescriptor
 {
     public byte BLength { get; }
-    public UsbDescriptorType BDescriptorType { get; }
+    public libusb_descriptor_type BDescriptorType { get; }
     public ushort BcdUSB { get; }
     public libusb_class_code BDeviceClass { get; }
     public byte BDeviceSubClass { get; }
@@ -23,7 +23,7 @@ public readonly record struct UsbDeviceDescriptor
     [JsonConstructor]
     public UsbDeviceDescriptor(
         byte bLength,
-        UsbDescriptorType bDescriptorType,
+        libusb_descriptor_type bDescriptorType,
         ushort bcdUSB,
         libusb_class_code bDeviceClass,
         byte bDeviceSubClass,

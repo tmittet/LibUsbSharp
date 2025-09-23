@@ -6,7 +6,7 @@ namespace LibUsbNative.Descriptors;
 public readonly record struct UsbEndpointDescriptor
 {
     public byte BLength { get; }
-    public UsbDescriptorType BDescriptorType { get; }
+    public libusb_descriptor_type BDescriptorType { get; }
     public UsbEndpointAddress BEndpointAddress { get; }
     public UsbEndpointAttributes BmAttributes { get; }
     public ushort WMaxPacketSize { get; }
@@ -18,7 +18,7 @@ public readonly record struct UsbEndpointDescriptor
     [JsonConstructor]
     public UsbEndpointDescriptor(
         byte bLength,
-        UsbDescriptorType bDescriptorType,
+        libusb_descriptor_type bDescriptorType,
         UsbEndpointAddress bEndpointAddress,
         UsbEndpointAttributes bmAttributes,
         ushort wMaxPacketSize,
