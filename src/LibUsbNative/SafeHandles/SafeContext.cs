@@ -16,8 +16,8 @@ public interface ISafeContext : IDisposable
     );
     void HotplugDeregisterCallback(IntPtr callbackHandle);
 
-    void SetOption(LibusbOption opt, int value);
-    void SetOption(LibusbOption option, IntPtr value);
+    void SetOption(LibUsbOption opt, int value);
+    void SetOption(LibUsbOption option, IntPtr value);
     LibUsbError HandleEventsCompleted(IntPtr param);
     void InterruptEventHandler();
     (ISafeDeviceList, uint) GetDeviceList();
@@ -54,10 +54,10 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
     public void SetOption(int option, int value)
     {
         SafeHelpers.ThrowIfClosed(this);
-        SetOption((LibusbOption)option, value);
+        SetOption((LibUsbOption)option, value);
     }
 
-    public void SetOption(LibusbOption option, int value)
+    public void SetOption(LibUsbOption option, int value)
     {
         SafeHelpers.ThrowIfClosed(this);
 
@@ -65,7 +65,7 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
         LibUsbException.ThrowIfError(rc, "libusb_set_option");
     }
 
-    public void SetOption(LibusbOption option, IntPtr value)
+    public void SetOption(LibUsbOption option, IntPtr value)
     {
         SafeHelpers.ThrowIfClosed(this);
 
@@ -106,7 +106,7 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
 
         try
         {
-            SetOption(LibusbOption.LIBUSB_OPTION_LOG_CB, Marshal.GetFunctionPointerForDelegate(callback));
+            SetOption(LibUsbOption.LIBUSB_OPTION_LOG_CB, Marshal.GetFunctionPointerForDelegate(callback));
         }
         catch
         {

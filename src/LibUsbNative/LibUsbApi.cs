@@ -13,8 +13,8 @@ public interface ILibUsbApi
 {
     LibUsbError libusb_init(out IntPtr ctx);
     void libusb_exit(IntPtr ctx);
-    LibUsbError libusb_set_option(IntPtr ctx, LibusbOption option, int value);
-    LibUsbError libusb_set_option(IntPtr ctx, LibusbOption option, IntPtr value);
+    LibUsbError libusb_set_option(IntPtr ctx, LibUsbOption usbOption, int value);
+    LibUsbError libusb_set_option(IntPtr ctx, LibUsbOption usbOption, IntPtr value);
 
     LibUsbError libusb_handle_events_completed(IntPtr ctx, IntPtr completed);
 
@@ -117,7 +117,7 @@ public interface ILibUsbApi
     void libusb_hotplug_deregister_callback(IntPtr ctx, IntPtr callbackHandle);
 }
 
-public enum LibusbOption
+public enum LibUsbOption
 {
     LOG_LEVEL = 0,
     USE_USBDK = 1,

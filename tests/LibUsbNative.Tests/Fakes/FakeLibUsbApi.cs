@@ -71,7 +71,7 @@ internal sealed class FakeLibusbApi : ILibUsbApi, IDisposable
     public int LastCbHandle = 42;
 
     // State tracking
-    private readonly Dictionary<LibusbOption, IntPtr> _options = new();
+    private readonly Dictionary<LibUsbOption, IntPtr> _options = new();
     private readonly HashSet<IntPtr> _openHandles = new();
     private readonly HashSet<(IntPtr Handle, int Interface)> _claimed = new();
     private int _nextHandle = 0x3000;
@@ -181,7 +181,7 @@ internal sealed class FakeLibusbApi : ILibUsbApi, IDisposable
 
     public void libusb_exit(IntPtr ctx) { }
 
-    public LibUsbError libusb_set_option(IntPtr ctx, LibusbOption option, int value)
+    public LibUsbError libusb_set_option(IntPtr ctx, LibUsbOption option, int value)
     {
         if (MaybeFail(nameof(libusb_set_option), out var err) != LibUsbError.Success)
             return err;
@@ -189,7 +189,7 @@ internal sealed class FakeLibusbApi : ILibUsbApi, IDisposable
         return LibUsbError.Success;
     }
 
-    public LibUsbError libusb_set_option(IntPtr ctx, LibusbOption option, IntPtr value)
+    public LibUsbError libusb_set_option(IntPtr ctx, LibUsbOption option, IntPtr value)
     {
         if (MaybeFail(nameof(libusb_set_option), out var err) != LibUsbError.Success)
             return err;
@@ -371,7 +371,7 @@ internal sealed class FakeLibusbApi : ILibUsbApi, IDisposable
 
     public IntPtr libusb_get_parent(IntPtr dev) => IntPtr.Zero;
 
-    public int libusb_get_device_speed(IntPtr dev) => (int)LibusbSpeed.High;
+    public int libusb_get_device_speed(IntPtr dev) => (int)LibUsbSpeed.High;
 
     public int libusb_get_max_packet_size(IntPtr dev, byte endpoint) => 512;
 

@@ -68,13 +68,13 @@ public class LibUsbNative : ILibUsbNative
         );
     }
 
-    public string StrError(LibUsbError error)
+    public string StrError(LibUsbError usbError)
     {
-        var ptr = _api.libusb_strerror(error);
+        var ptr = _api.libusb_strerror(usbError);
         Debug.Assert(ptr != IntPtr.Zero, "libusb_strerror returned null pointer");
 
         var detail = Marshal.PtrToStringAnsi(ptr);
-        return detail is null ? $"LibUsb error code {error}." : $"LibUsb error code {error}: {detail}.";
+        return detail is null ? $"LibUsb error code {usbError}." : $"LibUsb error code {usbError}: {detail}.";
     }
 }
 

@@ -1,6 +1,6 @@
 ﻿namespace LibUsbNative.Enums;
 
-public enum LibusbSpeed
+public enum LibUsbSpeed
 {
     Unknown = 0,
     Low = 1,

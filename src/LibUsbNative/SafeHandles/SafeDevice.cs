@@ -13,8 +13,8 @@ public interface ISafeDevice
     IUsbConfigDescriptor GetActiveConfigDescriptor();
     ISafeConfigDescriptorPtr GetActiveConfigDescriptorPtr();
 
-    IUsbConfigDescriptor GetConfigDescriptor(byte config_index);
-    ISafeConfigDescriptorPtr GetConfigDescriptorPtr(byte config_index);
+    IUsbConfigDescriptor GetConfigDescriptor(byte configIndex);
+    ISafeConfigDescriptorPtr GetConfigDescriptorPtr(byte configIndex);
 
     byte GetBusNumber();
     byte GetDeviceAddress();

@@ -270,10 +270,10 @@ public sealed class PInvokeLibUsbApi : ILibUsbApi
 
     void ILibUsbApi.libusb_exit(IntPtr ctx) => libusb_exit(ctx);
 
-    LibUsbError ILibUsbApi.libusb_set_option(IntPtr ctx, LibusbOption option, int value) =>
+    LibUsbError ILibUsbApi.libusb_set_option(IntPtr ctx, LibUsbOption option, int value) =>
         libusb_set_option(ctx, (int)option, value);
 
-    LibUsbError ILibUsbApi.libusb_set_option(IntPtr ctx, LibusbOption option, IntPtr value) =>
+    LibUsbError ILibUsbApi.libusb_set_option(IntPtr ctx, LibUsbOption option, IntPtr value) =>
         libusb_set_option(ctx, (int)option, value);
 
     LibUsbError ILibUsbApi.libusb_handle_events_completed(IntPtr ctx, IntPtr completed) =>

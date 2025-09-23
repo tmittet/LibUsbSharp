@@ -31,7 +31,7 @@ public class SafeDeviceTests
             }
         );
 
-        context.SetOption(LibusbOption.LOG_LEVEL, 3);
+        context.SetOption(LibUsbOption.LOG_LEVEL, 3);
     }
 
     internal static void EnterReadLock(Action action)
