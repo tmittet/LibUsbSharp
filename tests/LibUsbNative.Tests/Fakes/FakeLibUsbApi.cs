@@ -372,7 +372,7 @@ internal sealed class FakeLibusbApi : ILibUsbApi, IDisposable
 
     public IntPtr libusb_get_parent(IntPtr dev) => IntPtr.Zero;
 
-    public int libusb_get_device_speed(IntPtr dev) => (int)LibUsbSpeed.High;
+    public int libusb_get_device_speed(IntPtr dev) => (int)libusb_speed.LIBUSB_SPEED_HIGH;
 
     public int libusb_get_max_packet_size(IntPtr dev, byte endpoint) => 512;
 
