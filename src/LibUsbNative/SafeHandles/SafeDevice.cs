@@ -251,7 +251,7 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
             cfg.bNumInterfaces,
             cfg.bConfigurationValue,
             cfg.iConfiguration,
-            (UsbConfigAttributes)cfg.bmAttributes,
+            (libusb_config_desc_attributes)cfg.bmAttributes,
             cfg.MaxPower,
             interfaces,
             extraCfg

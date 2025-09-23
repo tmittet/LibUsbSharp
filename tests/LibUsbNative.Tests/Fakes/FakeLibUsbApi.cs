@@ -325,7 +325,9 @@ internal sealed class FakeLibusbApi : ILibUsbApi, IDisposable
             bNumInterfaces = 1,
             bConfigurationValue = 1,
             iConfiguration = 0,
-            bmAttributes = (byte)(UsbConfigAttributes.MustBeSet | UsbConfigAttributes.SelfPowered),
+            bmAttributes = (byte)(
+                libusb_config_desc_attributes.RESERVED_MUST_BE_SET | libusb_config_desc_attributes.SELF_POWERED
+            ),
             MaxPower = 50,
             interfacePtr = interfaceArrayPtr,
             extra = IntPtr.Zero,

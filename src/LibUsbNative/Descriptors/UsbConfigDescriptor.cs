@@ -11,7 +11,7 @@ public readonly record struct UsbConfigDescriptor
     public byte BNumInterfaces { get; }
     public byte BConfigurationValue { get; }
     public byte IConfiguration { get; }
-    public UsbConfigAttributes BmAttributes { get; }
+    public libusb_config_desc_attributes BmAttributes { get; }
     public byte MaxPower { get; }
     public IReadOnlyList<UsbInterface> Interfaces { get; } = Array.Empty<UsbInterface>();
     public byte[] Extra { get; } = Array.Empty<byte>();
@@ -24,7 +24,7 @@ public readonly record struct UsbConfigDescriptor
         byte bNumInterfaces,
         byte bConfigurationValue,
         byte iConfiguration,
-        UsbConfigAttributes bmAttributes,
+        libusb_config_desc_attributes bmAttributes,
         byte maxPower,
         IReadOnlyList<UsbInterface> interfaces,
         byte[] extra
