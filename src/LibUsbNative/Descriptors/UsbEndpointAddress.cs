@@ -8,7 +8,7 @@ namespace LibUsbNative.Descriptors;
 /// Combined representation of bEndpointAddress.
 /// </summary>
 [JsonConverter(typeof(UsbEndpointAddressFlexibleJsonConverter))]
-public readonly struct UsbEndpointAddress
+public readonly record struct UsbEndpointAddress
 {
     public UsbEndpointNumber Number { get; }
     public UsbEndpointDirection Direction { get; }

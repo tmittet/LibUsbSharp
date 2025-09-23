@@ -8,7 +8,7 @@ namespace LibUsbNative.Descriptors;
 /// Strongly typed view of endpoint bmAttributes.
 /// </summary>
 [JsonConverter(typeof(UsbEndpointAttributesFlexibleJsonConverter))]
-public readonly struct UsbEndpointAttributes
+public readonly record struct UsbEndpointAttributes
 {
     public UsbEndpointTransferType TransferType { get; }
     public UsbIsochronousSyncType SyncType { get; }

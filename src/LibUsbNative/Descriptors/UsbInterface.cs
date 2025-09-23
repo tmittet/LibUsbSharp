@@ -1,7 +1,14 @@
-﻿namespace LibUsbNative.Descriptors;
+﻿using System.Text.Json.Serialization;
 
-public record class UsbInterface() : IUsbInterface
+namespace LibUsbNative.Descriptors;
+
+public readonly record struct UsbInterface
 {
-    public IReadOnlyList<IUsbInterfaceDescriptor> AlternateSettings { get; set; } =
-        Array.Empty<UsbInterfaceDescriptor>();
+    public IReadOnlyList<UsbInterfaceDescriptor> AlternateSettings { get; }
+
+    [JsonConstructor]
+    public UsbInterface(IReadOnlyList<UsbInterfaceDescriptor> alternateSettings)
+    {
+        AlternateSettings = alternateSettings;
+    }
 }

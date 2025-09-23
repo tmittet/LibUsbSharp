@@ -40,7 +40,7 @@ static class SamplePrinter
         var devDesc = device.GetDeviceDescriptor();
 
         // Collect all configuration descriptors now that GetConfigDescriptor is available.
-        var configs = new List<IUsbConfigDescriptor>();
+        var configs = new List<UsbConfigDescriptor>();
         for (byte i = 0; i < devDesc.BNumConfigurations; i++)
         {
             try

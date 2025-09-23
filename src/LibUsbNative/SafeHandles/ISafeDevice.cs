@@ -6,12 +6,12 @@ public interface ISafeDevice
 {
     ISafeDeviceHandle Open();
 
-    IUsbDeviceDescriptor GetDeviceDescriptor();
+    UsbDeviceDescriptor GetDeviceDescriptor();
 
-    IUsbConfigDescriptor GetActiveConfigDescriptor();
+    UsbConfigDescriptor GetActiveConfigDescriptor();
     ISafeConfigDescriptorPtr GetActiveConfigDescriptorPtr();
 
-    IUsbConfigDescriptor GetConfigDescriptor(byte configIndex);
+    UsbConfigDescriptor GetConfigDescriptor(byte configIndex);
     ISafeConfigDescriptorPtr GetConfigDescriptorPtr(byte configIndex);
 
     byte GetBusNumber();

@@ -12,7 +12,7 @@ public static class DescriptorToStringExtension
     private static readonly CultureInfo _culture = CultureInfo.InvariantCulture;
     private static readonly string[] _newLine = new[] { "\r\n", "\n" };
 
-    public static string ToTreeString(this IUsbDeviceDescriptor d)
+    public static string ToTreeString(this UsbDeviceDescriptor d)
     {
         var sb = new StringBuilder();
         sb.AppendLine("Device Descriptor:");
@@ -33,7 +33,7 @@ public static class DescriptorToStringExtension
         return sb.ToString().TrimEnd();
     }
 
-    public static string ToTreeString(this IUsbDeviceDescriptor d, IReadOnlyList<IUsbConfigDescriptor> configs)
+    public static string ToTreeString(this UsbDeviceDescriptor d, IReadOnlyList<UsbConfigDescriptor> configs)
     {
         var sb = new StringBuilder();
         sb.AppendLine(d.ToTreeString());
@@ -45,7 +45,7 @@ public static class DescriptorToStringExtension
         return sb.ToString().TrimEnd();
     }
 
-    public static string ToTreeString(this IUsbConfigDescriptor cfg)
+    public static string ToTreeString(this UsbConfigDescriptor cfg)
     {
         var sb = new StringBuilder()
             .AppendLine("Configuration Descriptor:")
@@ -75,7 +75,7 @@ public static class DescriptorToStringExtension
         return sb.ToString().TrimEnd();
     }
 
-    public static string ToTreeString(this IUsbInterfaceDescriptor id)
+    public static string ToTreeString(this UsbInterfaceDescriptor id)
     {
         var sb = new StringBuilder();
         sb.AppendLine("Interface Descriptor:");
@@ -98,7 +98,7 @@ public static class DescriptorToStringExtension
         return sb.ToString();
     }
 
-    public static string ToTreeString(this IUsbEndpointDescriptor ep)
+    public static string ToTreeString(this UsbEndpointDescriptor ep)
     {
         var sb = new StringBuilder();
         sb.AppendLine("Endpoint Descriptor:");

@@ -1,17 +1,44 @@
-﻿using LibUsbNative.Enums;
+﻿using System.Text.Json.Serialization;
+using LibUsbNative.Enums;
 
 namespace LibUsbNative.Descriptors;
 
-public record class UsbConfigDescriptor : IUsbConfigDescriptor
+public readonly record struct UsbConfigDescriptor
 {
-    public byte BLength { get; set; }
-    public UsbDescriptorType BDescriptorType { get; set; }
-    public ushort WTotalLength { get; set; }
-    public byte BNumInterfaces { get; set; }
-    public byte BConfigurationValue { get; set; }
-    public byte IConfiguration { get; set; }
-    public UsbConfigAttributes BmAttributes { get; set; }
-    public byte MaxPower { get; set; }
-    public IReadOnlyList<IUsbInterface> Interfaces { get; set; } = Array.Empty<IUsbInterface>();
-    public byte[] Extra { get; set; } = Array.Empty<byte>();
+    public byte BLength { get; }
+    public UsbDescriptorType BDescriptorType { get; }
+    public ushort WTotalLength { get; }
+    public byte BNumInterfaces { get; }
+    public byte BConfigurationValue { get; }
+    public byte IConfiguration { get; }
+    public UsbConfigAttributes BmAttributes { get; }
+    public byte MaxPower { get; }
+    public IReadOnlyList<UsbInterface> Interfaces { get; } = Array.Empty<UsbInterface>();
+    public byte[] Extra { get; } = Array.Empty<byte>();
+
+    [JsonConstructor]
+    public UsbConfigDescriptor(
+        byte bLength,
+        UsbDescriptorType bDescriptorType,
+        ushort wTotalLength,
+        byte bNumInterfaces,
+        byte bConfigurationValue,
+        byte iConfiguration,
+        UsbConfigAttributes bmAttributes,
+        byte maxPower,
+        IReadOnlyList<UsbInterface> interfaces,
+        byte[] extra
+    )
+    {
+        BLength = bLength;
+        BDescriptorType = bDescriptorType;
+        WTotalLength = wTotalLength;
+        BNumInterfaces = bNumInterfaces;
+        BConfigurationValue = bConfigurationValue;
+        IConfiguration = iConfiguration;
+        BmAttributes = bmAttributes;
+        MaxPower = maxPower;
+        Interfaces = interfaces;
+        Extra = extra;
+    }
 }

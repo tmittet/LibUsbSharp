@@ -1,16 +1,41 @@
-﻿using LibUsbNative.Enums;
+﻿using System.Text.Json.Serialization;
+using LibUsbNative.Enums;
 
 namespace LibUsbNative.Descriptors;
 
-public record class UsbEndpointDescriptor() : IUsbEndpointDescriptor
+public readonly record struct UsbEndpointDescriptor
 {
-    public byte BLength { get; set; }
-    public UsbDescriptorType BDescriptorType { get; set; }
-    public UsbEndpointAddress BEndpointAddress { get; set; }
-    public UsbEndpointAttributes BmAttributes { get; set; }
-    public ushort WMaxPacketSize { get; set; }
-    public byte BInterval { get; set; }
-    public byte BRefresh { get; set; }
-    public byte BSynchAddress { get; set; }
-    public byte[] Extra { get; set; } = Array.Empty<byte>();
+    public byte BLength { get; }
+    public UsbDescriptorType BDescriptorType { get; }
+    public UsbEndpointAddress BEndpointAddress { get; }
+    public UsbEndpointAttributes BmAttributes { get; }
+    public ushort WMaxPacketSize { get; }
+    public byte BInterval { get; }
+    public byte BRefresh { get; }
+    public byte BSynchAddress { get; }
+    public byte[] Extra { get; } = Array.Empty<byte>();
+
+    [JsonConstructor]
+    public UsbEndpointDescriptor(
+        byte bLength,
+        UsbDescriptorType bDescriptorType,
+        UsbEndpointAddress bEndpointAddress,
+        UsbEndpointAttributes bmAttributes,
+        ushort wMaxPacketSize,
+        byte bInterval,
+        byte bRefresh,
+        byte bSynchAddress,
+        byte[] extra
+    )
+    {
+        BLength = bLength;
+        BDescriptorType = bDescriptorType;
+        BEndpointAddress = bEndpointAddress;
+        BmAttributes = bmAttributes;
+        WMaxPacketSize = wMaxPacketSize;
+        BInterval = bInterval;
+        BRefresh = bRefresh;
+        BSynchAddress = bSynchAddress;
+        Extra = extra;
+    }
 }

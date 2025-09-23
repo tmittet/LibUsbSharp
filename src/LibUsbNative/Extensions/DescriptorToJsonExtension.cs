@@ -14,31 +14,31 @@ public static class DescriptorToJsonExtension
     // raw: as before (numeric enums). Regardless of fancy/raw, BEndpointAddress and BmAttributes now serialize as a single byte value.
 
     public static string ToJson(
-        this IUsbDeviceDescriptor d,
+        this UsbDeviceDescriptor d,
         bool indented = true,
         bool hexExtras = false,
         bool raw = false
     ) => Serialize(d, indented, hexExtras, raw);
 
     public static string ToJson(
-        this IUsbConfigDescriptor d,
+        this UsbConfigDescriptor d,
         bool indented = true,
         bool hexExtras = false,
         bool raw = false
     ) => Serialize(d, indented, hexExtras, raw);
 
-    public static string ToJson(this IUsbInterface d, bool indented = true, bool hexExtras = false, bool raw = false) =>
+    public static string ToJson(this UsbInterface d, bool indented = true, bool hexExtras = false, bool raw = false) =>
         Serialize(d, indented, hexExtras, raw);
 
     public static string ToJson(
-        this IUsbInterfaceDescriptor d,
+        this UsbInterfaceDescriptor d,
         bool indented = true,
         bool hexExtras = false,
         bool raw = false
     ) => Serialize(d, indented, hexExtras, raw);
 
     public static string ToJson(
-        this IUsbEndpointDescriptor d,
+        this UsbEndpointDescriptor d,
         bool indented = true,
         bool hexExtras = false,
         bool raw = false
