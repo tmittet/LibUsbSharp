@@ -41,7 +41,7 @@ static class SamplePrinter
 
         // Collect all configuration descriptors now that GetConfigDescriptor is available.
         var configs = new List<libusb_config_descriptor>();
-        for (byte i = 0; i < devDesc.BNumConfigurations; i++)
+        for (byte i = 0; i < devDesc.bNumConfigurations; i++)
         {
             try
             {
@@ -84,9 +84,9 @@ static class SamplePrinter
                 sb.AppendLine(Indent(2) + $"{label}{ctx} (index {index}): \"{s}\"");
             }
 
-            AddStringLine("Manufacturer", devDesc.IManufacturer);
-            AddStringLine("Product", devDesc.IProduct);
-            AddStringLine("SerialNumber", devDesc.ISerialNumber);
+            AddStringLine("Manufacturer", devDesc.iManufacturer);
+            AddStringLine("Product", devDesc.iProduct);
+            AddStringLine("SerialNumber", devDesc.iSerialNumber);
 
             foreach (var cfg in configs)
             {

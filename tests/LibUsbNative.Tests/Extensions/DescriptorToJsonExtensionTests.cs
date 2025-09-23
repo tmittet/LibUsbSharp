@@ -92,7 +92,7 @@ public class DescriptorToJsonExtensionTests
             var json = device.GetDeviceDescriptor().ToJson();
             output.WriteLine(json);
 
-            var deserialized = JsonSerializer.Deserialize<UsbDeviceDescriptor>(json)!;
+            var deserialized = JsonSerializer.Deserialize<libusb_device_descriptor>(json)!;
             deserialized.ToJson().Should().Be(json);
             list.Dispose();
         });

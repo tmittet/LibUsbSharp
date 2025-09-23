@@ -30,14 +30,14 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
         return true;
     }
 
-    public UsbDeviceDescriptor GetDeviceDescriptor()
+    public libusb_device_descriptor GetDeviceDescriptor()
     {
         SafeHelpers.ThrowIfClosed(this);
 
         var result = _context.api.libusb_get_device_descriptor(handle, out var d);
         LibUsbException.ThrowIfError(result);
 
-        return new UsbDeviceDescriptor(
+        return new libusb_device_descriptor(
             d.bLength,
             (libusb_descriptor_type)d.bDescriptorType,
             d.bcdUSB,

@@ -6,7 +6,7 @@ public interface ISafeDevice
 {
     ISafeDeviceHandle Open();
 
-    UsbDeviceDescriptor GetDeviceDescriptor();
+    libusb_device_descriptor GetDeviceDescriptor();
 
     libusb_config_descriptor GetActiveConfigDescriptor();
     ISafeConfigDescriptorPtr GetActiveConfigDescriptorPtr();

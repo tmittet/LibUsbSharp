@@ -92,7 +92,7 @@ public class SafeDeviceHandleTests
             var deviceHandle = device.Open();
             _ = deviceHandle.IsClosed.Should().BeFalse();
             var serialNumber = deviceHandle.GetStringDescriptorAscii(
-                deviceHandle.Device.GetDeviceDescriptor().ISerialNumber
+                deviceHandle.Device.GetDeviceDescriptor().iSerialNumber
             );
             _ = serialNumber.Should().NotBeNullOrEmpty();
 

@@ -12,28 +12,28 @@ public static class DescriptorToStringExtension
     private static readonly CultureInfo _culture = CultureInfo.InvariantCulture;
     private static readonly string[] _newLine = new[] { "\r\n", "\n" };
 
-    public static string ToTreeString(this UsbDeviceDescriptor d)
+    public static string ToTreeString(this libusb_device_descriptor d)
     {
         var sb = new StringBuilder();
         sb.AppendLine("Device Descriptor:");
-        sb.AppendLine(_culture, $"  bLength              : {d.BLength}");
-        sb.AppendLine(_culture, $"  bDescriptorType      : {Fmt(d.BDescriptorType)}");
-        sb.AppendLine(_culture, $"  bcdUSB               : 0x{d.BcdUSB:X4}");
-        sb.AppendLine(_culture, $"  bDeviceClass         : {Fmt(d.BDeviceClass)}");
-        sb.AppendLine(_culture, $"  bDeviceSubClass      : 0x{d.BDeviceSubClass:X2}");
-        sb.AppendLine(_culture, $"  bDeviceProtocol      : 0x{d.BDeviceProtocol:X2}");
-        sb.AppendLine(_culture, $"  bMaxPacketSize0      : {d.BMaxPacketSize0}");
-        sb.AppendLine(_culture, $"  idVendor             : 0x{d.IdVendor:X4}");
-        sb.AppendLine(_culture, $"  idProduct            : 0x{d.IdProduct:X4}");
-        sb.AppendLine(_culture, $"  bcdDevice            : 0x{d.BcdDevice:X4}");
-        sb.AppendLine(_culture, $"  iManufacturer        : {d.IManufacturer}");
-        sb.AppendLine(_culture, $"  iProduct             : {d.IProduct}");
-        sb.AppendLine(_culture, $"  iSerialNumber        : {d.ISerialNumber}");
-        sb.AppendLine(_culture, $"  bNumConfigurations   : {d.BNumConfigurations}");
+        sb.AppendLine(_culture, $"  bLength              : {d.bLength}");
+        sb.AppendLine(_culture, $"  bDescriptorType      : {Fmt(d.bDescriptorType)}");
+        sb.AppendLine(_culture, $"  bcdUSB               : 0x{d.bcdUSB:X4}");
+        sb.AppendLine(_culture, $"  bDeviceClass         : {Fmt(d.bDeviceClass)}");
+        sb.AppendLine(_culture, $"  bDeviceSubClass      : 0x{d.bDeviceSubClass:X2}");
+        sb.AppendLine(_culture, $"  bDeviceProtocol      : 0x{d.bDeviceProtocol:X2}");
+        sb.AppendLine(_culture, $"  bMaxPacketSize0      : {d.bMaxPacketSize0}");
+        sb.AppendLine(_culture, $"  idVendor             : 0x{d.idVendor:X4}");
+        sb.AppendLine(_culture, $"  idProduct            : 0x{d.idProduct:X4}");
+        sb.AppendLine(_culture, $"  bcdDevice            : 0x{d.bcdDevice:X4}");
+        sb.AppendLine(_culture, $"  iManufacturer        : {d.iManufacturer}");
+        sb.AppendLine(_culture, $"  iProduct             : {d.iProduct}");
+        sb.AppendLine(_culture, $"  iSerialNumber        : {d.iSerialNumber}");
+        sb.AppendLine(_culture, $"  bNumConfigurations   : {d.bNumConfigurations}");
         return sb.ToString().TrimEnd();
     }
 
-    public static string ToTreeString(this UsbDeviceDescriptor d, IReadOnlyList<libusb_config_descriptor> configs)
+    public static string ToTreeString(this libusb_device_descriptor d, IReadOnlyList<libusb_config_descriptor> configs)
     {
         var sb = new StringBuilder();
         sb.AppendLine(d.ToTreeString());

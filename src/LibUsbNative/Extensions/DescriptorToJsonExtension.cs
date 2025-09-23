@@ -5,8 +5,8 @@ namespace LibUsbNative.Extensions;
 
 public static class DescriptorToJsonExtension
 {
-    public static string ToJson(this UsbDeviceDescriptor deviceDescriptor) =>
-        JsonSerializer.Serialize(deviceDescriptor, SerializationContext.Default.UsbDeviceDescriptor);
+    public static string ToJson(this libusb_device_descriptor deviceDescriptor) =>
+        JsonSerializer.Serialize(deviceDescriptor, SerializationContext.Default.libusb_device_descriptor);
 
     public static string ToJson(this libusb_config_descriptor configDescriptor) =>
         JsonSerializer.Serialize(configDescriptor, SerializationContext.Default.libusb_config_descriptor);
