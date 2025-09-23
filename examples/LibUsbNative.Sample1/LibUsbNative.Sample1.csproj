@@ -8,9 +8,6 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
     <ItemGroup>
-        <None Include="..\..\src\LibUsbNative\.editorconfig" Link=".editorconfig" />
-    </ItemGroup>
-    <ItemGroup>
         <ProjectReference Include="..\..\src\LibUsbNative\LibUsbNative.csproj" />
     </ItemGroup>
 </Project>

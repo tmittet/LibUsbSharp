@@ -106,9 +106,7 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
     )
     {
         SafeHelpers.ThrowIfClosed(this);
-
-        if (hotPlugCallback is null)
-            throw new ArgumentNullException(nameof(hotPlugCallback));
+        ArgumentNullException.ThrowIfNull(hotPlugCallback);
 
         int InternalCallback(IntPtr ctx, IntPtr dev, int eventType, IntPtr userData)
         {

@@ -48,9 +48,8 @@
         </None>
     </ItemGroup>
     <ItemGroup>
-        <EditorConfigFiles Remove=".editorconfig" />
-    </ItemGroup>
-    <ItemGroup>
-        <None Include=".editorconfig" />
+        <EditorConfigFiles Update=".editorconfig">
+            <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+        </EditorConfigFiles>
     </ItemGroup>
 </Project>

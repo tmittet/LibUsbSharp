@@ -4,9 +4,6 @@ using LibUsbNative.Enums;
 
 namespace LibUsbNative;
 
-#pragma warning disable IDE1006 // Naming Styles
-#pragma warning disable CA1707 // Identifiers should not contain underscores
-
 /// <summary>
 /// Swappable facade for libusb 1.x. Default impl: <see cref="PInvokeLibUsbApi"/>.
 /// </summary>
@@ -123,6 +120,3 @@ public delegate int libusb_hotplug_callback_fn(IntPtr ctx, IntPtr dev, int event
 
 [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 public delegate void libusb_log_callback(IntPtr context, int level, string message);
-
-#pragma warning restore IDE1006 // Naming Styles
-#pragma warning restore CA1707 // Identifiers should not contain underscores

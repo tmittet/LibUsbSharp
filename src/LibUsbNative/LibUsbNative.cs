@@ -5,8 +5,6 @@ using LibUsbNative.SafeHandles;
 
 namespace LibUsbNative;
 
-#pragma warning disable IDE1006 // Naming Styles
-
 /// <summary>
 /// Singleton-style access to libusb API. Swap in tests if needed.
 /// </summary>
@@ -78,5 +76,3 @@ public class LibUsbNative : ILibUsbNative
         return detail is null ? $"LibUsb error code {usbError}." : $"LibUsb error code {usbError}: {detail}.";
     }
 }
-
-#pragma warning restore IDE1006 // Naming Styles

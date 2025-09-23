@@ -12,9 +12,7 @@ public sealed class LibUsbException : Exception
         get
         {
             var mapped = LibUsbErrorMessage.Get(Error);
-            if (string.IsNullOrWhiteSpace(base.Message))
-                return mapped;
-            return $"{base.Message} {mapped}".Trim();
+            return string.IsNullOrWhiteSpace(base.Message) ? mapped : $"{base.Message} {mapped}".Trim();
         }
     }
 
