@@ -295,7 +295,7 @@ internal sealed class FakeLibusbApi : ILibUsbApi, IDisposable
             bInterfaceNumber = 0,
             bAlternateSetting = 0,
             bNumEndpoints = (byte)epCount,
-            bInterfaceClass = (byte)UsbClass.Miscellaneous,
+            bInterfaceClass = (byte)libusb_class_code.LIBUSB_CLASS_MISCELLANEOUS,
             bInterfaceSubClass = 0x02,
             bInterfaceProtocol = 0x01,
             iInterface = 0,

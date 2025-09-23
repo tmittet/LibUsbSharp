@@ -10,7 +10,7 @@ public readonly record struct UsbInterfaceDescriptor
     public byte BInterfaceNumber { get; }
     public byte BAlternateSetting { get; }
     public byte BNumEndpoints { get; }
-    public UsbClass BInterfaceClass { get; }
+    public libusb_class_code BInterfaceClass { get; }
     public byte BInterfaceSubClass { get; }
     public byte BInterfaceProtocol { get; }
     public byte IInterface { get; }
@@ -24,7 +24,7 @@ public readonly record struct UsbInterfaceDescriptor
         byte bInterfaceNumber,
         byte bAlternateSetting,
         byte bNumEndpoints,
-        UsbClass bInterfaceClass,
+        libusb_class_code bInterfaceClass,
         byte bInterfaceSubClass,
         byte bInterfaceProtocol,
         byte iInterface,

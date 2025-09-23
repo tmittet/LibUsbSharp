@@ -8,7 +8,7 @@ public readonly record struct UsbDeviceDescriptor
     public byte BLength { get; }
     public UsbDescriptorType BDescriptorType { get; }
     public ushort BcdUSB { get; }
-    public UsbClass BDeviceClass { get; }
+    public libusb_class_code BDeviceClass { get; }
     public byte BDeviceSubClass { get; }
     public byte BDeviceProtocol { get; }
     public byte BMaxPacketSize0 { get; }
@@ -25,7 +25,7 @@ public readonly record struct UsbDeviceDescriptor
         byte bLength,
         UsbDescriptorType bDescriptorType,
         ushort bcdUSB,
-        UsbClass bDeviceClass,
+        libusb_class_code bDeviceClass,
         byte bDeviceSubClass,
         byte bDeviceProtocol,
         byte bMaxPacketSize0,
