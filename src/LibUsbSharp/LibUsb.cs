@@ -29,7 +29,7 @@ public sealed class LibUsb : ILibUsb
     public Version GetVersion()
     {
         var version = _libUsbNative.GetVersion();
-        return new Version(version.Major, version.Minor, version.Micro, version.Nano);
+        return new Version(version.major, version.minor, version.micro, version.nano);
     }
 
     /// <summary>

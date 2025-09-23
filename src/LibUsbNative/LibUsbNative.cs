@@ -2,6 +2,7 @@
 using System.Runtime.InteropServices;
 using LibUsbNative.Enums;
 using LibUsbNative.SafeHandles;
+using LibUsbNative.Structs;
 
 namespace LibUsbNative;
 
@@ -46,7 +47,7 @@ public class LibUsbNative : ILibUsbNative
     /// <summary>
     /// Returns the full libusb version structure.
     /// </summary>
-    public LibUsbVersion GetVersion()
+    public libusb_version GetVersion()
     {
         var p = _api.libusb_get_version();
         if (p == IntPtr.Zero)
@@ -57,7 +58,7 @@ public class LibUsbNative : ILibUsbNative
         static string PtrToString(IntPtr sp) =>
             sp == IntPtr.Zero ? string.Empty : (Marshal.PtrToStringAnsi(sp) ?? string.Empty);
 
-        return new LibUsbVersion(
+        return new libusb_version(
             native.major,
             native.minor,
             native.micro,

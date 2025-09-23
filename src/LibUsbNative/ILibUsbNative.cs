@@ -1,5 +1,6 @@
 ﻿using LibUsbNative.Enums;
 using LibUsbNative.SafeHandles;
+using LibUsbNative.Structs;
 
 namespace LibUsbNative;
 
@@ -7,7 +8,7 @@ public interface ILibUsbNative
 {
     ISafeContext CreateContext();
 
-    LibUsbVersion GetVersion();
+    libusb_version GetVersion();
 
     bool HasCapability(uint capability);
 
