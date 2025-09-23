@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using FluentAssertions;
 using LibUsbNative.Descriptors;
+using LibUsbNative.Enums;
 using LibUsbNative.Extensions;
 using LibUsbNative.SafeHandles;
 using Xunit.Abstractions;

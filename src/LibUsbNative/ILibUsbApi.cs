@@ -1,5 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 using LibUsbNative.Descriptors;
+using LibUsbNative.Enums;
 
 namespace LibUsbNative;
 
@@ -115,21 +116,6 @@ public interface ILibUsbApi
         out int callbackHandle
     );
     void libusb_hotplug_deregister_callback(IntPtr ctx, IntPtr callbackHandle);
-}
-
-public enum LibUsbOption
-{
-    LOG_LEVEL = 0,
-    USE_USBDK = 1,
-    NO_DEVICE_DISCOVERY = 2,
-    LIBUSB_OPTION_LOG_CB = 3,
-}
-
-[StructLayout(LayoutKind.Sequential)]
-public struct TimeVal
-{
-    public IntPtr tv_sec;
-    public IntPtr tv_usec;
 }
 
 [UnmanagedFunctionPointer(CallingConvention.Cdecl)]

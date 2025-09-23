@@ -1,12 +1,7 @@
 ﻿using System.Runtime.InteropServices;
+using LibUsbNative.Enums;
 
 namespace LibUsbNative.SafeHandles;
-
-public interface ISafeDeviceList : IDisposable
-{
-    IEnumerable<ISafeDevice> Devices { get; }
-    bool IsClosed { get; }
-}
 
 internal sealed class SafeDeviceList : SafeHandle, ISafeDeviceList
 {

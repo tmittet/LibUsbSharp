@@ -1,4 +1,5 @@
-﻿using LibUsbNative.SafeHandles;
+﻿using LibUsbNative.Enums;
+using LibUsbNative.SafeHandles;
 
 namespace LibUsbNative;
 

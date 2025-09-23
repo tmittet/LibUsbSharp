@@ -2,9 +2,6 @@
 
 namespace LibUsbNative.Descriptors;
 
-// --------------------------------------------------------------------
-// Public interfaces
-// --------------------------------------------------------------------
 public interface IUsbDeviceDescriptor
 {
     byte BLength { get; }

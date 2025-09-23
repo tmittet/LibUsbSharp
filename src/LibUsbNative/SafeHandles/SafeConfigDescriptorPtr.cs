@@ -2,11 +2,6 @@
 
 namespace LibUsbNative.SafeHandles;
 
-public interface ISafeConfigDescriptorPtr : IDisposable
-{
-    IntPtr GetUnmanagedPointer();
-}
-
 internal sealed class SafeConfigDescriptorPtr : SafeHandle, ISafeConfigDescriptorPtr
 {
     private readonly SafeDevice _device;

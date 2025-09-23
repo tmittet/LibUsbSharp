@@ -2,11 +2,6 @@
 
 namespace LibUsbNative.SafeHandles;
 
-public interface ISafeDeviceInterface : IDisposable
-{
-    int GetInterfaceNumber();
-}
-
 internal sealed class SafeDeviceInterface : SafeHandle, ISafeDeviceInterface
 {
     private readonly SafeDeviceHandle _deviceHandle;
