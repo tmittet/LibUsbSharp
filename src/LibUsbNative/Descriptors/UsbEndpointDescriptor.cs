@@ -8,7 +8,7 @@ public readonly record struct UsbEndpointDescriptor
     public byte BLength { get; }
     public libusb_descriptor_type BDescriptorType { get; }
     public libusb_endpoint_address BEndpointAddress { get; }
-    public UsbEndpointAttributes BmAttributes { get; }
+    public libusb_endpoint_attributes BmAttributes { get; }
     public ushort WMaxPacketSize { get; }
     public byte BInterval { get; }
     public byte BRefresh { get; }
@@ -20,7 +20,7 @@ public readonly record struct UsbEndpointDescriptor
         byte bLength,
         libusb_descriptor_type bDescriptorType,
         libusb_endpoint_address bEndpointAddress,
-        UsbEndpointAttributes bmAttributes,
+        libusb_endpoint_attributes bmAttributes,
         ushort wMaxPacketSize,
         byte bInterval,
         byte bRefresh,

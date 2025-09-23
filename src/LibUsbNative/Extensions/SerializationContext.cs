@@ -19,7 +19,7 @@ namespace LibUsbNative;
 [JsonSerializable(typeof(IReadOnlyList<libusb_config_descriptor>))]
 [JsonSerializable(typeof(libusb_device_descriptor))]
 [JsonSerializable(typeof(libusb_endpoint_address))]
-[JsonSerializable(typeof(UsbEndpointAttributes))]
+[JsonSerializable(typeof(libusb_endpoint_attributes))]
 [JsonSerializable(typeof(UsbEndpointDescriptor))]
 [JsonSerializable(typeof(UsbEndpointDescriptor[]))]
 [JsonSerializable(typeof(IReadOnlyList<UsbEndpointDescriptor>))]

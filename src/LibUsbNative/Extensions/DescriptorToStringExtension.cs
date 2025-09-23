@@ -110,7 +110,7 @@ public static class DescriptorToStringExtension
         );
         sb.AppendLine(
             _culture,
-            $"  bmAttributes     : 0x{ep.BmAttributes.Raw:X2} ({ep.BmAttributes.TransferType}/{ep.BmAttributes.SyncType}/{ep.BmAttributes.UsageType})"
+            $"  bmAttributes     : 0x{ep.BmAttributes.rawValue:X2} ({ep.BmAttributes.TransferType}/{ep.BmAttributes.SyncType}/{ep.BmAttributes.UsageType})"
         );
         sb.AppendLine(_culture, $"  wMaxPacketSize   : {ep.WMaxPacketSize}");
         sb.AppendLine(_culture, $"  bInterval        : {ep.BInterval}");
