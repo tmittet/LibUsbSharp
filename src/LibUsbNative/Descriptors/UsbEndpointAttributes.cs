@@ -8,7 +8,7 @@ namespace LibUsbNative.Descriptors;
 /// </summary>
 public readonly record struct UsbEndpointAttributes
 {
-    public UsbEndpointTransferType TransferType { get; }
+    public libusb_endpoint_transfer_type TransferType { get; }
     public UsbIsochronousSyncType SyncType { get; }
     public UsbIsochronousUsageType UsageType { get; }
     public byte Raw { get; }
@@ -17,7 +17,7 @@ public readonly record struct UsbEndpointAttributes
     public UsbEndpointAttributes(byte raw)
     {
         Raw = raw;
-        TransferType = (UsbEndpointTransferType)(raw & 0x03);
+        TransferType = (libusb_endpoint_transfer_type)(raw & 0x03);
         SyncType = (UsbIsochronousSyncType)((raw >> 2) & 0x03);
         UsageType = (UsbIsochronousUsageType)((raw >> 4) & 0x03);
     }
