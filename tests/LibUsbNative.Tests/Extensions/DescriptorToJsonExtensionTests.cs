@@ -64,62 +64,7 @@ public class DescriptorToJsonExtensionTests
     }
 
     [Fact]
-    public void TestDeviceDescriptorToJsonRaw()
-    {
-        EnterReadLock(() =>
-        {
-            var (list, count) = context.GetDeviceList();
-            count.Should().BePositive();
-            var device = list.Devices.ToList()[0];
-            var json = device.GetDeviceDescriptor().ToJson(raw: true);
-            output.WriteLine(json);
-
-            var deserialized = JsonSerializer.Deserialize<UsbDeviceDescriptor>(json)!;
-            deserialized.ToJson(raw: true).Should().Be(json);
-
-            list.Dispose();
-        });
-    }
-
-    [Fact]
-    public void TestActiveConfigToJsonRaw()
-    {
-        EnterReadLock(() =>
-        {
-            var (list, count) = context.GetDeviceList();
-            count.Should().BePositive();
-            var device = list.Devices.ToList()[0];
-            var json = device.GetActiveConfigDescriptor().ToJson(raw: true);
-            output.WriteLine("orginal:");
-            output.WriteLine(json);
-
-            var deserialized = JsonSerializer.Deserialize<UsbConfigDescriptor>(json)!;
-            output.WriteLine("new:");
-            output.WriteLine(deserialized.ToJson(raw: true));
-
-            //deserialized.ToJson(raw: true).Should().Be(json);
-
-            list.Dispose();
-        });
-    }
-
-    [Fact]
-    public void TestDeviceDescriptorToJsonFancy()
-    {
-        EnterReadLock(() =>
-        {
-            var (list, count) = context.GetDeviceList();
-            count.Should().BePositive();
-            var device = list.Devices.ToList()[0];
-            var json = device.GetDeviceDescriptor().ToJson();
-            output.WriteLine(json);
-
-            list.Dispose();
-        });
-    }
-
-    [Fact]
-    public void TestActiveConfigToJsonFancy()
+    public void UsbConfigDescriptor_serializes_and_deserializes_successfully()
     {
         EnterReadLock(() =>
         {
@@ -129,6 +74,26 @@ public class DescriptorToJsonExtensionTests
             var json = device.GetActiveConfigDescriptor().ToJson();
             output.WriteLine(json);
 
+            var deserialized = JsonSerializer.Deserialize<UsbConfigDescriptor>(json)!;
+            output.WriteLine(deserialized.ToJson());
+            deserialized.ToJson().Should().Be(json);
+            list.Dispose();
+        });
+    }
+
+    [Fact]
+    public void UsbDeviceDescriptor_serializes_and_deserializes_successfully()
+    {
+        EnterReadLock(() =>
+        {
+            var (list, count) = context.GetDeviceList();
+            count.Should().BePositive();
+            var device = list.Devices.ToList()[0];
+            var json = device.GetDeviceDescriptor().ToJson();
+            output.WriteLine(json);
+
+            var deserialized = JsonSerializer.Deserialize<UsbDeviceDescriptor>(json)!;
+            deserialized.ToJson().Should().Be(json);
             list.Dispose();
         });
     }

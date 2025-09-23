@@ -15,7 +15,8 @@ public readonly record struct UsbEndpointAttributes
     public UsbIsochronousUsageType UsageType { get; }
     public byte Raw { get; }
 
-    internal UsbEndpointAttributes(byte raw)
+    [JsonConstructor]
+    public UsbEndpointAttributes(byte raw)
     {
         Raw = raw;
         TransferType = (UsbEndpointTransferType)(raw & 0x03);

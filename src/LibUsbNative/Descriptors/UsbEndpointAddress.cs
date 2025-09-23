@@ -14,7 +14,8 @@ public readonly record struct UsbEndpointAddress
     public UsbEndpointDirection Direction { get; }
     public byte Raw { get; }
 
-    internal UsbEndpointAddress(byte raw)
+    [JsonConstructor]
+    public UsbEndpointAddress(byte raw)
     {
         Raw = raw;
         Direction = (raw & 0x80) != 0 ? UsbEndpointDirection.In : UsbEndpointDirection.Out;
