@@ -106,7 +106,7 @@ public static class DescriptorToStringExtension
         sb.AppendLine(_culture, $"  bDescriptorType  : {Fmt(ep.BDescriptorType)}");
         sb.AppendLine(
             _culture,
-            $"  bEndpointAddress : 0x{ep.BEndpointAddress.Raw:X2} ({ep.BEndpointAddress.Direction}, {ep.BEndpointAddress.Number})"
+            $"  bEndpointAddress : 0x{ep.BEndpointAddress.rawValue:X2} ({ep.BEndpointAddress.Direction}, {ep.BEndpointAddress.Number})"
         );
         sb.AppendLine(
             _culture,

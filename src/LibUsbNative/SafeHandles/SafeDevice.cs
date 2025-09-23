@@ -206,7 +206,7 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
                                 return new UsbEndpointDescriptor(
                                     ep.bLength,
                                     (libusb_descriptor_type)ep.bDescriptorType,
-                                    new UsbEndpointAddress(ep.bEndpointAddress),
+                                    new libusb_endpoint_address(ep.bEndpointAddress),
                                     new UsbEndpointAttributes(ep.bmAttributes),
                                     ep.wMaxPacketSize,
                                     ep.bInterval,
