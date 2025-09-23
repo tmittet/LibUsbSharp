@@ -213,12 +213,12 @@ public sealed class PInvokeLibUsbApi : ILibUsbApi
     #region Events/Async
 
     [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
-    private static extern libusb_error libusb_handle_events_timeout(IntPtr ctx, ref TimeVal tv);
+    private static extern libusb_error libusb_handle_events_timeout(IntPtr ctx, ref libusb_timeval tv);
 
     [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
     private static extern libusb_error libusb_handle_events_timeout_completed(
         IntPtr ctx,
-        ref TimeVal tv,
+        ref libusb_timeval tv,
         IntPtr completed
     );
 
@@ -385,11 +385,14 @@ public sealed class PInvokeLibUsbApi : ILibUsbApi
 
     libusb_error ILibUsbApi.libusb_reset_device(IntPtr h) => libusb_reset_device(h);
 
-    libusb_error ILibUsbApi.libusb_handle_events_timeout(IntPtr ctx, ref TimeVal tv) =>
+    libusb_error ILibUsbApi.libusb_handle_events_timeout(IntPtr ctx, ref libusb_timeval tv) =>
         libusb_handle_events_timeout(ctx, ref tv);
 
-    libusb_error ILibUsbApi.libusb_handle_events_timeout_completed(IntPtr ctx, ref TimeVal tv, IntPtr completed) =>
-        libusb_handle_events_timeout_completed(ctx, ref tv, completed);
+    libusb_error ILibUsbApi.libusb_handle_events_timeout_completed(
+        IntPtr ctx,
+        ref libusb_timeval tv,
+        IntPtr completed
+    ) => libusb_handle_events_timeout_completed(ctx, ref tv, completed);
 
     libusb_error ILibUsbApi.libusb_handle_events(IntPtr ctx) => libusb_handle_events(ctx);
 

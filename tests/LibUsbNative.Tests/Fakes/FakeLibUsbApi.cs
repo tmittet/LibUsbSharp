@@ -554,10 +554,10 @@ internal sealed class FakeLibusbApi : ILibUsbApi, IDisposable
     public libusb_error libusb_reset_device(IntPtr handle) => MaybeFail(nameof(libusb_reset_device));
 
     // ------------- Events / async -------------
-    public libusb_error libusb_handle_events_timeout(IntPtr ctx, ref TimeVal tv) =>
+    public libusb_error libusb_handle_events_timeout(IntPtr ctx, ref libusb_timeval tv) =>
         MaybeFail(nameof(libusb_handle_events_timeout));
 
-    public libusb_error libusb_handle_events_timeout_completed(IntPtr ctx, ref TimeVal tv, IntPtr completed) =>
+    public libusb_error libusb_handle_events_timeout_completed(IntPtr ctx, ref libusb_timeval tv, IntPtr completed) =>
         MaybeFail(nameof(libusb_handle_events_timeout_completed));
 
     public libusb_error libusb_handle_events(IntPtr ctx) => MaybeFail(nameof(libusb_handle_events));

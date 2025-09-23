@@ -90,8 +90,8 @@ public interface ILibUsbApi
     libusb_error libusb_clear_halt(IntPtr handle, byte endpoint);
     libusb_error libusb_reset_device(IntPtr handle);
 
-    libusb_error libusb_handle_events_timeout(IntPtr ctx, ref TimeVal tv);
-    libusb_error libusb_handle_events_timeout_completed(IntPtr ctx, ref TimeVal tv, IntPtr completed);
+    libusb_error libusb_handle_events_timeout(IntPtr ctx, ref libusb_timeval tv);
+    libusb_error libusb_handle_events_timeout_completed(IntPtr ctx, ref libusb_timeval tv, IntPtr completed);
     libusb_error libusb_handle_events(IntPtr ctx);
     IntPtr libusb_get_pollfds(IntPtr ctx, out IntPtr pollfds);
     void libusb_free_pollfds(IntPtr pollfds);
