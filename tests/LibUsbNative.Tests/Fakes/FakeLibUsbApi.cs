@@ -71,7 +71,7 @@ internal sealed class FakeLibusbApi : ILibUsbApi, IDisposable
     public int LastCbHandle = 42;
 
     // State tracking
-    private readonly Dictionary<LibUsbOption, IntPtr> _options = new();
+    private readonly Dictionary<libusb_option, IntPtr> _options = new();
     private readonly HashSet<IntPtr> _openHandles = new();
     private readonly HashSet<(IntPtr Handle, int Interface)> _claimed = new();
     private int _nextHandle = 0x3000;
@@ -182,7 +182,7 @@ internal sealed class FakeLibusbApi : ILibUsbApi, IDisposable
 
     public void libusb_exit(IntPtr ctx) { }
 
-    public libusb_error libusb_set_option(IntPtr ctx, LibUsbOption option, int value)
+    public libusb_error libusb_set_option(IntPtr ctx, libusb_option option, int value)
     {
         if (MaybeFail(nameof(libusb_set_option), out var err) != libusb_error.LIBUSB_SUCCESS)
             return err;
@@ -190,7 +190,7 @@ internal sealed class FakeLibusbApi : ILibUsbApi, IDisposable
         return libusb_error.LIBUSB_SUCCESS;
     }
 
-    public libusb_error libusb_set_option(IntPtr ctx, LibUsbOption option, IntPtr value)
+    public libusb_error libusb_set_option(IntPtr ctx, libusb_option option, IntPtr value)
     {
         if (MaybeFail(nameof(libusb_set_option), out var err) != libusb_error.LIBUSB_SUCCESS)
             return err;

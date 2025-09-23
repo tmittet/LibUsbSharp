@@ -34,10 +34,10 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
     public void SetOption(int option, int value)
     {
         SafeHelpers.ThrowIfClosed(this);
-        SetOption((LibUsbOption)option, value);
+        SetOption((libusb_option)option, value);
     }
 
-    public void SetOption(LibUsbOption option, int value)
+    public void SetOption(libusb_option option, int value)
     {
         SafeHelpers.ThrowIfClosed(this);
 
@@ -45,7 +45,7 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
         LibUsbException.ThrowIfError(rc, "libusb_set_option");
     }
 
-    public void SetOption(LibUsbOption option, IntPtr value)
+    public void SetOption(libusb_option option, IntPtr value)
     {
         SafeHelpers.ThrowIfClosed(this);
 
@@ -86,7 +86,7 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
 
         try
         {
-            SetOption(LibUsbOption.LIBUSB_OPTION_LOG_CB, Marshal.GetFunctionPointerForDelegate(callback));
+            SetOption(libusb_option.LIBUSB_OPTION_LOG_CB, Marshal.GetFunctionPointerForDelegate(callback));
         }
         catch
         {

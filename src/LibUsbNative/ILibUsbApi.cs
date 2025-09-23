@@ -11,8 +11,8 @@ public interface ILibUsbApi
 {
     libusb_error libusb_init(out IntPtr ctx);
     void libusb_exit(IntPtr ctx);
-    libusb_error libusb_set_option(IntPtr ctx, LibUsbOption usbOption, int value);
-    libusb_error libusb_set_option(IntPtr ctx, LibUsbOption usbOption, IntPtr value);
+    libusb_error libusb_set_option(IntPtr ctx, libusb_option usbOption, int value);
+    libusb_error libusb_set_option(IntPtr ctx, libusb_option usbOption, IntPtr value);
 
     libusb_error libusb_handle_events_completed(IntPtr ctx, IntPtr completed);
 

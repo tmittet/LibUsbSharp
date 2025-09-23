@@ -46,7 +46,7 @@ public abstract class SafeContextTests
             }
         );
 
-        context.SetOption(LibUsbOption.LOG_LEVEL, 3);
+        context.SetOption(libusb_option.LIBUSB_OPTION_LOG_LEVEL, 3);
         return context;
     }
 
@@ -204,7 +204,7 @@ public abstract class SafeContextTests
             act = () => context.SetOption(0, 0);
             act.Should().Throw<ObjectDisposedException>();
 
-            act = () => context.SetOption((LibUsbOption)0, 0);
+            act = () => context.SetOption((libusb_option)0, 0);
             act.Should().Throw<ObjectDisposedException>();
 
             act = () => context.HandleEventsCompleted((IntPtr)0);

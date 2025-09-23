@@ -16,8 +16,8 @@ public interface ISafeContext : IDisposable
     );
     void HotplugDeregisterCallback(IntPtr callbackHandle);
 
-    void SetOption(LibUsbOption opt, int value);
-    void SetOption(LibUsbOption option, IntPtr value);
+    void SetOption(libusb_option opt, int value);
+    void SetOption(libusb_option option, IntPtr value);
     libusb_error HandleEventsCompleted(IntPtr param);
     void InterruptEventHandler();
     (ISafeDeviceList, uint) GetDeviceList();
