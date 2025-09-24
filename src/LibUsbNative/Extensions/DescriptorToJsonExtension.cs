@@ -17,6 +17,6 @@ public static class DescriptorToJsonExtension
     public static string ToJson(this libusb_interface_descriptor interfaceDescriptor) =>
         JsonSerializer.Serialize(interfaceDescriptor, SerializationContext.Default.libusb_interface_descriptor);
 
-    public static string ToJson(this UsbEndpointDescriptor endpointDescriptor) =>
-        JsonSerializer.Serialize(endpointDescriptor, SerializationContext.Default.UsbEndpointDescriptor);
+    public static string ToJson(this libusb_endpoint_descriptor endpointDescriptor) =>
+        JsonSerializer.Serialize(endpointDescriptor, SerializationContext.Default.libusb_endpoint_descriptor);
 }

@@ -98,26 +98,26 @@ public static class DescriptorToStringExtension
         return sb.ToString();
     }
 
-    public static string ToTreeString(this UsbEndpointDescriptor ep)
+    public static string ToTreeString(this libusb_endpoint_descriptor ep)
     {
         var sb = new StringBuilder();
         sb.AppendLine("Endpoint Descriptor:");
-        sb.AppendLine(_culture, $"  bLength          : {ep.BLength}");
-        sb.AppendLine(_culture, $"  bDescriptorType  : {Fmt(ep.BDescriptorType)}");
+        sb.AppendLine(_culture, $"  bLength          : {ep.bLength}");
+        sb.AppendLine(_culture, $"  bDescriptorType  : {Fmt(ep.bDescriptorType)}");
         sb.AppendLine(
             _culture,
-            $"  bEndpointAddress : 0x{ep.BEndpointAddress.rawValue:X2} ({ep.BEndpointAddress.Direction}, {ep.BEndpointAddress.Number})"
+            $"  bEndpointAddress : 0x{ep.bEndpointAddress.rawValue:X2} ({ep.bEndpointAddress.Direction}, {ep.bEndpointAddress.Number})"
         );
         sb.AppendLine(
             _culture,
-            $"  bmAttributes     : 0x{ep.BmAttributes.rawValue:X2} ({ep.BmAttributes.TransferType}/{ep.BmAttributes.SyncType}/{ep.BmAttributes.UsageType})"
+            $"  bmAttributes     : 0x{ep.bmAttributes.rawValue:X2} ({ep.bmAttributes.TransferType}/{ep.bmAttributes.SyncType}/{ep.bmAttributes.UsageType})"
         );
-        sb.AppendLine(_culture, $"  wMaxPacketSize   : {ep.WMaxPacketSize}");
-        sb.AppendLine(_culture, $"  bInterval        : {ep.BInterval}");
-        sb.AppendLine(_culture, $"  bRefresh         : {ep.BRefresh}");
-        sb.AppendLine(_culture, $"  bSynchAddress    : {ep.BSynchAddress}");
-        if (ep.Extra is { Length: > 0 })
-            sb.AppendLine(_culture, $"  Extra            : {ep.Extra.Length} bytes");
+        sb.AppendLine(_culture, $"  wMaxPacketSize   : {ep.wMaxPacketSize}");
+        sb.AppendLine(_culture, $"  bInterval        : {ep.bInterval}");
+        sb.AppendLine(_culture, $"  bRefresh         : {ep.bRefresh}");
+        sb.AppendLine(_culture, $"  bSynchAddress    : {ep.bSynchAddress}");
+        if (ep.extra is { Length: > 0 })
+            sb.AppendLine(_culture, $"  Extra            : {ep.extra.Length} bytes");
         return sb.ToString().TrimEnd();
     }
 

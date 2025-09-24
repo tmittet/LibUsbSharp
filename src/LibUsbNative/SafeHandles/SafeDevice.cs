@@ -203,7 +203,7 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
                                 var ep = Marshal.PtrToStructure<native_libusb_endpoint_descriptor>(epPtr);
                                 var extraEp = ReadExtra(ep.extra, ep.extra_length);
 
-                                return new UsbEndpointDescriptor(
+                                return new libusb_endpoint_descriptor(
                                     ep.bLength,
                                     (libusb_descriptor_type)ep.bDescriptorType,
                                     new libusb_endpoint_address(ep.bEndpointAddress),
