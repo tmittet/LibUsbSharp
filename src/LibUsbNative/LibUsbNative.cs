@@ -51,7 +51,12 @@ public class LibUsbNative : ILibUsbNative
     {
         var p = _api.libusb_get_version();
         if (p == IntPtr.Zero)
-            throw new LibUsbException(libusb_error.LIBUSB_ERROR_OTHER, "libusb_get_version returned null pointer");
+        {
+            throw new LibUsbException(
+                libusb_error.LIBUSB_ERROR_OTHER,
+                $"LibUsbApi '{nameof(_api.libusb_get_version)}' returned a null pointer."
+            );
+        }
 
         var native = Marshal.PtrToStructure<native_libusb_version>(p);
 

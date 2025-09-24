@@ -35,7 +35,7 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
         SafeHelpers.ThrowIfClosed(this);
 
         var result = _context.api.libusb_get_device_descriptor(handle, out var d);
-        LibUsbException.ThrowIfError(result);
+        LibUsbException.ThrowIfApiError(result, nameof(_context.api.libusb_get_device_descriptor));
 
         return new libusb_device_descriptor(
             d.bLength,
@@ -60,17 +60,14 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
         SafeHelpers.ThrowIfClosed(this);
 
         var result = _context.api.libusb_get_active_config_descriptor(handle, out var descriptor);
-        if (result != libusb_error.LIBUSB_SUCCESS)
-        {
-            throw new LibUsbException(result, "Failed to get active configuration descriptor.");
-        }
+        LibUsbException.ThrowIfApiError(result, nameof(_context.api.libusb_get_active_config_descriptor));
 
-        bool success = false;
+        var success = false;
         DangerousAddRef(ref success);
         if (!success)
         {
             _context.api.libusb_free_config_descriptor(descriptor);
-            LibUsbException.ThrowIfError(libusb_error.LIBUSB_ERROR_OTHER, "Failed to ref SafeHandle");
+            LibUsbException.ThrowIfError(libusb_error.LIBUSB_ERROR_OTHER, "Failed to ref SafeHandle.");
         }
 
         return new SafeConfigDescriptorPtr(this, descriptor);
@@ -81,10 +78,7 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
         SafeHelpers.ThrowIfClosed(this);
 
         var result = _context.api.libusb_get_active_config_descriptor(handle, out var descriptor);
-        if (result != libusb_error.LIBUSB_SUCCESS)
-        {
-            throw new LibUsbException(result, "Failed to get active configuration descriptor.");
-        }
+        LibUsbException.ThrowIfApiError(result, nameof(_context.api.libusb_get_active_config_descriptor));
         try
         {
             var config = FromPointer(descriptor);
@@ -101,17 +95,14 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
         SafeHelpers.ThrowIfClosed(this);
 
         var result = _context.api.libusb_get_config_descriptor(handle, config_index, out var descriptor);
-        if (result != libusb_error.LIBUSB_SUCCESS)
-        {
-            throw new LibUsbException(result, "Failed to get configuration descriptor.");
-        }
+        LibUsbException.ThrowIfApiError(result, nameof(_context.api.libusb_get_config_descriptor));
 
-        bool success = false;
+        var success = false;
         DangerousAddRef(ref success);
         if (!success)
         {
             _context.api.libusb_free_config_descriptor(descriptor);
-            LibUsbException.ThrowIfError(libusb_error.LIBUSB_ERROR_OTHER, "Failed to ref SafeHandle");
+            LibUsbException.ThrowIfError(libusb_error.LIBUSB_ERROR_OTHER, "Failed to ref SafeHandle.");
         }
 
         return new SafeConfigDescriptorPtr(this, descriptor);
@@ -122,10 +113,7 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
         SafeHelpers.ThrowIfClosed(this);
 
         var result = _context.api.libusb_get_config_descriptor(handle, config_index, out var descriptor);
-        if (result != libusb_error.LIBUSB_SUCCESS)
-        {
-            throw new LibUsbException(result, "Failed to get configuration descriptor.");
-        }
+        LibUsbException.ThrowIfApiError(result, nameof(_context.api.libusb_get_config_descriptor));
         try
         {
             var config = FromPointer(descriptor);
@@ -160,15 +148,14 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
         SafeHelpers.ThrowIfClosed(this);
 
         var result = _context.api.libusb_open(handle, out var ptr);
-        if (result != libusb_error.LIBUSB_SUCCESS)
-            throw new LibUsbException(result, "Failed to open USB device.");
+        LibUsbException.ThrowIfApiError(result, nameof(_context.api.libusb_open));
 
-        bool success = false;
+        var success = false;
         _context.DangerousAddRef(ref success);
         if (!success)
         {
             _context.api.libusb_close(ptr);
-            LibUsbException.ThrowIfError(libusb_error.LIBUSB_ERROR_OTHER, "Failed to ref SafeHandle");
+            LibUsbException.ThrowIfError(libusb_error.LIBUSB_ERROR_OTHER, "Failed to ref SafeHandle.");
         }
 
         return new SafeDeviceHandle(_context, ptr, new SafeDevice(_context, handle));

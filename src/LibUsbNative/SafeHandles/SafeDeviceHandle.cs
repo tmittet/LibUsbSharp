@@ -45,7 +45,11 @@ internal sealed class SafeDeviceHandle : SafeHandle, ISafeDeviceHandle
 
         var buf = new byte[256];
         var result = _context.api.libusb_get_string_descriptor_ascii(handle, index, buf, buf.Length);
-        LibUsbException.ThrowIfError(result, "Failed to get string descriptor at index {index}");
+        LibUsbException.ThrowIfApiError(
+            result,
+            nameof(_context.api.libusb_get_string_descriptor_ascii),
+            $"Index {index}."
+        );
         return System.Text.Encoding.ASCII.GetString(buf, 0, (int)result);
     }
 
@@ -54,7 +58,11 @@ internal sealed class SafeDeviceHandle : SafeHandle, ISafeDeviceHandle
         SafeHelpers.ThrowIfClosed(this);
 
         var result = _context.api.libusb_claim_interface(handle, interfaceNumber);
-        LibUsbException.ThrowIfError(result, $"Failed to claim interface {interfaceNumber}");
+        LibUsbException.ThrowIfApiError(
+            result,
+            nameof(_context.api.libusb_claim_interface),
+            $"Interface {interfaceNumber}."
+        );
         return new SafeDeviceInterface(this, interfaceNumber);
     }
 
@@ -68,13 +76,12 @@ internal sealed class SafeDeviceHandle : SafeHandle, ISafeDeviceHandle
     {
         {
             var ptr = _context.api.libusb_alloc_transfer(isoPackets);
-            if (ptr == IntPtr.Zero)
-                throw new LibUsbException(
+            return ptr == IntPtr.Zero
+                ? throw new LibUsbException(
                     libusb_error.LIBUSB_ERROR_NO_MEM,
-                    "Failed to allocate libusb transfer buffer."
-                );
-
-            return new SafeTransfer(_context, ptr);
+                    $"LibUsbApi '{nameof(_context.api.libusb_alloc_transfer)}' failed."
+                )
+                : (ISafeTransfer)new SafeTransfer(_context, ptr);
         }
     }
 }

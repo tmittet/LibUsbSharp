@@ -13,7 +13,7 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
         var result = api.libusb_init(out var raw);
         if (result != 0 || raw == IntPtr.Zero)
         {
-            throw new LibUsbException(result, "Failed to initialize libusb context.");
+            LibUsbException.ThrowIfApiError(result, nameof(api.libusb_init));
         }
 
         this.api = api;
@@ -36,7 +36,7 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
         SafeHelpers.ThrowIfClosed(this);
 
         var rc = api.libusb_set_option(handle, option, value);
-        LibUsbException.ThrowIfError(rc, "libusb_set_option");
+        LibUsbException.ThrowIfApiError(rc, nameof(api.libusb_set_option));
     }
 
     public void SetOption(libusb_option option, IntPtr value)
@@ -44,7 +44,7 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
         SafeHelpers.ThrowIfClosed(this);
 
         var rc = api.libusb_set_option(handle, option, value);
-        LibUsbException.ThrowIfError(rc, "libusb_set_option");
+        LibUsbException.ThrowIfApiError(rc, nameof(api.libusb_set_option));
     }
 
     public libusb_error HandleEventsCompleted(IntPtr completedPtr)
@@ -120,7 +120,7 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
             out var callbackHandle
         );
 
-        LibUsbException.ThrowIfError(result, "Failed to register hotplug callback");
+        LibUsbException.ThrowIfApiError(result, nameof(api.libusb_hotplug_register_callback));
 
         return (IntPtr)callbackHandle;
     }
@@ -141,14 +141,14 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
         SafeHelpers.ThrowIfClosed(this);
 
         var rc = api.libusb_get_device_list(handle, out var list);
-        LibUsbException.ThrowIfError(rc, "Failed to get device list");
+        LibUsbException.ThrowIfApiError(rc, nameof(api.libusb_get_device_list));
 
         var success = false;
         DangerousAddRef(ref success);
         if (!success)
         {
             api.libusb_free_device_list(list, 1);
-            LibUsbException.ThrowIfError(libusb_error.LIBUSB_ERROR_OTHER, "Failed to ref SafeHandle");
+            LibUsbException.ThrowIfError(libusb_error.LIBUSB_ERROR_OTHER, "Failed to ref SafeHandle.");
         }
 
         return new SafeDeviceList(this, list, (int)rc);

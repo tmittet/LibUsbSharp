@@ -28,7 +28,11 @@ internal sealed class SafeDeviceInterface : SafeHandle, ISafeDeviceInterface
             _deviceHandle.DangerousGetHandle(),
             _interfaceNumber
         );
-        LibUsbException.ThrowIfError(result, $"Failed to release interface {_interfaceNumber}.");
+        LibUsbException.ThrowIfApiError(
+            result,
+            nameof(_deviceHandle._context.api.libusb_release_interface),
+            $"Interface {_interfaceNumber}."
+        );
         return true;
     }
 }

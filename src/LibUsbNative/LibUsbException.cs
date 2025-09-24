@@ -1,4 +1,5 @@
-﻿using LibUsbNative.Enums;
+﻿using System.Diagnostics;
+using LibUsbNative.Enums;
 using LibUsbNative.Extensions;
 
 namespace LibUsbNative;
@@ -23,10 +24,23 @@ public sealed class LibUsbException : Exception
         Error = error;
     }
 
-    public static void ThrowIfError(libusb_error rc, string? msg = null)
+    [StackTraceHidden]
+    public static void ThrowIfError(libusb_error result, string? message = null)
     {
-        if (rc >= 0)
+        if (result >= 0)
+        {
             return;
-        throw new LibUsbException(rc, msg);
+        }
+        throw new LibUsbException(result, message);
+    }
+
+    [StackTraceHidden]
+    public static void ThrowIfApiError(libusb_error result, string methodName, string? message = null)
+    {
+        if (result >= 0)
+        {
+            return;
+        }
+        throw new LibUsbException(result, $"LibUsbApi '{methodName}' failed. {message}".TrimEnd());
     }
 }
