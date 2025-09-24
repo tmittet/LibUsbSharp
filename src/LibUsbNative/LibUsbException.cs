@@ -1,4 +1,5 @@
 ﻿using LibUsbNative.Enums;
+using LibUsbNative.Extensions;
 
 namespace LibUsbNative;
 
@@ -11,13 +12,16 @@ public sealed class LibUsbException : Exception
     {
         get
         {
-            var mapped = LibUsbErrorMessage.Get(Error);
-            return string.IsNullOrWhiteSpace(base.Message) ? mapped : $"{base.Message} {mapped}".Trim();
+            var message = $"{Error}: {Error.GetString()}.";
+            return string.IsNullOrWhiteSpace(base.Message) ? message : $"{base.Message} {message}";
         }
     }
 
     public LibUsbException(libusb_error error, string? message)
-        : base(message) => Error = error;
+        : base(message)
+    {
+        Error = error;
+    }
 
     public static void ThrowIfError(libusb_error rc, string? msg = null)
     {
