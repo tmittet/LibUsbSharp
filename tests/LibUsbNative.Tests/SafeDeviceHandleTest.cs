@@ -5,7 +5,7 @@ using Xunit.Abstractions;
 
 namespace LibUsbNative.Tests;
 
-public class SafeDeviceTests
+public class SafeDeviceHandleTest
 {
     private readonly ITestOutputHelper output;
     private readonly ISafeContext context;
@@ -13,7 +13,7 @@ public class SafeDeviceTests
     private static readonly ReaderWriterLockSlim rw_lock = new();
     private readonly LibUsbNative libUsb;
 
-    public SafeDeviceTests(ITestOutputHelper output)
+    public SafeDeviceHandleTest(ITestOutputHelper output)
     {
         this.output = output;
         libUsb = new LibUsbNative(new PInvokeLibUsbApi());
@@ -61,34 +61,46 @@ public class SafeDeviceTests
     }
 
     [Fact]
-    public void TestGetDeviceDescriptor()
+    public void TestOpenDeviceHandle()
     {
         EnterReadLock(() =>
         {
             var (list, count) = context.GetDeviceList();
             count.Should().BePositive();
-
             var device = list.Devices.ToList()[0];
-            var descriptor = device.GetDeviceDescriptor();
-            descriptor.bDescriptorType.Should().Be(libusb_descriptor_type.LIBUSB_DT_DEVICE);
+            // TODO: Picks random device to open and fails. In some cases this results in:
+            // Failed to open USB device. Operation not supported or unimplemented on this platform.
+            var deviceHandle = device.Open();
+            _ = deviceHandle.IsClosed.Should().BeFalse();
 
             list.Dispose();
+            context.Dispose();
+            deviceHandle.Dispose();
         });
     }
 
     [Fact]
-    public void TestGetActiveConfigDescriptor()
+    public void TestReadSerialNumber()
     {
         EnterReadLock(() =>
         {
             var (list, count) = context.GetDeviceList();
             count.Should().BePositive();
-
             var device = list.Devices.ToList()[0];
-            var descriptor = device.GetActiveConfigDescriptor();
-            descriptor.bDescriptorType.Should().Be(libusb_descriptor_type.LIBUSB_DT_CONFIG);
+            // TODO: Picks random device to open and fails. In some cases this results in:
+            // Failed to open USB device. Operation not supported or unimplemented on this platform.
+            var deviceHandle = device.Open();
+            _ = deviceHandle.IsClosed.Should().BeFalse();
+            var serialNumber = deviceHandle.GetStringDescriptorAscii(
+                deviceHandle.Device.GetDeviceDescriptor().iSerialNumber
+            );
+            _ = serialNumber.Should().NotBeNullOrEmpty();
+
+            output.WriteLine($"Serial Number: {serialNumber}");
 
             list.Dispose();
+            deviceHandle.Dispose();
+            context.Dispose();
         });
     }
 
@@ -100,27 +112,24 @@ public class SafeDeviceTests
             var (list, count) = context.GetDeviceList();
             count.Should().BePositive();
 
-            var device = list.Devices.ToList()[0];
-            list.Dispose();
-
-            Action act = () => device.GetActiveConfigDescriptor();
-            act.Should().Throw<ObjectDisposedException>();
-
             // TODO: Picks random device to open and fails. In some cases this results in:
             // Failed to open USB device. Operation not supported or unimplemented on this platform.
-            act = () => device.Open();
+            var deviceHandle = list.Devices.ToList()[0].Open();
+            deviceHandle.Dispose();
+
+            Action act = () => deviceHandle.ClaimInterface(1);
             act.Should().Throw<ObjectDisposedException>();
 
-            act = () => device.GetBusNumber();
+            act = () =>
+            {
+                var d = deviceHandle.Device;
+            };
             act.Should().Throw<ObjectDisposedException>();
 
-            act = () => device.GetDeviceAddress();
+            act = () => deviceHandle.GetStringDescriptorAscii(1);
             act.Should().Throw<ObjectDisposedException>();
 
-            act = () => device.GetPortNumber();
-            act.Should().Throw<ObjectDisposedException>();
-
-            act = () => device.GetDeviceDescriptor();
+            act = () => deviceHandle.ResetDevice();
             act.Should().Throw<ObjectDisposedException>();
         });
     }

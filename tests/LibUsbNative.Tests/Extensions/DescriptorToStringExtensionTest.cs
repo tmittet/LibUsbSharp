@@ -6,7 +6,7 @@ using Xunit.Abstractions;
 
 namespace LibUsbNative.Tests.Extensions;
 
-public class DescriptorToStringExtensionTests
+public class DescriptorToStringExtensionTest
 {
     private readonly ITestOutputHelper output;
     private readonly ISafeContext context;
@@ -14,7 +14,7 @@ public class DescriptorToStringExtensionTests
     private static readonly ReaderWriterLockSlim rw_lock = new();
     private readonly LibUsbNative libUsb;
 
-    public DescriptorToStringExtensionTests(ITestOutputHelper output)
+    public DescriptorToStringExtensionTest(ITestOutputHelper output)
     {
         this.output = output;
         libUsb = new LibUsbNative(new PInvokeLibUsbApi());

@@ -8,7 +8,7 @@ using Xunit.Abstractions;
 
 namespace LibUsbNative.Tests.Extensions;
 
-public class DescriptorToJsonExtensionTests
+public class DescriptorToJsonExtensionTest
 {
     private readonly ITestOutputHelper output;
     private readonly ISafeContext context;
@@ -16,7 +16,7 @@ public class DescriptorToJsonExtensionTests
     private static readonly ReaderWriterLockSlim rw_lock = new();
     private readonly LibUsbNative libUsb;
 
-    public DescriptorToJsonExtensionTests(ITestOutputHelper output)
+    public DescriptorToJsonExtensionTest(ITestOutputHelper output)
     {
         this.output = output;
         libUsb = new LibUsbNative(new PInvokeLibUsbApi());

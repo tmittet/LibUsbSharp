@@ -6,26 +6,26 @@ using Xunit.Abstractions;
 
 namespace LibUsbNative.Tests;
 
-public class SafeContextTests_Fake : SafeContextTests
+public class SafeContextTests_Fake : SafeContextTest
 {
     public SafeContextTests_Fake(ITestOutputHelper output)
         : base(output, new FakeLibusbApi()) { }
 }
 
-public class SafeContextTests_Real : SafeContextTests
+public class SafeContextTests_Real : SafeContextTest
 {
     public SafeContextTests_Real(ITestOutputHelper output)
         : base(output, new PInvokeLibUsbApi()) { }
 }
 
-public abstract class SafeContextTests
+public abstract class SafeContextTest
 {
     private readonly ITestOutputHelper output;
     private readonly List<string> stdout = new();
     private static readonly ReaderWriterLockSlim rw_lock = new();
     private readonly LibUsbNative libUsb;
 
-    public SafeContextTests(ITestOutputHelper output, ILibUsbApi api)
+    public SafeContextTest(ITestOutputHelper output, ILibUsbApi api)
     {
         this.output = output;
         libUsb = new LibUsbNative(api);
