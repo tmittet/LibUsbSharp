@@ -1,7 +1,7 @@
 ﻿using System.Text.Json.Serialization;
 using LibUsbNative.Enums;
 
-namespace LibUsbNative.Descriptors;
+namespace LibUsbNative.Structs;
 
 /// <summary>
 /// Strongly typed view of endpoint bmAttributes.

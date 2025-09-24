@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
-using LibUsbNative.Descriptors;
 using LibUsbNative.Enums;
+using LibUsbNative.Structs;
 
 namespace LibUsbNative;
 

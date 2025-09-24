@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace LibUsbNative.Descriptors;
+namespace LibUsbNative.Structs;
 
 [StructLayout(LayoutKind.Sequential)]
 public struct libusb_timeval

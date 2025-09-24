@@ -1,6 +1,6 @@
 ﻿using System.Globalization;
 using System.Text;
-using LibUsbNative.Descriptors;
+using LibUsbNative.Structs;
 
 namespace LibUsbNative.Extensions;
 

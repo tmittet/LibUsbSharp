@@ -1,9 +1,9 @@
 ﻿using System.Text.Json;
 using FluentAssertions;
-using LibUsbNative.Descriptors;
 using LibUsbNative.Enums;
 using LibUsbNative.Extensions;
 using LibUsbNative.SafeHandles;
+using LibUsbNative.Structs;
 using Xunit.Abstractions;
 
 namespace LibUsbNative.Tests.Extensions;

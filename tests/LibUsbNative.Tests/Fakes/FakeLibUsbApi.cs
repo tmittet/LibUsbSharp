@@ -1,7 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using System.Text;
-using LibUsbNative.Descriptors;
 using LibUsbNative.Enums;
+using LibUsbNative.Structs;
 
 namespace LibUsbNative.Tests.Fakes;
 

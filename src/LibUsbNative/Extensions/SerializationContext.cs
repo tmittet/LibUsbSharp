@@ -1,5 +1,5 @@
 ﻿using System.Text.Json.Serialization;
-using LibUsbNative.Descriptors;
+using LibUsbNative.Structs;
 
 namespace LibUsbNative;
 

@@ -60,7 +60,7 @@ public readonly struct UsbDeviceDescriptor : IUsbDeviceDescriptor
     }
 
     internal UsbDeviceDescriptor(
-        LibUsbNative.Descriptors.libusb_device_descriptor partialDescriptor,
+        LibUsbNative.Structs.libusb_device_descriptor partialDescriptor,
         byte busNumber,
         byte address,
         byte portNumber

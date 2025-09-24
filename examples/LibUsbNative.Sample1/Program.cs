@@ -1,7 +1,7 @@
 using System.Text;
-using LibUsbNative.Descriptors;
 using LibUsbNative.Extensions;
 using LibUsbNative.SafeHandles;
+using LibUsbNative.Structs;
 
 // ------------------------------------------------------------
 // Program
