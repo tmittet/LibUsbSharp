@@ -3,6 +3,7 @@ using Xunit.Abstractions;
 
 namespace LibUsbNative.Tests.SafeHandles.SafeDevice;
 
+[Trait("Category", "UsbDevice")]
 public class Given_an_accessible_USB_device_Real(ITestOutputHelper output)
     : Given_an_accessible_USB_device(output, new PInvokeLibUsbApi());
 

@@ -7,6 +7,7 @@ namespace LibUsbNative.Tests.SafeHandles.SafeContext;
 public class Given_an_accessible_USB_device_Fake(ITestOutputHelper output)
     : Given_an_accessible_USB_device(output, new FakeLibusbApi());
 
+[Trait("Category", "UsbDevice")]
 public class Given_an_accessible_USB_device_Real(ITestOutputHelper output)
     : Given_an_accessible_USB_device(output, new PInvokeLibUsbApi());
 
