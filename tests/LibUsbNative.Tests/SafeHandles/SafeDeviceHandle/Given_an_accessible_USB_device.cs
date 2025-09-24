@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using LibUsbNative.Tests.TestInfrastructure;
 using Xunit.Abstractions;
 
 namespace LibUsbNative.Tests.SafeHandles.SafeDeviceHandle;
@@ -10,33 +11,29 @@ public class Given_an_accessible_USB_device_Real(ITestOutputHelper output)
 public abstract class Given_an_accessible_USB_device(ITestOutputHelper output, ILibUsbApi api)
     : LibUsbNativeTestBase(output, api)
 {
-    [Fact]
+    [SkippableFact]
     public void TestOpenDeviceHandle()
     {
         EnterReadLock(() =>
         {
             using var context = GetContext();
             using var list = context.GetDeviceList();
-            list.Count.Should().BePositive();
-            var device = list[0];
-            // TODO: Picks random device to open and fails. In some cases this results in:
-            // Failed to open USB device. Operation not supported or unimplemented on this platform.
+            var device = list.GetAccessibleDeviceOrSkipTest();
+
             using var deviceHandle = device.Open();
             _ = deviceHandle.IsClosed.Should().BeFalse();
         });
     }
 
-    [Fact]
+    [SkippableFact]
     public void TestReadSerialNumber()
     {
         EnterReadLock(() =>
         {
             using var context = GetContext();
             using var list = context.GetDeviceList();
-            list.Count.Should().BePositive();
-            var device = list[0];
-            // TODO: Picks random device to open and fails. In some cases this results in:
-            // Failed to open USB device. Operation not supported or unimplemented on this platform.
+            var device = list.GetAccessibleDeviceOrSkipTest();
+
             using var deviceHandle = device.Open();
             _ = deviceHandle.IsClosed.Should().BeFalse();
             var serialNumber = deviceHandle.GetStringDescriptorAscii(
@@ -48,18 +45,16 @@ public abstract class Given_an_accessible_USB_device(ITestOutputHelper output, I
         });
     }
 
-    [Fact]
+    [SkippableFact]
     public void TestFailsAfterDispose()
     {
         EnterReadLock(() =>
         {
             using var context = GetContext();
             using var list = context.GetDeviceList();
-            list.Count.Should().BePositive();
+            var device = list.GetAccessibleDeviceOrSkipTest();
 
-            // TODO: Picks random device to open and fails. In some cases this results in:
-            // Failed to open USB device. Operation not supported or unimplemented on this platform.
-            var deviceHandle = list[0].Open();
+            var deviceHandle = device.Open();
             deviceHandle.Dispose();
 
             Action act = () => deviceHandle.ClaimInterface(1);

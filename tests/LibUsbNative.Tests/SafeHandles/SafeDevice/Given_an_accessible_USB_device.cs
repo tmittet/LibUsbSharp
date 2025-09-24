@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using LibUsbNative.Tests.TestInfrastructure;
 using Xunit.Abstractions;
 
 namespace LibUsbNative.Tests.SafeHandles.SafeDevice;
@@ -10,23 +11,20 @@ public class Given_an_accessible_USB_device_Real(ITestOutputHelper output)
 public abstract class Given_an_accessible_USB_device(ITestOutputHelper output, ILibUsbApi api)
     : LibUsbNativeTestBase(output, api)
 {
-    [Fact]
+    [SkippableFact]
     public void TestFailsAfterDispose()
     {
         EnterReadLock(() =>
         {
             var context = GetContext();
             var list = context.GetDeviceList();
-            list.Count.Should().BePositive();
+            var device = list.GetAccessibleDeviceOrSkipTest();
 
-            var device = list[0];
             list.Dispose();
 
             Action act = () => device.GetActiveConfigDescriptor();
             act.Should().Throw<ObjectDisposedException>();
 
-            // TODO: Picks random device to open and fails. In some cases this results in:
-            // Failed to open USB device. Operation not supported or unimplemented on this platform.
             act = () => device.Open();
             act.Should().Throw<ObjectDisposedException>();
 

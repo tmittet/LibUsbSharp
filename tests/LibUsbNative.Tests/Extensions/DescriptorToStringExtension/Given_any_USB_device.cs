@@ -1,6 +1,7 @@
 ﻿using FluentAssertions;
 using LibUsbNative.Extensions;
 using LibUsbNative.Tests.Fakes;
+using LibUsbNative.Tests.TestInfrastructure;
 using Xunit.Abstractions;
 
 namespace LibUsbNative.Tests.Extensions.DescriptorToStringExtension;
@@ -12,31 +13,35 @@ public class Given_any_USB_device_Real(ITestOutputHelper output) : Given_any_USB
 
 public abstract class Given_any_USB_device(ITestOutputHelper output, ILibUsbApi api) : LibUsbNativeTestBase(output, api)
 {
-    [Fact]
+    [SkippableFact]
     public void TestDeviceDescriptorTreeString()
     {
         EnterReadLock(() =>
         {
             using var context = GetContext();
             using var list = context.GetDeviceList();
-            list.Count.Should().BePositive();
-            var device = list[0];
+            var device = list.GetAnyDeviceOrSkipTest();
+
             var descriptor = device.GetDeviceDescriptor();
-            Output.WriteLine(descriptor.ToTreeString());
+            var treeString = descriptor.ToTreeString();
+            Output.WriteLine(treeString);
+            treeString.Should().NotBeNullOrWhiteSpace();
         });
     }
 
-    [Fact]
+    [SkippableFact]
     public void TestActiveConfigTreeString()
     {
         EnterReadLock(() =>
         {
             using var context = GetContext();
             using var list = context.GetDeviceList();
-            list.Count.Should().BePositive();
-            var device = list[0];
+            var device = list.GetAnyDeviceOrSkipTest();
+
             var descriptor = device.GetActiveConfigDescriptor();
-            Output.WriteLine(descriptor.ToTreeString());
+            var treeString = descriptor.ToTreeString();
+            Output.WriteLine(treeString);
+            treeString.Should().NotBeNullOrWhiteSpace();
         });
     }
 };

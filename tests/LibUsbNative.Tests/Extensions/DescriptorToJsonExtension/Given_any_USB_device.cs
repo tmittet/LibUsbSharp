@@ -3,6 +3,7 @@ using FluentAssertions;
 using LibUsbNative.Extensions;
 using LibUsbNative.Structs;
 using LibUsbNative.Tests.Fakes;
+using LibUsbNative.Tests.TestInfrastructure;
 using Xunit.Abstractions;
 
 namespace LibUsbNative.Tests.Extensions.DescriptorToJsonExtension;
@@ -14,15 +15,15 @@ public class Given_any_USB_device_Real(ITestOutputHelper output) : Given_any_USB
 
 public abstract class Given_any_USB_device(ITestOutputHelper output, ILibUsbApi api) : LibUsbNativeTestBase(output, api)
 {
-    [Fact]
+    [SkippableFact]
     public void UsbConfigDescriptor_serializes_and_deserializes_successfully()
     {
         EnterReadLock(() =>
         {
             using var context = GetContext();
             using var list = context.GetDeviceList();
-            list.Count.Should().BePositive();
-            var device = list[0];
+            var device = list.GetAnyDeviceOrSkipTest();
+
             var json = device.GetActiveConfigDescriptor().ToJson();
             Output.WriteLine(json);
 
@@ -31,15 +32,15 @@ public abstract class Given_any_USB_device(ITestOutputHelper output, ILibUsbApi 
         });
     }
 
-    [Fact]
+    [SkippableFact]
     public void UsbDeviceDescriptor_serializes_and_deserializes_successfully()
     {
         EnterReadLock(() =>
         {
             using var context = GetContext();
             using var list = context.GetDeviceList();
-            list.Count.Should().BePositive();
-            var device = list[0];
+            var device = list.GetAnyDeviceOrSkipTest();
+
             var json = device.GetDeviceDescriptor().ToJson();
             Output.WriteLine(json);
 

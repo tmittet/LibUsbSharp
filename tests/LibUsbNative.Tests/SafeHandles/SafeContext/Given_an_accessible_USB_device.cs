@@ -1,5 +1,6 @@
 ﻿using FluentAssertions;
 using LibUsbNative.Tests.Fakes;
+using LibUsbNative.Tests.TestInfrastructure;
 using Xunit.Abstractions;
 
 namespace LibUsbNative.Tests.SafeHandles.SafeContext;
@@ -14,33 +15,31 @@ public class Given_an_accessible_USB_device_Real(ITestOutputHelper output)
 public abstract class Given_an_accessible_USB_device(ITestOutputHelper output, ILibUsbApi api)
     : LibUsbNativeTestBase(output, api)
 {
-    [Fact]
+    [SkippableFact]
     public void TestNoListOrHandleDispose()
     {
         EnterWriteLock(() =>
         {
             var context = GetContext();
             var list = context.GetDeviceList();
-            list.Count.Should().BePositive();
-            // TODO: Picks random device to open and fails. In some cases this results in:
-            // Failed to open USB device. Operation not supported or unimplemented on this platform.
-            var deviceHandle = list[0].Open();
+            var device = list.GetAccessibleDeviceOrSkipTest();
+
+            var deviceHandle = device.Open();
             context.Dispose();
             _ = LibUsbOutput.Should().NotContain(s => s.Contains("still referenced"));
         });
     }
 
-    [Fact]
+    [SkippableFact]
     public void TestDisposeInWrongOrder()
     {
         EnterWriteLock(() =>
         {
             var context = GetContext();
             var list = context.GetDeviceList();
-            list.Count.Should().BePositive();
-            // TODO: Picks random device to open and fails. In some cases this results in:
-            // Failed to open USB device. Operation not supported or unimplemented on this platform.
-            var deviceHandle = list[0].Open();
+            var device = list.GetAccessibleDeviceOrSkipTest();
+
+            var deviceHandle = device.Open();
 
             context.Dispose();
             list.Dispose();
