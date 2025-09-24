@@ -3,9 +3,9 @@ using LibUsbNative.Extensions;
 using LibUsbNative.SafeHandles;
 using Xunit.Abstractions;
 
-namespace LibUsbNative.Tests.SafeHandles;
+namespace LibUsbNative.Tests;
 
-public class SafeHandlesTestBase(ITestOutputHelper _output, ILibUsbApi _api)
+public class LibUsbNativeTestBase(ITestOutputHelper _output, ILibUsbApi _api)
 {
     private static readonly ReaderWriterLockSlim rw_lock = new();
 

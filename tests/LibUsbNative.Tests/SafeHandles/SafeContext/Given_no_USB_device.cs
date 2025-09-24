@@ -8,7 +8,7 @@ public class Given_no_USB_device_Fake(ITestOutputHelper output) : Given_no_USB_d
 
 public class Given_no_USB_device_Real(ITestOutputHelper output) : Given_no_USB_device(output, new PInvokeLibUsbApi());
 
-public abstract class Given_no_USB_device(ITestOutputHelper output, ILibUsbApi api) : SafeHandlesTestBase(output, api)
+public abstract class Given_no_USB_device(ITestOutputHelper output, ILibUsbApi api) : LibUsbNativeTestBase(output, api)
 {
     [Fact]
     public void TestTwoContexts()

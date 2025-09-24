@@ -12,7 +12,7 @@ public class Given_an_accessible_USB_device_Real(ITestOutputHelper output)
     : Given_an_accessible_USB_device(output, new PInvokeLibUsbApi());
 
 public abstract class Given_an_accessible_USB_device(ITestOutputHelper output, ILibUsbApi api)
-    : SafeHandlesTestBase(output, api)
+    : LibUsbNativeTestBase(output, api)
 {
     [Fact]
     public void TestNoListOrHandleDispose()
