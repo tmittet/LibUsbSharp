@@ -33,7 +33,7 @@ public static class DescriptorToStringExtension
         return sb.ToString().TrimEnd();
     }
 
-    public static string ToTreeString(this UsbDeviceDescriptor d, IReadOnlyList<UsbConfigDescriptor> configs)
+    public static string ToTreeString(this UsbDeviceDescriptor d, IReadOnlyList<libusb_config_descriptor> configs)
     {
         var sb = new StringBuilder();
         sb.AppendLine(d.ToTreeString());
@@ -45,25 +45,25 @@ public static class DescriptorToStringExtension
         return sb.ToString().TrimEnd();
     }
 
-    public static string ToTreeString(this UsbConfigDescriptor cfg)
+    public static string ToTreeString(this libusb_config_descriptor cfg)
     {
         var sb = new StringBuilder()
             .AppendLine("Configuration Descriptor:")
-            .AppendLine(_culture, $"  bLength             : {cfg.BLength}")
-            .AppendLine(_culture, $"  bDescriptorType     : {Fmt(cfg.BDescriptorType)}")
-            .AppendLine(_culture, $"  wTotalLength        : {cfg.WTotalLength}")
-            .AppendLine(_culture, $"  bNumInterfaces      : {cfg.BNumInterfaces}")
-            .AppendLine(_culture, $"  bConfigurationValue : {cfg.BConfigurationValue}")
-            .AppendLine(_culture, $"  iConfiguration      : {cfg.IConfiguration}")
-            .AppendLine(_culture, $"  bmAttributes        : {Fmt(cfg.BmAttributes)}")
-            .AppendLine(_culture, $"  MaxPower            : {cfg.MaxPower} (units of 2mA)");
-        if (cfg.Extra is { Length: > 0 })
+            .AppendLine(_culture, $"  bLength             : {cfg.bLength}")
+            .AppendLine(_culture, $"  bDescriptorType     : {Fmt(cfg.bDescriptorType)}")
+            .AppendLine(_culture, $"  wTotalLength        : {cfg.wTotalLength}")
+            .AppendLine(_culture, $"  bNumInterfaces      : {cfg.bNumInterfaces}")
+            .AppendLine(_culture, $"  bConfigurationValue : {cfg.bConfigurationValue}")
+            .AppendLine(_culture, $"  iConfiguration      : {cfg.iConfiguration}")
+            .AppendLine(_culture, $"  bmAttributes        : {Fmt(cfg.bmAttributes)}")
+            .AppendLine(_culture, $"  MaxPower            : {cfg.bMaxPower} (units of 2mA)");
+        if (cfg.extra is { Length: > 0 })
         {
-            sb.AppendLine(_culture, $"  Extra               : {cfg.Extra.Length} bytes");
+            sb.AppendLine(_culture, $"  Extra               : {cfg.extra.Length} bytes");
         }
-        for (var i = 0; i < cfg.Interfaces.Count; i++)
+        for (var i = 0; i < cfg.interfaces.Count; i++)
         {
-            var iface = cfg.Interfaces[i];
+            var iface = cfg.interfaces[i];
             sb.AppendLine();
             sb.AppendLine(_culture, $"  Interface[{i}]:");
             for (var a = 0; a < iface.AlternateSettings.Count; a++)

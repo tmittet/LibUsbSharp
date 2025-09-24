@@ -76,7 +76,7 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
         return new SafeConfigDescriptorPtr(this, descriptor);
     }
 
-    public UsbConfigDescriptor GetActiveConfigDescriptor()
+    public libusb_config_descriptor GetActiveConfigDescriptor()
     {
         SafeHelpers.ThrowIfClosed(this);
 
@@ -117,7 +117,7 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
         return new SafeConfigDescriptorPtr(this, descriptor);
     }
 
-    public UsbConfigDescriptor GetConfigDescriptor(byte config_index)
+    public libusb_config_descriptor GetConfigDescriptor(byte config_index)
     {
         SafeHelpers.ThrowIfClosed(this);
 
@@ -174,7 +174,7 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
         return new SafeDeviceHandle(_context, ptr, new SafeDevice(_context, handle));
     }
 
-    private static UsbConfigDescriptor FromPointer(IntPtr pConfigDescriptor)
+    private static libusb_config_descriptor FromPointer(IntPtr pConfigDescriptor)
     {
         if (pConfigDescriptor == IntPtr.Zero)
             throw new ArgumentNullException(nameof(pConfigDescriptor));
@@ -244,7 +244,7 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
 
         var extraCfg = ReadExtra(cfg.extra, cfg.extra_length);
 
-        return new UsbConfigDescriptor(
+        return new libusb_config_descriptor(
             cfg.bLength,
             (libusb_descriptor_type)cfg.bDescriptorType,
             cfg.wTotalLength,

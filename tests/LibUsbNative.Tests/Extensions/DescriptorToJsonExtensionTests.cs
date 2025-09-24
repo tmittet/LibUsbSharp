@@ -74,7 +74,7 @@ public class DescriptorToJsonExtensionTests
             var json = device.GetActiveConfigDescriptor().ToJson();
             output.WriteLine(json);
 
-            var deserialized = JsonSerializer.Deserialize<UsbConfigDescriptor>(json)!;
+            var deserialized = JsonSerializer.Deserialize<libusb_config_descriptor>(json)!;
             output.WriteLine(deserialized.ToJson());
             deserialized.ToJson().Should().Be(json);
             list.Dispose();

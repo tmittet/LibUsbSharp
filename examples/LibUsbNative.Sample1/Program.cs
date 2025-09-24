@@ -40,7 +40,7 @@ static class SamplePrinter
         var devDesc = device.GetDeviceDescriptor();
 
         // Collect all configuration descriptors now that GetConfigDescriptor is available.
-        var configs = new List<UsbConfigDescriptor>();
+        var configs = new List<libusb_config_descriptor>();
         for (byte i = 0; i < devDesc.BNumConfigurations; i++)
         {
             try
@@ -92,13 +92,13 @@ static class SamplePrinter
             {
                 AddStringLine(
                     "Configuration",
-                    cfg.IConfiguration,
-                    $"(bWOOPConfigurationValue={cfg.BConfigurationValue})"
+                    cfg.iConfiguration,
+                    $"(bWOOPConfigurationValue={cfg.bConfigurationValue})"
                 );
                 // Interface + alt setting strings
-                for (int i = 0; i < cfg.Interfaces.Count; i++)
+                for (int i = 0; i < cfg.interfaces.Count; i++)
                 {
-                    var iface = cfg.Interfaces[i];
+                    var iface = cfg.interfaces[i];
                     foreach (var alt in iface.AlternateSettings)
                     {
                         if (alt.iInterface == 0)
@@ -106,7 +106,7 @@ static class SamplePrinter
                         AddStringLine(
                             "Interface",
                             alt.iInterface,
-                            $"(cfg={cfg.BConfigurationValue}, if={alt.bInterfaceNumber}, alt={alt.bAlternateSetting})"
+                            $"(cfg={cfg.bConfigurationValue}, if={alt.bInterfaceNumber}, alt={alt.bAlternateSetting})"
                         );
                     }
                 }

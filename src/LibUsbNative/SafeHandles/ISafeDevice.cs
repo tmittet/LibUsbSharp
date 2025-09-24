@@ -8,10 +8,10 @@ public interface ISafeDevice
 
     UsbDeviceDescriptor GetDeviceDescriptor();
 
-    UsbConfigDescriptor GetActiveConfigDescriptor();
+    libusb_config_descriptor GetActiveConfigDescriptor();
     ISafeConfigDescriptorPtr GetActiveConfigDescriptorPtr();
 
-    UsbConfigDescriptor GetConfigDescriptor(byte configIndex);
+    libusb_config_descriptor GetConfigDescriptor(byte configIndex);
     ISafeConfigDescriptorPtr GetConfigDescriptorPtr(byte configIndex);
 
     byte GetBusNumber();
