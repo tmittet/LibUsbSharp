@@ -51,7 +51,7 @@ public readonly record struct libusb_config_descriptor
     /// <summary>
     /// Array of interfaces supported by this configuration.
     /// </summary>
-    public IReadOnlyList<UsbInterface> interfaces { get; } = Array.Empty<UsbInterface>();
+    public IReadOnlyList<libusb_interface> interfaces { get; } = Array.Empty<libusb_interface>();
 
     /// <summary>
     /// Extra descriptors.
@@ -68,7 +68,7 @@ public readonly record struct libusb_config_descriptor
         byte iConfiguration,
         libusb_config_desc_attributes bmAttributes,
         byte bMaxPower,
-        IReadOnlyList<UsbInterface> interfaces,
+        IReadOnlyList<libusb_interface> interfaces,
         byte[] extra
     )
     {

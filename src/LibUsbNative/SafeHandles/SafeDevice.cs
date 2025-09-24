@@ -237,7 +237,7 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
                     Marshal.SizeOf<native_libusb_interface_descriptor>()
                 );
 
-                return new UsbInterface(alt);
+                return new libusb_interface(alt);
             },
             Marshal.SizeOf<native_libusb_interface>()
         );

@@ -99,7 +99,7 @@ static class SamplePrinter
                 for (int i = 0; i < cfg.interfaces.Count; i++)
                 {
                     var iface = cfg.interfaces[i];
-                    foreach (var alt in iface.AlternateSettings)
+                    foreach (var alt in iface.altsetting)
                     {
                         if (alt.iInterface == 0)
                             continue;

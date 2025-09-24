@@ -66,9 +66,9 @@ public static class DescriptorToStringExtension
             var iface = cfg.interfaces[i];
             sb.AppendLine();
             sb.AppendLine(_culture, $"  Interface[{i}]:");
-            for (var a = 0; a < iface.AlternateSettings.Count; a++)
+            for (var a = 0; a < iface.altsetting.Count; a++)
             {
-                var alt = iface.AlternateSettings[a];
+                var alt = iface.altsetting[a];
                 sb.Append(alt.ToTreeString().Indent(4));
             }
         }
