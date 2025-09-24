@@ -1,7 +1,4 @@
-﻿using FluentAssertions;
-using LibUsbNative.Enums;
-using LibUsbNative.Tests.TestInfrastructure;
-using Xunit.Abstractions;
+﻿using LibUsbNative.Enums;
 
 namespace LibUsbNative.Tests.SafeHandles.SafeDevice;
 

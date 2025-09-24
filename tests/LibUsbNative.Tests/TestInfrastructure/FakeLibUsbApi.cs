@@ -3,7 +3,7 @@ using System.Text;
 using LibUsbNative.Enums;
 using LibUsbNative.Structs;
 
-namespace LibUsbNative.Tests.Fakes;
+namespace LibUsbNative.Tests.TestInfrastructure;
 
 /// <summary>
 /// Enhanced in-memory fake of libusb for tests.

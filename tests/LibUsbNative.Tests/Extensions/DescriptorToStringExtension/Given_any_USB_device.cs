@@ -1,8 +1,4 @@
-﻿using FluentAssertions;
-using LibUsbNative.Extensions;
-using LibUsbNative.Tests.Fakes;
-using LibUsbNative.Tests.TestInfrastructure;
-using Xunit.Abstractions;
+﻿using LibUsbNative.Extensions;
 
 namespace LibUsbNative.Tests.Extensions.DescriptorToStringExtension;
 

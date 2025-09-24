@@ -1,8 +1,4 @@
-﻿using FluentAssertions;
-using LibUsbNative.Tests.TestInfrastructure;
-using Xunit.Abstractions;
-
-namespace LibUsbNative.Tests.SafeHandles.SafeDeviceHandle;
+﻿namespace LibUsbNative.Tests.SafeHandles.SafeDeviceHandle;
 
 [Trait("Category", "UsbDevice")]
 public class Given_an_accessible_USB_device_Real(ITestOutputHelper output)

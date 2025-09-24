@@ -1,10 +1,6 @@
 ﻿using System.Text.Json;
-using FluentAssertions;
 using LibUsbNative.Extensions;
 using LibUsbNative.Structs;
-using LibUsbNative.Tests.Fakes;
-using LibUsbNative.Tests.TestInfrastructure;
-using Xunit.Abstractions;
 
 namespace LibUsbNative.Tests.Extensions.DescriptorToJsonExtension;
 

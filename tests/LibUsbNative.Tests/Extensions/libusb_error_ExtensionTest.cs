@@ -1,6 +1,4 @@
 ﻿using System.Runtime.InteropServices;
-using FluentAssertions;
-using FluentAssertions.Execution;
 using LibUsbNative.Enums;
 using LibUsbNative.Extensions;
 

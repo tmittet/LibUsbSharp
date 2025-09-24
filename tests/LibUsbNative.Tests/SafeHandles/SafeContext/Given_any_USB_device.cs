@@ -1,9 +1,4 @@
-﻿using FluentAssertions;
-using LibUsbNative.Tests.Fakes;
-using LibUsbNative.Tests.TestInfrastructure;
-using Xunit.Abstractions;
-
-namespace LibUsbNative.Tests.SafeHandles.SafeContext;
+﻿namespace LibUsbNative.Tests.SafeHandles.SafeContext;
 
 public class Given_any_USB_device_Fake(ITestOutputHelper output) : Given_any_USB_device(output, new FakeLibusbApi());
 
