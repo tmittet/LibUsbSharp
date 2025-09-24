@@ -18,11 +18,10 @@ public class Given_an_accessible_USB_device_Real : Given_an_accessible_USB_devic
         : base(output, new PInvokeLibUsbApi()) { }
 }
 
-public abstract class Given_an_accessible_USB_device
+public abstract class Given_an_accessible_USB_device : SafeHandlesTestBase
 {
     private readonly ITestOutputHelper output;
     private readonly List<string> stdout = [];
-    private static readonly ReaderWriterLockSlim rw_lock = new();
     private readonly LibUsbNative libUsb;
 
     public Given_an_accessible_USB_device(ITestOutputHelper output, ILibUsbApi api)
@@ -48,32 +47,6 @@ public abstract class Given_an_accessible_USB_device
 
         context.SetOption(libusb_option.LIBUSB_OPTION_LOG_LEVEL, 3);
         return context;
-    }
-
-    internal static void EnterReadLock(Action action)
-    {
-        rw_lock.EnterReadLock();
-        try
-        {
-            action();
-        }
-        finally
-        {
-            rw_lock.ExitReadLock();
-        }
-    }
-
-    internal static void EnterWriteLock(Action action)
-    {
-        rw_lock.EnterReadLock();
-        try
-        {
-            action();
-        }
-        finally
-        {
-            rw_lock.ExitReadLock();
-        }
     }
 
     [Fact]

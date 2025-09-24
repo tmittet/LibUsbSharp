@@ -5,12 +5,11 @@ using Xunit.Abstractions;
 
 namespace LibUsbNative.Tests.SafeHandles.SafeDevice;
 
-public class Given_no_USB_device
+public class Given_no_USB_device : SafeHandlesTestBase
 {
     private readonly ITestOutputHelper output;
     private readonly ISafeContext context;
     private readonly List<string> stdout = [];
-    private static readonly ReaderWriterLockSlim rw_lock = new();
     private readonly LibUsbNative libUsb;
 
     public Given_no_USB_device(ITestOutputHelper output)
@@ -32,32 +31,6 @@ public class Given_no_USB_device
         );
 
         context.SetOption(libusb_option.LIBUSB_OPTION_LOG_LEVEL, 3);
-    }
-
-    internal static void EnterReadLock(Action action)
-    {
-        rw_lock.EnterReadLock();
-        try
-        {
-            action();
-        }
-        finally
-        {
-            rw_lock.ExitReadLock();
-        }
-    }
-
-    internal static void EnterWriteLock(Action action)
-    {
-        rw_lock.EnterReadLock();
-        try
-        {
-            action();
-        }
-        finally
-        {
-            rw_lock.ExitReadLock();
-        }
     }
 
     [Fact]
