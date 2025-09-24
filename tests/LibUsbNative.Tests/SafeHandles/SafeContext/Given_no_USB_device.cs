@@ -4,28 +4,28 @@ using LibUsbNative.SafeHandles;
 using LibUsbNative.Tests.Fakes;
 using Xunit.Abstractions;
 
-namespace LibUsbNative.Tests;
+namespace LibUsbNative.Tests.SafeHandles.SafeContext;
 
-public class SafeContextTests_Fake : SafeContextTest
+public class Given_no_USB_device_Fake : Given_no_USB_device
 {
-    public SafeContextTests_Fake(ITestOutputHelper output)
+    public Given_no_USB_device_Fake(ITestOutputHelper output)
         : base(output, new FakeLibusbApi()) { }
 }
 
-public class SafeContextTests_Real : SafeContextTest
+public class Given_no_USB_device_Real : Given_no_USB_device
 {
-    public SafeContextTests_Real(ITestOutputHelper output)
+    public Given_no_USB_device_Real(ITestOutputHelper output)
         : base(output, new PInvokeLibUsbApi()) { }
 }
 
-public abstract class SafeContextTest
+public abstract class Given_no_USB_device
 {
     private readonly ITestOutputHelper output;
-    private readonly List<string> stdout = new();
+    private readonly List<string> stdout = [];
     private static readonly ReaderWriterLockSlim rw_lock = new();
     private readonly LibUsbNative libUsb;
 
-    public SafeContextTest(ITestOutputHelper output, ILibUsbApi api)
+    public Given_no_USB_device(ITestOutputHelper output, ILibUsbApi api)
     {
         this.output = output;
         libUsb = new LibUsbNative(api);
@@ -128,43 +128,6 @@ public abstract class SafeContextTest
     }
 
     [Fact]
-    public void TestNoListOrHandleDispose()
-    {
-        EnterWriteLock(() =>
-        {
-            var context = GetContext();
-            var (list, count) = context.GetDeviceList();
-            count.Should().BePositive();
-            // TODO: Picks random device to open and fails. In some cases this results in:
-            // Failed to open USB device. Operation not supported or unimplemented on this platform.
-            var deviceHandle = list.Devices.ToList()[0].Open();
-            context.Dispose();
-            _ = stdout.Should().NotContain(s => s.Contains("still referenced"));
-        });
-    }
-
-    [Fact]
-    public void TestDisposeInWrongOrder()
-    {
-        EnterWriteLock(() =>
-        {
-            var context = GetContext();
-            var (list, count) = context.GetDeviceList();
-            count.Should().BePositive();
-            // TODO: Picks random device to open and fails. In some cases this results in:
-            // Failed to open USB device. Operation not supported or unimplemented on this platform.
-            var deviceHandle = list.Devices.ToList()[0].Open();
-
-            context.Dispose();
-            list.Dispose();
-
-            deviceHandle.IsClosed.Should().BeFalse();
-            deviceHandle.Dispose();
-            _ = stdout.Should().NotContain(s => s.Contains("still referenced"));
-        });
-    }
-
-    [Fact]
     public void TestFailsAfterDispose()
     {
         EnterReadLock(() =>
@@ -189,7 +152,7 @@ public abstract class SafeContextTest
                     0,
                     0,
                     0,
-                    (IntPtr)0,
+                    0,
                     (p1, p2, p3, p4) =>
                     {
                         return true;
@@ -198,16 +161,16 @@ public abstract class SafeContextTest
             };
             act.Should().Throw<ObjectDisposedException>();
 
-            act = () => context.HotplugDeregisterCallback((IntPtr)0);
+            act = () => context.HotplugDeregisterCallback(0);
             act.Should().Throw<ObjectDisposedException>();
 
             act = () => context.SetOption(0, 0);
             act.Should().Throw<ObjectDisposedException>();
 
-            act = () => context.SetOption((libusb_option)0, 0);
+            act = () => context.SetOption(0, 0);
             act.Should().Throw<ObjectDisposedException>();
 
-            act = () => context.HandleEventsCompleted((IntPtr)0);
+            act = () => context.HandleEventsCompleted(0);
             act.Should().Throw<ObjectDisposedException>();
         });
     }

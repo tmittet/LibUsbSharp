@@ -3,17 +3,17 @@ using LibUsbNative.Enums;
 using LibUsbNative.SafeHandles;
 using Xunit.Abstractions;
 
-namespace LibUsbNative.Tests;
+namespace LibUsbNative.Tests.SafeHandles.SafeDeviceHandle;
 
-public class SafeDeviceHandleTest
+public class Given_an_accessible_USB_device
 {
     private readonly ITestOutputHelper output;
     private readonly ISafeContext context;
-    private readonly List<string> stdout = new();
+    private readonly List<string> stdout = [];
     private static readonly ReaderWriterLockSlim rw_lock = new();
     private readonly LibUsbNative libUsb;
 
-    public SafeDeviceHandleTest(ITestOutputHelper output)
+    public Given_an_accessible_USB_device(ITestOutputHelper output)
     {
         this.output = output;
         libUsb = new LibUsbNative(new PInvokeLibUsbApi());
