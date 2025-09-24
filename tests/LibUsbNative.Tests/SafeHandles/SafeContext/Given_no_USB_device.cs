@@ -4,17 +4,9 @@ using Xunit.Abstractions;
 
 namespace LibUsbNative.Tests.SafeHandles.SafeContext;
 
-public class Given_no_USB_device_Fake : Given_no_USB_device
-{
-    public Given_no_USB_device_Fake(ITestOutputHelper output)
-        : base(output, new FakeLibusbApi()) { }
-}
+public class Given_no_USB_device_Fake(ITestOutputHelper output) : Given_no_USB_device(output, new FakeLibusbApi());
 
-public class Given_no_USB_device_Real : Given_no_USB_device
-{
-    public Given_no_USB_device_Real(ITestOutputHelper output)
-        : base(output, new PInvokeLibUsbApi()) { }
-}
+public class Given_no_USB_device_Real(ITestOutputHelper output) : Given_no_USB_device(output, new PInvokeLibUsbApi());
 
 public abstract class Given_no_USB_device(ITestOutputHelper output, ILibUsbApi api) : SafeHandlesTestBase(output, api)
 {
