@@ -1,43 +1,19 @@
 ﻿using FluentAssertions;
 using LibUsbNative.Enums;
-using LibUsbNative.SafeHandles;
 using Xunit.Abstractions;
 
 namespace LibUsbNative.Tests.SafeHandles.SafeDevice;
 
-public class Given_no_USB_device : SafeHandlesTestBase
+public class Given_no_USB_device_Real(ITestOutputHelper output) : Given_no_USB_device(output, new PInvokeLibUsbApi());
+
+public abstract class Given_no_USB_device(ITestOutputHelper output, ILibUsbApi api) : SafeHandlesTestBase(output, api)
 {
-    private readonly ITestOutputHelper output;
-    private readonly ISafeContext context;
-    private readonly List<string> stdout = [];
-    private readonly LibUsbNative libUsb;
-
-    public Given_no_USB_device(ITestOutputHelper output)
-    {
-        this.output = output;
-        libUsb = new LibUsbNative(new PInvokeLibUsbApi());
-
-        var version = libUsb.GetVersion();
-        output.WriteLine(version.ToString());
-
-        context = libUsb.CreateContext();
-
-        context.RegisterLogCallback(
-            (level, message) =>
-            {
-                output.WriteLine($"[Libusb][{level}] {message}");
-                stdout.Add(message);
-            }
-        );
-
-        context.SetOption(libusb_option.LIBUSB_OPTION_LOG_LEVEL, 3);
-    }
-
     [Fact]
     public void TestGetDeviceDescriptor()
     {
         EnterReadLock(() =>
         {
+            var context = GetContext();
             var (list, count) = context.GetDeviceList();
             count.Should().BePositive();
 
@@ -54,6 +30,7 @@ public class Given_no_USB_device : SafeHandlesTestBase
     {
         EnterReadLock(() =>
         {
+            var context = GetContext();
             var (list, count) = context.GetDeviceList();
             count.Should().BePositive();
 

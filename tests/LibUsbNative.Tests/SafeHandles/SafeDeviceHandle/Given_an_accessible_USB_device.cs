@@ -1,43 +1,20 @@
 ﻿using FluentAssertions;
-using LibUsbNative.Enums;
-using LibUsbNative.SafeHandles;
 using Xunit.Abstractions;
 
 namespace LibUsbNative.Tests.SafeHandles.SafeDeviceHandle;
 
-public class Given_an_accessible_USB_device : SafeHandlesTestBase
+public class Given_an_accessible_USB_device_Real(ITestOutputHelper output)
+    : Given_an_accessible_USB_device(output, new PInvokeLibUsbApi());
+
+public abstract class Given_an_accessible_USB_device(ITestOutputHelper output, ILibUsbApi api)
+    : SafeHandlesTestBase(output, api)
 {
-    private readonly ITestOutputHelper output;
-    private readonly ISafeContext context;
-    private readonly List<string> stdout = [];
-    private readonly LibUsbNative libUsb;
-
-    public Given_an_accessible_USB_device(ITestOutputHelper output)
-    {
-        this.output = output;
-        libUsb = new LibUsbNative(new PInvokeLibUsbApi());
-
-        var version = libUsb.GetVersion();
-        output.WriteLine(version.ToString());
-
-        context = libUsb.CreateContext();
-
-        context.RegisterLogCallback(
-            (level, message) =>
-            {
-                output.WriteLine($"[Libusb][{level}] {message}");
-                stdout.Add(message);
-            }
-        );
-
-        context.SetOption(libusb_option.LIBUSB_OPTION_LOG_LEVEL, 3);
-    }
-
     [Fact]
     public void TestOpenDeviceHandle()
     {
         EnterReadLock(() =>
         {
+            var context = GetContext();
             var (list, count) = context.GetDeviceList();
             count.Should().BePositive();
             var device = list.Devices.ToList()[0];
@@ -57,6 +34,7 @@ public class Given_an_accessible_USB_device : SafeHandlesTestBase
     {
         EnterReadLock(() =>
         {
+            var context = GetContext();
             var (list, count) = context.GetDeviceList();
             count.Should().BePositive();
             var device = list.Devices.ToList()[0];
@@ -69,7 +47,7 @@ public class Given_an_accessible_USB_device : SafeHandlesTestBase
             );
             _ = serialNumber.Should().NotBeNullOrEmpty();
 
-            output.WriteLine($"Serial Number: {serialNumber}");
+            Output.WriteLine($"Serial Number: {serialNumber}");
 
             list.Dispose();
             deviceHandle.Dispose();
@@ -82,6 +60,7 @@ public class Given_an_accessible_USB_device : SafeHandlesTestBase
     {
         EnterReadLock(() =>
         {
+            var context = GetContext();
             var (list, count) = context.GetDeviceList();
             count.Should().BePositive();
 

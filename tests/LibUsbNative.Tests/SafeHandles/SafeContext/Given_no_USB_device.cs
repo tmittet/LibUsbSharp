@@ -1,6 +1,4 @@
 ﻿using FluentAssertions;
-using LibUsbNative.Enums;
-using LibUsbNative.SafeHandles;
 using LibUsbNative.Tests.Fakes;
 using Xunit.Abstractions;
 
@@ -18,37 +16,8 @@ public class Given_no_USB_device_Real : Given_no_USB_device
         : base(output, new PInvokeLibUsbApi()) { }
 }
 
-public abstract class Given_no_USB_device : SafeHandlesTestBase
+public abstract class Given_no_USB_device(ITestOutputHelper output, ILibUsbApi api) : SafeHandlesTestBase(output, api)
 {
-    private readonly ITestOutputHelper output;
-    private readonly List<string> stdout = [];
-    private readonly LibUsbNative libUsb;
-
-    public Given_no_USB_device(ITestOutputHelper output, ILibUsbApi api)
-    {
-        this.output = output;
-        libUsb = new LibUsbNative(api);
-
-        var version = libUsb.GetVersion();
-        output.WriteLine(version.ToString());
-    }
-
-    internal ISafeContext GetContext()
-    {
-        var context = libUsb.CreateContext();
-
-        context.RegisterLogCallback(
-            (level, message) =>
-            {
-                output.WriteLine($"[Libusb][{level}] {message}");
-                stdout.Add(message);
-            }
-        );
-
-        context.SetOption(libusb_option.LIBUSB_OPTION_LOG_LEVEL, 3);
-        return context;
-    }
-
     [Fact]
     public void TestTwoContexts()
     {
@@ -66,7 +35,7 @@ public abstract class Given_no_USB_device : SafeHandlesTestBase
             context.Dispose();
             context2.Dispose();
 
-            _ = stdout.Should().NotContain(s => s.Contains("still referenced"));
+            _ = LibUsbOutput.Should().NotContain(s => s.Contains("still referenced"));
         });
     }
 
@@ -84,7 +53,7 @@ public abstract class Given_no_USB_device : SafeHandlesTestBase
             list.Dispose();
             context.Dispose();
 
-            _ = stdout.Should().NotContain(s => s.Contains("still referenced"));
+            _ = LibUsbOutput.Should().NotContain(s => s.Contains("still referenced"));
         });
     }
 
@@ -96,7 +65,7 @@ public abstract class Given_no_USB_device : SafeHandlesTestBase
             var context = GetContext();
             var (list, count) = context.GetDeviceList();
             context.Dispose();
-            _ = stdout.Should().NotContain(s => s.Contains("still referenced"));
+            _ = LibUsbOutput.Should().NotContain(s => s.Contains("still referenced"));
         });
     }
 
