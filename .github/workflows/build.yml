@@ -78,6 +78,13 @@ jobs:
       run: |
         dotnet restore --runtime ${{ matrix.config.runtime }}
 
+    - name: Build LibUsbNative
+      shell: bash
+      run: |
+        dotnet build src/LibUsbNative/LibUsbNative.csproj \
+          --no-restore \
+          --runtime ${{ matrix.config.runtime }}
+
     - name: Build LibUsbSharp
       shell: bash
       run: |
@@ -85,11 +92,12 @@ jobs:
           --no-restore \
           --runtime ${{ matrix.config.runtime }}
 
-    - name: Install libusb 1.0 dev (for linux)
-      if: startsWith(matrix.config.runtime, 'linux-')
+    - name: Build LibUsbNative.Tests
+      shell: bash
       run: |
-        sudo apt-get update
-        sudo apt-get install -y libusb-1.0-0-dev
+        dotnet build tests/LibUsbNative.Tests/LibUsbNative.Tests.csproj \
+          --no-restore \
+          --runtime ${{ matrix.config.runtime }}
 
     - name: Build LibUsbSharp.Tests
       shell: bash
@@ -105,13 +113,28 @@ jobs:
           --no-restore \
           --runtime ${{ matrix.config.runtime }}
 
+    - name: Install libusb 1.0 dev (for linux)
+      # libusb is not packaged for linux and must be present before running tests
+      if: startsWith(matrix.config.runtime, 'linux-')
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libusb-1.0-0-dev
+
+    - name: Run LibUsbNative.Tests
+      shell: bash
+      run: |
+        dotnet test tests/LibUsbNative.Tests/LibUsbNative.Tests.csproj \
+          --no-build \
+          --runtime ${{ matrix.config.runtime }} \
+          --logger "junit;LogFilePath=TestResults/results.xml" \
+          --verbosity normal
+
     - name: Run LibUsbSharp.Tests
       shell: bash
       run: |
         dotnet test tests/LibUsbSharp.Tests/LibUsbSharp.Tests.csproj \
           --no-build \
           --runtime ${{ matrix.config.runtime }} \
-          --settings LibUsbSharp.runsettings \
           --logger "junit;LogFilePath=TestResults/results.xml" \
           --verbosity normal
 
@@ -121,7 +144,6 @@ jobs:
         dotnet test tests/LibUsbSharp.Extensions.Tests/LibUsbSharp.Extensions.Tests.csproj \
           --no-build \
           --runtime ${{ matrix.config.runtime }} \
-          --settings LibUsbSharp.runsettings \
           --logger "junit;LogFilePath=TestResults/results.xml" \
           --verbosity normal
 
