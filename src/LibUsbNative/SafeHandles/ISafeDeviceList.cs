@@ -1,7 +1,6 @@
 ﻿namespace LibUsbNative.SafeHandles;
 
-public interface ISafeDeviceList : IDisposable
+public interface ISafeDeviceList : IReadOnlyList<ISafeDevice>, IDisposable
 {
-    IEnumerable<ISafeDevice> Devices { get; }
     bool IsClosed { get; }
 }

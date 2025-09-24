@@ -136,7 +136,7 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
     }
 
     // TODO: Using out parameter for count or returning List would be clearer
-    public (ISafeDeviceList, uint) GetDeviceList()
+    public ISafeDeviceList GetDeviceList()
     {
         SafeHelpers.ThrowIfClosed(this);
 
@@ -151,6 +151,6 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
             LibUsbException.ThrowIfError(libusb_error.LIBUSB_ERROR_OTHER, "Failed to ref SafeHandle");
         }
 
-        return (new SafeDeviceList(this, list, (uint)rc), (uint)rc);
+        return new SafeDeviceList(this, list, (int)rc);
     }
 }

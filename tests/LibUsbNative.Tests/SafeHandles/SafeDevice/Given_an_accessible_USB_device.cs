@@ -16,10 +16,10 @@ public abstract class Given_an_accessible_USB_device(ITestOutputHelper output, I
         EnterReadLock(() =>
         {
             var context = GetContext();
-            var (list, count) = context.GetDeviceList();
-            count.Should().BePositive();
+            var list = context.GetDeviceList();
+            list.Count.Should().BePositive();
 
-            var device = list.Devices.ToList()[0];
+            var device = list[0];
             list.Dispose();
 
             Action act = () => device.GetActiveConfigDescriptor();

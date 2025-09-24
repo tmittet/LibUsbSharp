@@ -18,19 +18,16 @@ context.RegisterLogCallback(
     }
 );
 
-var (deviceList, count) = context.GetDeviceList();
-Console.WriteLine($"Found {count} USB devices.");
+using var deviceList = context.GetDeviceList();
+Console.WriteLine($"Found {deviceList.Count} USB devices.");
 
-using (deviceList)
+var idx = 0;
+foreach (var device in deviceList)
 {
-    int idx = 0;
-    foreach (var device in deviceList.Devices)
-    {
-        Console.WriteLine($"=== Device #{idx} ===");
-        SamplePrinter.PrintDevice(device);
-        Console.WriteLine();
-        idx++;
-    }
+    Console.WriteLine($"=== Device #{idx} ===");
+    SamplePrinter.PrintDevice(device);
+    Console.WriteLine();
+    idx++;
 }
 
 static class SamplePrinter

@@ -1,46 +1,53 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Collections;
+using System.Runtime.InteropServices;
 using LibUsbNative.Enums;
 
 namespace LibUsbNative.SafeHandles;
 
 internal sealed class SafeDeviceList : SafeHandle, ISafeDeviceList
 {
-    private readonly uint _count;
-    private readonly Lazy<SafeDevice[]> lazyDevices;
+    private readonly int _count;
+    private readonly Lazy<IReadOnlyList<SafeDevice>> _lazyDevices;
     private readonly SafeContext _context;
 
-    public SafeDeviceList(SafeContext context, IntPtr listPtr, uint count)
+    public SafeDeviceList(SafeContext context, IntPtr listPtr, int count)
         : base(listPtr, ownsHandle: true)
     {
         if (listPtr == IntPtr.Zero)
             throw new ArgumentNullException(nameof(listPtr));
+        if (count < 0)
+            throw new ArgumentOutOfRangeException(nameof(count), "Must be greater than zero.");
 
         _context = context;
         _count = count;
-        lazyDevices = new Lazy<SafeDevice[]>(() =>
-        {
-            var devices = new SafeDevice[_count];
-            var ptrSize = IntPtr.Size;
-            for (var i = 0; i < _count; i++)
-            {
-                var devPtr = Marshal.ReadIntPtr(handle, i * ptrSize);
-
-                bool success = false;
-                context.DangerousAddRef(ref success);
-                if (!success)
-                {
-                    LibUsbException.ThrowIfError(libusb_error.LIBUSB_ERROR_OTHER, "Failed to ref SafeHandle");
-                }
-
-                devices[i] = new SafeDevice(_context, devPtr);
-            }
-            return devices;
-        });
+        _lazyDevices = new Lazy<IReadOnlyList<SafeDevice>>(() => GetDevices(context, handle, count));
     }
+
+    private static SafeDevice[] GetDevices(SafeContext context, nint handle, int count)
+    {
+        var devices = new SafeDevice[count];
+        var ptrSize = IntPtr.Size;
+        for (var i = 0; i < count; i++)
+        {
+            var devPtr = Marshal.ReadIntPtr(handle, i * ptrSize);
+
+            var success = false;
+            context.DangerousAddRef(ref success);
+            if (!success)
+            {
+                LibUsbException.ThrowIfError(libusb_error.LIBUSB_ERROR_OTHER, "Failed to ref SafeHandle.");
+            }
+
+            devices[i] = new SafeDevice(context, devPtr);
+        }
+        return devices;
+    }
+
+    public ISafeDevice this[int index] => _lazyDevices.Value[index];
 
     public override bool IsInvalid => handle == IntPtr.Zero;
 
-    public uint Count
+    public int Count
     {
         get
         {
@@ -49,13 +56,16 @@ internal sealed class SafeDeviceList : SafeHandle, ISafeDeviceList
         }
     }
 
-    public IEnumerable<ISafeDevice> Devices
+    public IEnumerator<ISafeDevice> GetEnumerator()
     {
-        get
-        {
-            SafeHelpers.ThrowIfClosed(this);
-            return lazyDevices.Value;
-        }
+        SafeHelpers.ThrowIfClosed(this);
+        return _lazyDevices.Value.GetEnumerator();
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        SafeHelpers.ThrowIfClosed(this);
+        return _lazyDevices.Value.GetEnumerator();
     }
 
     protected override bool ReleaseHandle()
@@ -63,9 +73,9 @@ internal sealed class SafeDeviceList : SafeHandle, ISafeDeviceList
         if (IsInvalid)
             return true;
 
-        if (lazyDevices.IsValueCreated)
+        if (_lazyDevices.IsValueCreated)
         {
-            foreach (var device in lazyDevices.Value)
+            foreach (var device in _lazyDevices.Value)
             {
                 if (!device.IsClosed)
                 {

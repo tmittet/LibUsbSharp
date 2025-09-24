@@ -13,15 +13,13 @@ public abstract class Given_no_USB_device(ITestOutputHelper output, ILibUsbApi a
     {
         EnterReadLock(() =>
         {
-            var context = GetContext();
-            var (list, count) = context.GetDeviceList();
-            count.Should().BePositive();
+            using var context = GetContext();
+            using var list = context.GetDeviceList();
+            list.Count.Should().BePositive();
 
-            var device = list.Devices.ToList()[0];
+            var device = list[0];
             var descriptor = device.GetDeviceDescriptor();
             descriptor.bDescriptorType.Should().Be(libusb_descriptor_type.LIBUSB_DT_DEVICE);
-
-            list.Dispose();
         });
     }
 
@@ -30,15 +28,13 @@ public abstract class Given_no_USB_device(ITestOutputHelper output, ILibUsbApi a
     {
         EnterReadLock(() =>
         {
-            var context = GetContext();
-            var (list, count) = context.GetDeviceList();
-            count.Should().BePositive();
+            using var context = GetContext();
+            using var list = context.GetDeviceList();
+            list.Count.Should().BePositive();
 
-            var device = list.Devices.ToList()[0];
+            var device = list[0];
             var descriptor = device.GetActiveConfigDescriptor();
             descriptor.bDescriptorType.Should().Be(libusb_descriptor_type.LIBUSB_DT_CONFIG);
-
-            list.Dispose();
         });
     }
 };

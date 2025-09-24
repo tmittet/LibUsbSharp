@@ -17,14 +17,12 @@ public abstract class Given_any_USB_device(ITestOutputHelper output, ILibUsbApi 
     {
         EnterReadLock(() =>
         {
-            var context = GetContext();
-            var (list, count) = context.GetDeviceList();
-            count.Should().BePositive();
-            var device = list.Devices.ToList()[0];
+            using var context = GetContext();
+            using var list = context.GetDeviceList();
+            list.Count.Should().BePositive();
+            var device = list[0];
             var descriptor = device.GetDeviceDescriptor();
             Output.WriteLine(descriptor.ToTreeString());
-
-            list.Dispose();
         });
     }
 
@@ -33,14 +31,12 @@ public abstract class Given_any_USB_device(ITestOutputHelper output, ILibUsbApi 
     {
         EnterReadLock(() =>
         {
-            var context = GetContext();
-            var (list, count) = context.GetDeviceList();
-            count.Should().BePositive();
-            var device = list.Devices.ToList()[0];
+            using var context = GetContext();
+            using var list = context.GetDeviceList();
+            list.Count.Should().BePositive();
+            var device = list[0];
             var descriptor = device.GetActiveConfigDescriptor();
             Output.WriteLine(descriptor.ToTreeString());
-
-            list.Dispose();
         });
     }
 };

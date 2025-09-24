@@ -20,11 +20,11 @@ public abstract class Given_an_accessible_USB_device(ITestOutputHelper output, I
         EnterWriteLock(() =>
         {
             var context = GetContext();
-            var (list, count) = context.GetDeviceList();
-            count.Should().BePositive();
+            var list = context.GetDeviceList();
+            list.Count.Should().BePositive();
             // TODO: Picks random device to open and fails. In some cases this results in:
             // Failed to open USB device. Operation not supported or unimplemented on this platform.
-            var deviceHandle = list.Devices.ToList()[0].Open();
+            var deviceHandle = list[0].Open();
             context.Dispose();
             _ = LibUsbOutput.Should().NotContain(s => s.Contains("still referenced"));
         });
@@ -36,11 +36,11 @@ public abstract class Given_an_accessible_USB_device(ITestOutputHelper output, I
         EnterWriteLock(() =>
         {
             var context = GetContext();
-            var (list, count) = context.GetDeviceList();
-            count.Should().BePositive();
+            var list = context.GetDeviceList();
+            list.Count.Should().BePositive();
             // TODO: Picks random device to open and fails. In some cases this results in:
             // Failed to open USB device. Operation not supported or unimplemented on this platform.
-            var deviceHandle = list.Devices.ToList()[0].Open();
+            var deviceHandle = list[0].Open();
 
             context.Dispose();
             list.Dispose();

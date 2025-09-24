@@ -239,7 +239,7 @@ public sealed class LibUsb : ILibUsb
 
     private UsbDevice OpenDeviceUnlocked(ISafeContext context, string deviceKey)
     {
-        var (deviceList, _) = context.GetDeviceList();
+        var deviceList = context.GetDeviceList();
         try
         {
             var device = OpenListDeviceUnlocked(context, deviceList, deviceKey);
@@ -263,7 +263,7 @@ public sealed class LibUsb : ILibUsb
     private UsbDevice OpenListDeviceUnlocked(ISafeContext context, ISafeDeviceList deviceList, string deviceKey)
     {
         var (device, descriptor) = LibUsbDeviceEnum
-            .GetDeviceDescriptors(_logger, deviceList.Devices.ToList())
+            .GetDeviceDescriptors(_logger, deviceList)
             .FirstOrDefault(d => d.Descriptor.DeviceKey == deviceKey);
         if (device is null)
         {

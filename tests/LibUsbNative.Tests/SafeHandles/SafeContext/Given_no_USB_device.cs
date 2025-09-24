@@ -18,11 +18,11 @@ public abstract class Given_no_USB_device(ITestOutputHelper output, ILibUsbApi a
             var context = GetContext();
             var context2 = GetContext();
 
-            var (list, count) = context.GetDeviceList();
-            var (list2, count2) = context2.GetDeviceList();
+            var list = context.GetDeviceList();
+            var list2 = context2.GetDeviceList();
 
-            count.Should().BePositive();
-            count2.Equals(count);
+            list.Count.Should().BePositive();
+            list2.Count.Equals(list.Count);
 
             context.Dispose();
             context2.Dispose();
@@ -37,10 +37,10 @@ public abstract class Given_no_USB_device(ITestOutputHelper output, ILibUsbApi a
         EnterReadLock(() =>
         {
             var context = GetContext();
-            var (list, count) = context.GetDeviceList();
+            var list = context.GetDeviceList();
 
-            count.Should().BePositive();
-            list.Devices.ToList().Should().HaveCount((int)count);
+            list.Count.Should().BePositive();
+            list.Should().HaveCount(list.Count);
 
             list.Dispose();
             context.Dispose();
@@ -55,7 +55,7 @@ public abstract class Given_no_USB_device(ITestOutputHelper output, ILibUsbApi a
         EnterReadLock(() =>
         {
             var context = GetContext();
-            var (list, count) = context.GetDeviceList();
+            var list = context.GetDeviceList();
             context.Dispose();
             _ = LibUsbOutput.Should().NotContain(s => s.Contains("still referenced"));
         });

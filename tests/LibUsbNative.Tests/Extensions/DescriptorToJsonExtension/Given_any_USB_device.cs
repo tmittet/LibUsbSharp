@@ -19,16 +19,15 @@ public abstract class Given_any_USB_device(ITestOutputHelper output, ILibUsbApi 
     {
         EnterReadLock(() =>
         {
-            var context = GetContext();
-            var (list, count) = context.GetDeviceList();
-            count.Should().BePositive();
-            var device = list.Devices.ToList()[0];
+            using var context = GetContext();
+            using var list = context.GetDeviceList();
+            list.Count.Should().BePositive();
+            var device = list[0];
             var json = device.GetActiveConfigDescriptor().ToJson();
             Output.WriteLine(json);
 
             var deserialized = JsonSerializer.Deserialize<libusb_config_descriptor>(json)!;
             deserialized.ToJson().Should().Be(json);
-            list.Dispose();
         });
     }
 
@@ -37,16 +36,15 @@ public abstract class Given_any_USB_device(ITestOutputHelper output, ILibUsbApi 
     {
         EnterReadLock(() =>
         {
-            var context = GetContext();
-            var (list, count) = context.GetDeviceList();
-            count.Should().BePositive();
-            var device = list.Devices.ToList()[0];
+            using var context = GetContext();
+            using var list = context.GetDeviceList();
+            list.Count.Should().BePositive();
+            var device = list[0];
             var json = device.GetDeviceDescriptor().ToJson();
             Output.WriteLine(json);
 
             var deserialized = JsonSerializer.Deserialize<libusb_device_descriptor>(json)!;
             deserialized.ToJson().Should().Be(json);
-            list.Dispose();
         });
     }
 };

@@ -22,25 +22,16 @@ internal static class LibUsbDeviceEnum
         HashSet<ushort>? productIds
     )
     {
-        (var deviceList, var count) = libusbContext.GetDeviceList();
-        var result = LibUsbResult.Success;
-        try
-        {
-            return result >= 0
-                ? GetDeviceDescriptors(logger, deviceList.Devices.ToList())
-                    .Select(d => d.Descriptor)
-                    .Where(d =>
-                        (vendorId is null || vendorId == d.VendorId)
-                        && (productIds is null || productIds.Contains(d.ProductId))
-                    )
-                    .Cast<IUsbDeviceDescriptor>()
-                    .ToList()
-                : throw LibUsbException.FromResult(result, "Failed to get device list.");
-        }
-        finally
-        {
-            deviceList.Dispose();
-        }
+        // TODO: Verify error handling, behavior has changed with LibUsbNative
+        using var deviceList = libusbContext.GetDeviceList();
+
+        return GetDeviceDescriptors(logger, deviceList)
+            .Select(d => d.Descriptor)
+            .Where(d =>
+                (vendorId is null || vendorId == d.VendorId) && (productIds is null || productIds.Contains(d.ProductId))
+            )
+            .Cast<IUsbDeviceDescriptor>()
+            .ToList();
     }
 
     /// <summary>
@@ -50,9 +41,11 @@ internal static class LibUsbDeviceEnum
     /// <param name="devices">Pointer to device list returned by libusb_get_device_list.</param>
     internal static IEnumerable<(ISafeDevice device, UsbDeviceDescriptor Descriptor)> GetDeviceDescriptors(
         ILogger logger,
-        List<ISafeDevice> devices
+        IReadOnlyList<ISafeDevice> devices
     )
     {
+        // TODO: Verify error handling, behavior has changed with LibUsbNative
+
         foreach (var device in devices)
         {
             var result = TryGetDeviceDescriptor(device, out var descriptor);
@@ -73,6 +66,7 @@ internal static class LibUsbDeviceEnum
     /// </summary>
     internal static LibUsbResult TryGetDeviceDescriptor(ISafeDevice device, out UsbDeviceDescriptor? descriptor)
     {
+        // TODO: Verify error handling, behavior has changed with LibUsbNative
         var partialDescriptor = device.GetDeviceDescriptor();
 
         descriptor = new UsbDeviceDescriptor(

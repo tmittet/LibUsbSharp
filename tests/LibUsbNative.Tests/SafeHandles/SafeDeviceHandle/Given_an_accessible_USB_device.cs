@@ -15,18 +15,14 @@ public abstract class Given_an_accessible_USB_device(ITestOutputHelper output, I
     {
         EnterReadLock(() =>
         {
-            var context = GetContext();
-            var (list, count) = context.GetDeviceList();
-            count.Should().BePositive();
-            var device = list.Devices.ToList()[0];
+            using var context = GetContext();
+            using var list = context.GetDeviceList();
+            list.Count.Should().BePositive();
+            var device = list[0];
             // TODO: Picks random device to open and fails. In some cases this results in:
             // Failed to open USB device. Operation not supported or unimplemented on this platform.
-            var deviceHandle = device.Open();
+            using var deviceHandle = device.Open();
             _ = deviceHandle.IsClosed.Should().BeFalse();
-
-            list.Dispose();
-            context.Dispose();
-            deviceHandle.Dispose();
         });
     }
 
@@ -35,13 +31,13 @@ public abstract class Given_an_accessible_USB_device(ITestOutputHelper output, I
     {
         EnterReadLock(() =>
         {
-            var context = GetContext();
-            var (list, count) = context.GetDeviceList();
-            count.Should().BePositive();
-            var device = list.Devices.ToList()[0];
+            using var context = GetContext();
+            using var list = context.GetDeviceList();
+            list.Count.Should().BePositive();
+            var device = list[0];
             // TODO: Picks random device to open and fails. In some cases this results in:
             // Failed to open USB device. Operation not supported or unimplemented on this platform.
-            var deviceHandle = device.Open();
+            using var deviceHandle = device.Open();
             _ = deviceHandle.IsClosed.Should().BeFalse();
             var serialNumber = deviceHandle.GetStringDescriptorAscii(
                 deviceHandle.Device.GetDeviceDescriptor().iSerialNumber
@@ -49,10 +45,6 @@ public abstract class Given_an_accessible_USB_device(ITestOutputHelper output, I
             _ = serialNumber.Should().NotBeNullOrEmpty();
 
             Output.WriteLine($"Serial Number: {serialNumber}");
-
-            list.Dispose();
-            deviceHandle.Dispose();
-            context.Dispose();
         });
     }
 
@@ -61,13 +53,13 @@ public abstract class Given_an_accessible_USB_device(ITestOutputHelper output, I
     {
         EnterReadLock(() =>
         {
-            var context = GetContext();
-            var (list, count) = context.GetDeviceList();
-            count.Should().BePositive();
+            using var context = GetContext();
+            using var list = context.GetDeviceList();
+            list.Count.Should().BePositive();
 
             // TODO: Picks random device to open and fails. In some cases this results in:
             // Failed to open USB device. Operation not supported or unimplemented on this platform.
-            var deviceHandle = list.Devices.ToList()[0].Open();
+            var deviceHandle = list[0].Open();
             deviceHandle.Dispose();
 
             Action act = () => deviceHandle.ClaimInterface(1);
