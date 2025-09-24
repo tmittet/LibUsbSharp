@@ -31,12 +31,6 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
         return true;
     }
 
-    public void SetOption(int option, int value)
-    {
-        SafeHelpers.ThrowIfClosed(this);
-        SetOption((libusb_option)option, value);
-    }
-
     public void SetOption(libusb_option option, int value)
     {
         SafeHelpers.ThrowIfClosed(this);
@@ -57,10 +51,9 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
     {
         SafeHelpers.ThrowIfClosed(this);
 
-        if (completedPtr == IntPtr.Zero)
-            throw new ArgumentNullException(nameof(completedPtr));
-
-        return api.libusb_handle_events_completed(handle, completedPtr);
+        return completedPtr == IntPtr.Zero
+            ? throw new ArgumentNullException(nameof(completedPtr))
+            : api.libusb_handle_events_completed(handle, completedPtr);
     }
 
     public void InterruptEventHandler()
@@ -82,7 +75,7 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
         }
 
         var callback = new libusb_log_callback(LibUsbLogHandler);
-        GCHandle.Alloc(callback);
+        _ = GCHandle.Alloc(callback);
 
         try
         {
@@ -113,7 +106,7 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
             return hotPlugCallback(this, new SafeDevice(this, dev), eventType, userData) ? 1 : 0;
         }
         var callback = new libusb_hotplug_callback_fn(InternalCallback);
-        GCHandle.Alloc(callback);
+        _ = GCHandle.Alloc(callback);
 
         var result = api.libusb_hotplug_register_callback(
             handle,
@@ -150,7 +143,7 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
         var rc = api.libusb_get_device_list(handle, out var list);
         LibUsbException.ThrowIfError(rc, "Failed to get device list");
 
-        bool success = false;
+        var success = false;
         DangerousAddRef(ref success);
         if (!success)
         {
