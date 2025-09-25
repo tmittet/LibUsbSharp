@@ -7,6 +7,7 @@ internal sealed class SafeDeviceHandle : SafeHandle, ISafeDeviceHandle
 {
     internal readonly SafeContext _context;
     private readonly SafeDevice _device;
+
     public ISafeDevice Device
     {
         get
@@ -16,7 +17,7 @@ internal sealed class SafeDeviceHandle : SafeHandle, ISafeDeviceHandle
         }
     }
 
-    public SafeDeviceHandle(SafeContext context, IntPtr deviceHandle, SafeDevice device)
+    public SafeDeviceHandle(SafeContext context, nint deviceHandle, SafeDevice device)
         : base(deviceHandle, ownsHandle: true)
     {
         if (deviceHandle == IntPtr.Zero)
@@ -66,22 +67,24 @@ internal sealed class SafeDeviceHandle : SafeHandle, ISafeDeviceHandle
         return new SafeDeviceInterface(this, interfaceNumber);
     }
 
-    public libusb_error ResetDevice()
+    public void ResetDevice()
     {
         SafeHelpers.ThrowIfClosed(this);
-        return _context.api.libusb_reset_device(handle);
+        var result = _context.api.libusb_reset_device(handle);
+        LibUsbException.ThrowIfApiError(result, nameof(_context.api.libusb_reset_device));
     }
 
     public ISafeTransfer AllocateTransfer(int isoPackets = 0)
     {
-        {
-            var ptr = _context.api.libusb_alloc_transfer(isoPackets);
-            return ptr == IntPtr.Zero
-                ? throw new LibUsbException(
-                    libusb_error.LIBUSB_ERROR_NO_MEM,
-                    $"LibUsbApi '{nameof(_context.api.libusb_alloc_transfer)}' failed."
-                )
-                : (ISafeTransfer)new SafeTransfer(_context, ptr);
-        }
+        if (isoPackets < 0)
+            throw new ArgumentOutOfRangeException(nameof(isoPackets), "Must be greater than or equal to zero.");
+
+        var ptr = _context.api.libusb_alloc_transfer(isoPackets);
+        return ptr == IntPtr.Zero
+            ? throw new LibUsbException(
+                libusb_error.LIBUSB_ERROR_NO_MEM,
+                $"LibUsbApi '{nameof(_context.api.libusb_alloc_transfer)}' failed."
+            )
+            : (ISafeTransfer)new SafeTransfer(_context, ptr);
     }
 }

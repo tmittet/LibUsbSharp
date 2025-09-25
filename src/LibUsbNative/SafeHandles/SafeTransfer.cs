@@ -7,7 +7,7 @@ internal sealed class SafeTransfer : SafeHandle, ISafeTransfer
 {
     private readonly SafeContext _context;
 
-    public SafeTransfer(SafeContext context, IntPtr ptr)
+    public SafeTransfer(SafeContext context, nint ptr)
         : base(ptr, true)
     {
         _context = context;
@@ -25,7 +25,7 @@ internal sealed class SafeTransfer : SafeHandle, ISafeTransfer
         return true;
     }
 
-    public IntPtr GetBufferPtr()
+    public nint GetBufferPtr()
     {
         SafeHelpers.ThrowIfClosed(this);
         return DangerousGetHandle();

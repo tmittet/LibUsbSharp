@@ -8,7 +8,7 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
 {
     internal readonly SafeContext _context;
 
-    public SafeDevice(SafeContext context, IntPtr dev)
+    public SafeDevice(SafeContext context, nint dev)
         : base(dev, ownsHandle: true)
     {
         if (dev == IntPtr.Zero)
@@ -39,9 +39,9 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
 
         return new libusb_device_descriptor(
             d.bLength,
-            (libusb_descriptor_type)d.bDescriptorType,
+            d.bDescriptorType,
             d.bcdUSB,
-            (libusb_class_code)d.bDeviceClass,
+            d.bDeviceClass,
             d.bDeviceSubClass,
             d.bDeviceProtocol,
             d.bMaxPacketSize0,
@@ -67,7 +67,7 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
         if (!success)
         {
             _context.api.libusb_free_config_descriptor(descriptor);
-            LibUsbException.ThrowIfError(libusb_error.LIBUSB_ERROR_OTHER, "Failed to ref SafeHandle.");
+            throw LibUsbException.FromError(libusb_error.LIBUSB_ERROR_OTHER, "Failed to ref SafeHandle.");
         }
 
         return new SafeConfigDescriptorPtr(this, descriptor);
@@ -102,7 +102,7 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
         if (!success)
         {
             _context.api.libusb_free_config_descriptor(descriptor);
-            LibUsbException.ThrowIfError(libusb_error.LIBUSB_ERROR_OTHER, "Failed to ref SafeHandle.");
+            throw LibUsbException.FromError(libusb_error.LIBUSB_ERROR_OTHER, "Failed to ref SafeHandle.");
         }
 
         return new SafeConfigDescriptorPtr(this, descriptor);
@@ -155,13 +155,13 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
         if (!success)
         {
             _context.api.libusb_close(ptr);
-            LibUsbException.ThrowIfError(libusb_error.LIBUSB_ERROR_OTHER, "Failed to ref SafeHandle.");
+            throw LibUsbException.FromError(libusb_error.LIBUSB_ERROR_OTHER, "Failed to ref SafeHandle.");
         }
 
         return new SafeDeviceHandle(_context, ptr, new SafeDevice(_context, handle));
     }
 
-    private static libusb_config_descriptor FromPointer(IntPtr pConfigDescriptor)
+    private static libusb_config_descriptor FromPointer(nint pConfigDescriptor)
     {
         if (pConfigDescriptor == IntPtr.Zero)
             throw new ArgumentNullException(nameof(pConfigDescriptor));
@@ -246,9 +246,9 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
     }
 
     private static TManaged[] ReadArray<TManaged>(
-        IntPtr basePtr,
+        nint basePtr,
         int count,
-        Func<IntPtr, TManaged> projector,
+        Func<nint, TManaged> projector,
         int elementSize
     )
     {
@@ -256,7 +256,7 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
             return Array.Empty<TManaged>();
 
         var arr = new TManaged[count];
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
         {
             var elemPtr = IntPtr.Add(basePtr, i * elementSize);
             arr[i] = projector(elemPtr);
@@ -264,7 +264,7 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
         return arr;
     }
 
-    private static byte[] ReadExtra(IntPtr p, int length)
+    private static byte[] ReadExtra(nint p, int length)
     {
         if (p == IntPtr.Zero || length <= 0)
             return Array.Empty<byte>();

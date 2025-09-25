@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using LibUsbNative.Enums;
 using LibUsbNative.SafeHandles;
 using Microsoft.Extensions.Logging;
 
@@ -58,10 +59,10 @@ internal sealed class LibUsbEventLoop : IDisposable
             {
                 // libusb does not write to completed, so there is no reason to check it
                 // See: https://github.com/libusb/libusb/blob/master/libusb/io.c
-                var result = (int)_context.HandleEventsCompleted(_completedPtr);
-                // libusb_handle_events can return LibUsbResult.Interrupted transiently;
-                // do not exit the loop on LibUsbResult.Interrupted.
-                if (result != 0 && result != (int)LibUsbResult.Interrupted)
+                var result = _context.HandleEventsCompleted(_completedPtr);
+                // libusb_handle_events can return LIBUSB_ERROR_INTERRUPTED transiently;
+                // do not exit the loop on LIBUSB_ERROR_INTERRUPTED.
+                if (result != 0 && result != libusb_error.LIBUSB_ERROR_INTERRUPTED)
                 {
                     _logger.LogWarning(
                         "LibUsb HandleEvents failed; exiting event loop. {ErrorMessage}",
@@ -78,7 +79,7 @@ internal sealed class LibUsbEventLoop : IDisposable
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "libusb_handle_events_completed error.");
+            _logger.LogError(ex, "HandleEventsLoop failed.");
         }
     }
 

@@ -6,7 +6,7 @@ internal sealed class SafeConfigDescriptorPtr : SafeHandle, ISafeConfigDescripto
 {
     private readonly SafeDevice _device;
 
-    public SafeConfigDescriptorPtr(SafeDevice device, IntPtr configPtr)
+    public SafeConfigDescriptorPtr(SafeDevice device, nint configPtr)
         : base(configPtr, ownsHandle: true)
     {
         if (configPtr == IntPtr.Zero)
@@ -27,7 +27,7 @@ internal sealed class SafeConfigDescriptorPtr : SafeHandle, ISafeConfigDescripto
         return true;
     }
 
-    public IntPtr GetUnmanagedPointer()
+    public nint GetUnmanagedPointer()
     {
         SafeHelpers.ThrowIfClosed(this);
         return DangerousGetHandle();

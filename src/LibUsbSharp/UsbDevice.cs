@@ -1,6 +1,5 @@
 using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
-using System.Text;
 using LibUsbNative.SafeHandles;
 using LibUsbSharp.Descriptor;
 using LibUsbSharp.Internal;
@@ -264,12 +263,7 @@ public sealed class UsbDevice : IUsbDevice
     public void Reset()
     {
         using var token = _rundownGuard.AcquireExclusiveToken();
-
-        var resetResult = (int)Handle.ResetDevice();
-        if (resetResult != 0)
-        {
-            throw LibUsbException.FromError(resetResult, $"Failed to reset USB device port.");
-        }
+        Handle.ResetDevice();
     }
 
     public override string ToString() => _descriptor.DeviceKey;

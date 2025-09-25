@@ -2,5 +2,5 @@
 
 public interface ISafeConfigDescriptorPtr : IDisposable
 {
-    IntPtr GetUnmanagedPointer();
+    nint GetUnmanagedPointer();
 }

@@ -13,7 +13,7 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
         var result = api.libusb_init(out var raw);
         if (result != 0 || raw == IntPtr.Zero)
         {
-            LibUsbException.ThrowIfApiError(result, nameof(api.libusb_init));
+            throw LibUsbException.FromError(result, nameof(api.libusb_init));
         }
 
         this.api = api;
@@ -31,27 +31,25 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
         return true;
     }
 
-    public void SetOption(libusb_option option, int value)
+    public void SetOption(libusb_option libusbOption, int value)
     {
         SafeHelpers.ThrowIfClosed(this);
-
-        var rc = api.libusb_set_option(handle, option, value);
-        LibUsbException.ThrowIfApiError(rc, nameof(api.libusb_set_option));
+        var result = api.libusb_set_option(handle, libusbOption, value);
+        LibUsbException.ThrowIfApiError(result, nameof(api.libusb_set_option));
     }
 
-    public void SetOption(libusb_option option, IntPtr value)
+    public void SetOption(libusb_option libusbOption, nint value)
     {
         SafeHelpers.ThrowIfClosed(this);
-
-        var rc = api.libusb_set_option(handle, option, value);
-        LibUsbException.ThrowIfApiError(rc, nameof(api.libusb_set_option));
+        var result = api.libusb_set_option(handle, libusbOption, value);
+        LibUsbException.ThrowIfApiError(result, nameof(api.libusb_set_option));
     }
 
-    public libusb_error HandleEventsCompleted(IntPtr completedPtr)
+    public libusb_error HandleEventsCompleted(nint completedPtr)
     {
         SafeHelpers.ThrowIfClosed(this);
 
-        return completedPtr == IntPtr.Zero
+        return completedPtr == IntPtr.Zero // TODO: Zero pointer OK according to libusb docs.
             ? throw new ArgumentNullException(nameof(completedPtr))
             : api.libusb_handle_events_completed(handle, completedPtr);
     }
@@ -59,54 +57,47 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
     public void InterruptEventHandler()
     {
         SafeHelpers.ThrowIfClosed(this);
-
         api.libusb_interrupt_event_handler(handle);
     }
 
     public void RegisterLogCallback(Action<int, string> logHandler)
     {
         SafeHelpers.ThrowIfClosed(this);
-
         ArgumentNullException.ThrowIfNull(logHandler);
 
-        void LibUsbLogHandler(IntPtr ptr, int level, string messagePtr)
-        {
-            logHandler(level, messagePtr);
-        }
-
-        var callback = new libusb_log_callback(LibUsbLogHandler);
-        _ = GCHandle.Alloc(callback);
+        var callback = new libusb_log_callback((nint _, int level, string message) => logHandler(level, message));
+        var gcHandle = GCHandle.Alloc(callback);
 
         try
         {
+            // TODO: On Success GCHandle is never freed in this implementation
             SetOption(libusb_option.LIBUSB_OPTION_LOG_CB, Marshal.GetFunctionPointerForDelegate(callback));
         }
         catch
         {
-            GCHandle.FromIntPtr(Marshal.GetFunctionPointerForDelegate(callback)).Free();
+            gcHandle.Free();
             throw;
         }
     }
 
-    public IntPtr HotplugRegisterCallback(
+    public nint HotplugRegisterCallback(
         int events,
         int flags,
         int vendorId,
         int productId,
         int deviceClass,
-        IntPtr userData,
-        Func<ISafeContext, ISafeDevice, int, IntPtr, bool> hotPlugCallback
+        nint userData,
+        Func<ISafeContext, ISafeDevice, int, nint, bool> hotplugCallback
     )
     {
         SafeHelpers.ThrowIfClosed(this);
-        ArgumentNullException.ThrowIfNull(hotPlugCallback);
+        ArgumentNullException.ThrowIfNull(hotplugCallback);
 
-        int InternalCallback(IntPtr ctx, IntPtr dev, int eventType, IntPtr userData)
-        {
-            return hotPlugCallback(this, new SafeDevice(this, dev), eventType, userData) ? 1 : 0;
-        }
-        var callback = new libusb_hotplug_callback_fn(InternalCallback);
-        _ = GCHandle.Alloc(callback);
+        var callback = new libusb_hotplug_callback_fn(
+            (_, dev, eventType, userData) =>
+                hotplugCallback(this, new SafeDevice(this, dev), eventType, userData) ? 1 : 0
+        );
+        var gcHandle = GCHandle.Alloc(callback);
 
         var result = api.libusb_hotplug_register_callback(
             handle,
@@ -120,12 +111,21 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
             out var callbackHandle
         );
 
-        LibUsbException.ThrowIfApiError(result, nameof(api.libusb_hotplug_register_callback));
+        try
+        {
+            // TODO: On success GCHandle is never freed in this implementation
+            LibUsbException.ThrowIfApiError(result, nameof(api.libusb_hotplug_register_callback));
+        }
+        catch
+        {
+            gcHandle.Free();
+            throw;
+        }
 
-        return (IntPtr)callbackHandle;
+        return callbackHandle;
     }
 
-    public void HotplugDeregisterCallback(IntPtr callbackHandle)
+    public void HotplugDeregisterCallback(nint callbackHandle)
     {
         SafeHelpers.ThrowIfClosed(this);
 
@@ -135,7 +135,6 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
         api.libusb_hotplug_deregister_callback(handle, callbackHandle);
     }
 
-    // TODO: Using out parameter for count or returning List would be clearer
     public ISafeDeviceList GetDeviceList()
     {
         SafeHelpers.ThrowIfClosed(this);
@@ -148,7 +147,7 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
         if (!success)
         {
             api.libusb_free_device_list(list, 1);
-            LibUsbException.ThrowIfError(libusb_error.LIBUSB_ERROR_OTHER, "Failed to ref SafeHandle.");
+            throw LibUsbException.FromError(libusb_error.LIBUSB_ERROR_OTHER, "Failed to ref SafeHandle.");
         }
 
         return new SafeDeviceList(this, list, (int)rc);

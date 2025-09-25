@@ -5,20 +5,26 @@ namespace LibUsbNative.SafeHandles;
 public interface ISafeContext : IDisposable
 {
     void RegisterLogCallback(Action<int, string> logHandler);
-    IntPtr HotplugRegisterCallback(
+
+    nint HotplugRegisterCallback(
         int events,
         int flags,
         int vendorId,
         int productId,
         int deviceClass,
-        IntPtr userData,
-        Func<ISafeContext, ISafeDevice, int, IntPtr, bool> hotPlugCallback
+        nint userData,
+        Func<ISafeContext, ISafeDevice, int, nint, bool> hotPlugCallback
     );
-    void HotplugDeregisterCallback(IntPtr callbackHandle);
 
-    void SetOption(libusb_option opt, int value);
-    void SetOption(libusb_option option, IntPtr value);
-    libusb_error HandleEventsCompleted(IntPtr param);
+    void HotplugDeregisterCallback(nint callbackHandle);
+
+    void SetOption(libusb_option libusbOption, int value);
+
+    void SetOption(libusb_option libusbOption, nint value);
+
+    libusb_error HandleEventsCompleted(nint completedPtr);
+
     void InterruptEventHandler();
+
     ISafeDeviceList GetDeviceList();
 }
