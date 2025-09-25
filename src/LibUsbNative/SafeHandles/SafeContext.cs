@@ -31,6 +31,7 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
         return true;
     }
 
+    /// <inheritdoc />
     public void SetOption(libusb_option libusbOption, int value)
     {
         SafeHelpers.ThrowIfClosed(this);
@@ -38,6 +39,7 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
         LibUsbException.ThrowIfApiError(result, nameof(api.libusb_set_option));
     }
 
+    /// <inheritdoc />
     public void SetOption(libusb_option libusbOption, nint value)
     {
         SafeHelpers.ThrowIfClosed(this);
@@ -45,6 +47,7 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
         LibUsbException.ThrowIfApiError(result, nameof(api.libusb_set_option));
     }
 
+    /// <inheritdoc />
     public libusb_error HandleEventsCompleted(nint completedPtr)
     {
         SafeHelpers.ThrowIfClosed(this);
@@ -54,12 +57,14 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
             : api.libusb_handle_events_completed(handle, completedPtr);
     }
 
+    /// <inheritdoc />
     public void InterruptEventHandler()
     {
         SafeHelpers.ThrowIfClosed(this);
         api.libusb_interrupt_event_handler(handle);
     }
 
+    /// <inheritdoc />
     public void RegisterLogCallback(Action<int, string> logHandler)
     {
         SafeHelpers.ThrowIfClosed(this);
@@ -80,6 +85,7 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
         }
     }
 
+    /// <inheritdoc />
     public nint HotplugRegisterCallback(
         int events,
         int flags,
@@ -125,6 +131,7 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
         return callbackHandle;
     }
 
+    /// <inheritdoc />
     public void HotplugDeregisterCallback(nint callbackHandle)
     {
         SafeHelpers.ThrowIfClosed(this);
@@ -135,6 +142,7 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
         api.libusb_hotplug_deregister_callback(handle, callbackHandle);
     }
 
+    /// <inheritdoc />
     public ISafeDeviceList GetDeviceList()
     {
         SafeHelpers.ThrowIfClosed(this);

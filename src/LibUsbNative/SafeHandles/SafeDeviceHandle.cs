@@ -8,6 +8,7 @@ internal sealed class SafeDeviceHandle : SafeHandle, ISafeDeviceHandle
     internal readonly SafeContext _context;
     private readonly SafeDevice _device;
 
+    /// <inheritdoc />
     public ISafeDevice Device
     {
         get
@@ -40,6 +41,7 @@ internal sealed class SafeDeviceHandle : SafeHandle, ISafeDeviceHandle
         return true;
     }
 
+    /// <inheritdoc />
     public string GetStringDescriptorAscii(byte index)
     {
         SafeHelpers.ThrowIfClosed(this);
@@ -67,6 +69,7 @@ internal sealed class SafeDeviceHandle : SafeHandle, ISafeDeviceHandle
         return new SafeDeviceInterface(this, interfaceNumber);
     }
 
+    /// <inheritdoc />
     public void ResetDevice()
     {
         SafeHelpers.ThrowIfClosed(this);
@@ -74,6 +77,7 @@ internal sealed class SafeDeviceHandle : SafeHandle, ISafeDeviceHandle
         LibUsbException.ThrowIfApiError(result, nameof(_context.api.libusb_reset_device));
     }
 
+    /// <inheritdoc />
     public ISafeTransfer AllocateTransfer(int isoPackets = 0)
     {
         if (isoPackets < 0)

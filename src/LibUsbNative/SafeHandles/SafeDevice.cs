@@ -30,6 +30,7 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
         return true;
     }
 
+    /// <inheritdoc />
     public libusb_device_descriptor GetDeviceDescriptor()
     {
         SafeHelpers.ThrowIfClosed(this);
@@ -55,6 +56,7 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
         );
     }
 
+    /// <inheritdoc />
     public ISafeConfigDescriptorPtr GetActiveConfigDescriptorPtr()
     {
         SafeHelpers.ThrowIfClosed(this);
@@ -73,6 +75,7 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
         return new SafeConfigDescriptorPtr(this, descriptor);
     }
 
+    /// <inheritdoc />
     public libusb_config_descriptor GetActiveConfigDescriptor()
     {
         SafeHelpers.ThrowIfClosed(this);
@@ -90,6 +93,7 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
         }
     }
 
+    /// <inheritdoc />
     public ISafeConfigDescriptorPtr GetConfigDescriptorPtr(byte config_index)
     {
         SafeHelpers.ThrowIfClosed(this);
@@ -108,6 +112,7 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
         return new SafeConfigDescriptorPtr(this, descriptor);
     }
 
+    /// <inheritdoc />
     public libusb_config_descriptor GetConfigDescriptor(byte config_index)
     {
         SafeHelpers.ThrowIfClosed(this);
@@ -125,24 +130,28 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
         }
     }
 
+    /// <inheritdoc />
     public byte GetBusNumber()
     {
         SafeHelpers.ThrowIfClosed(this);
         return _context.api.libusb_get_bus_number(handle);
     }
 
+    /// <inheritdoc />
     public byte GetDeviceAddress()
     {
         SafeHelpers.ThrowIfClosed(this);
         return _context.api.libusb_get_device_address(handle);
     }
 
+    /// <inheritdoc />
     public byte GetPortNumber()
     {
         SafeHelpers.ThrowIfClosed(this);
         return _context.api.libusb_get_port_number(handle);
     }
 
+    /// <inheritdoc />
     public ISafeDeviceHandle Open()
     {
         SafeHelpers.ThrowIfClosed(this);
