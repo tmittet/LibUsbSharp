@@ -1,4 +1,6 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Runtime.InteropServices;
+using System.Text;
 using LibUsbNative.Enums;
 
 namespace LibUsbNative.SafeHandles;
@@ -44,16 +46,33 @@ internal sealed class SafeDeviceHandle : SafeHandle, ISafeDeviceHandle
     /// <inheritdoc />
     public string GetStringDescriptorAscii(byte index)
     {
+        return TryGetStringDescriptorAscii(index, out var value, out var error)
+            ? value
+            : throw LibUsbException.FromError(error.Value, nameof(_context.api.libusb_get_string_descriptor_ascii));
+    }
+
+    /// <inheritdoc />
+    public bool TryGetStringDescriptorAscii(
+        byte index,
+        [NotNullWhen(true)] out string? descriptorValue,
+        [NotNullWhen(false)] out libusb_error? usbError
+    )
+    {
         SafeHelpers.ThrowIfClosed(this);
 
-        var buf = new byte[256];
-        var result = _context.api.libusb_get_string_descriptor_ascii(handle, index, buf, buf.Length);
-        LibUsbException.ThrowIfApiError(
-            result,
-            nameof(_context.api.libusb_get_string_descriptor_ascii),
-            $"Index {index}."
-        );
-        return System.Text.Encoding.ASCII.GetString(buf, 0, (int)result);
+        var buffer = new byte[256];
+        var result = _context.api.libusb_get_string_descriptor_ascii(handle, index, buffer, buffer.Length);
+
+        if (result >= 0)
+        {
+            descriptorValue = Encoding.ASCII.GetString(buffer, 0, (int)result);
+            usbError = null;
+            return true;
+        }
+
+        descriptorValue = null;
+        usbError = result;
+        return false;
     }
 
     public ISafeDeviceInterface ClaimInterface(int interfaceNumber)

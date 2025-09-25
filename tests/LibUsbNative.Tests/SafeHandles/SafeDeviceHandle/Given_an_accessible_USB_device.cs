@@ -17,7 +17,7 @@ public abstract class Given_an_accessible_USB_device(ITestOutputHelper output, I
             var device = list.GetAccessibleDeviceOrSkipTest();
 
             using var deviceHandle = device.Open();
-            _ = deviceHandle.IsClosed.Should().BeFalse();
+            deviceHandle.IsClosed.Should().BeFalse();
         });
     }
 
@@ -31,13 +31,32 @@ public abstract class Given_an_accessible_USB_device(ITestOutputHelper output, I
             var device = list.GetAccessibleDeviceOrSkipTest();
 
             using var deviceHandle = device.Open();
-            _ = deviceHandle.IsClosed.Should().BeFalse();
+            deviceHandle.IsClosed.Should().BeFalse();
             var serialNumber = deviceHandle.GetStringDescriptorAscii(
                 deviceHandle.Device.GetDeviceDescriptor().iSerialNumber
             );
-            _ = serialNumber.Should().NotBeNullOrEmpty();
+            serialNumber.Should().NotBeNullOrEmpty();
 
             Output.WriteLine($"Serial Number: {serialNumber}");
+        });
+    }
+
+    [SkippableFact]
+    public void TryGetStringDescriptorAscii_successfully_returns_serial()
+    {
+        EnterReadLock(() =>
+        {
+            using var context = GetContext();
+            using var list = context.GetDeviceList();
+            var device = list.GetAccessibleDeviceOrSkipTest();
+
+            using var deviceHandle = device.Open();
+            var snIndex = device.GetDeviceDescriptor().iSerialNumber;
+            var result = deviceHandle.TryGetStringDescriptorAscii(snIndex, out var value, out var error);
+            result.Should().BeTrue();
+            value.Should().NotBeNullOrEmpty();
+            error.Should().BeNull();
+            Output.WriteLine($"Serial Number: {value}");
         });
     }
 

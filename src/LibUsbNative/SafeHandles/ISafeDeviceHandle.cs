@@ -26,6 +26,20 @@ public interface ISafeDeviceHandle : IDisposable
     string GetStringDescriptorAscii(byte index);
 
     /// <summary>
+    /// Reads a string descriptor from the device, using the first language supported by the device.
+    /// NOTE: On some devices it may fail even for basic fields like serial number (at index 0).
+    /// </summary>
+    /// <returns>
+    /// True when the string read operation was successful; otherwise false with a libusb_error output.
+    /// </returns>
+    /// <exception cref="ObjectDisposedException">Thrown when the SafeDeviceHandle is disposed.</exception>
+    bool TryGetStringDescriptorAscii(
+        byte index,
+        [NotNullWhen(returnValue: true)] out string? descriptorValue,
+        [NotNullWhen(returnValue: false)] out libusb_error? usbError
+    );
+
+    /// <summary>
     /// Claim a USB device interface.
     /// </summary>
     /// <exception cref="ObjectDisposedException">Thrown when the SafeDeviceHandle is disposed.</exception>
