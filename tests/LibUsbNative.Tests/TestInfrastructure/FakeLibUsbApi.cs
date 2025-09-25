@@ -96,7 +96,7 @@ internal sealed class FakeLibusbApi : ILibUsbApi, IDisposable
         _versionRcPtr = AllocAnsi("mock");
         _versionDescPtr = AllocAnsi("LibUsbSharp Test Fake");
 
-        var verNative = new LibUsbNative.native_libusb_version
+        var verNative = new native_libusb_version
         {
             major = 1,
             minor = 0,
@@ -105,7 +105,7 @@ internal sealed class FakeLibusbApi : ILibUsbApi, IDisposable
             rc = _versionRcPtr,
             describe = _versionDescPtr,
         };
-        _versionPtr = Marshal.AllocHGlobal(Marshal.SizeOf<LibUsbNative.native_libusb_version>());
+        _versionPtr = Marshal.AllocHGlobal(Marshal.SizeOf<native_libusb_version>());
         Marshal.StructureToPtr(verNative, _versionPtr, false);
 
         _strErrorPtrs = new();

@@ -26,25 +26,6 @@ public class LibUsbNative : ILibUsbNative
     public bool HasCapability(uint capability) => _api.libusb_has_capability((uint)capability) != 0;
 
     /// <summary>
-    /// Native layout for libusb_version (libusb.h)
-    /// struct libusb_version {
-    ///   const uint16_t major, minor, micro, nano;
-    ///   const char *rc;
-    ///   const char *describe;
-    /// };
-    /// </summary>
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct native_libusb_version
-    {
-        public ushort major;
-        public ushort minor;
-        public ushort micro;
-        public ushort nano;
-        public IntPtr rc;
-        public IntPtr describe;
-    }
-
-    /// <summary>
     /// Returns the full libusb version structure.
     /// </summary>
     public libusb_version GetVersion()
