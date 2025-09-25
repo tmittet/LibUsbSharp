@@ -12,10 +12,9 @@ public interface ISafeDevice
     ISafeDeviceHandle Open();
 
     /// <summary>
-    /// Get the device descriptor.
+    /// Get the device descriptor. NOTE: Since libusb-1.0.16, this function always succeeds.
     /// </summary>
     /// <exception cref="ObjectDisposedException">Thrown when the ISafeDevice is disposed.</exception>
-    /// <exception cref="LibUsbException">Thrown when the get descriptor operation fails.</exception>
     libusb_device_descriptor GetDeviceDescriptor();
 
     /// <summary>

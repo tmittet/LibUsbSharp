@@ -66,9 +66,7 @@ internal static class LibUsbDeviceEnum
     /// </summary>
     internal static LibUsbResult TryGetDeviceDescriptor(ISafeDevice device, out UsbDeviceDescriptor? descriptor)
     {
-        // TODO: Verify error handling, behavior has changed with LibUsbNative
         var partialDescriptor = device.GetDeviceDescriptor();
-
         descriptor = new UsbDeviceDescriptor(
             partialDescriptor,
             device.GetBusNumber(),
