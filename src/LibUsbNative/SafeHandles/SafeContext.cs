@@ -53,7 +53,7 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
         LibUsbException.ThrowIfError(rc, "libusb_set_option");
     }
 
-    public LibUsbError HandleEventsCompleted(IntPtr completedPtr)
+    public libusb_error HandleEventsCompleted(IntPtr completedPtr)
     {
         SafeHelpers.ThrowIfClosed(this);
 
@@ -155,7 +155,7 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
         if (!success)
         {
             api.libusb_free_device_list(list, 1);
-            LibUsbException.ThrowIfError(LibUsbError.Other, "Failed to ref SafeHandle");
+            LibUsbException.ThrowIfError(libusb_error.LIBUSB_ERROR_OTHER, "Failed to ref SafeHandle");
         }
 
         return (new SafeDeviceList(this, list, (uint)rc), (uint)rc);

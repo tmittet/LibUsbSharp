@@ -3,46 +3,46 @@
 /// <summary>
 /// libusb return codes. Most libusb functions return 0 on success or a negative error code.
 /// </summary>
-public enum LibUsbError : int
+public enum libusb_error : int
 {
-    Success = 0,
+    LIBUSB_SUCCESS = 0,
 
     /// <summary>Input/output error.</summary>
-    Io = -1,
+    LIBUSB_ERROR_IO = -1,
 
     /// <summary>Invalid parameter.</summary>
-    InvalidParam = -2,
+    LIBUSB_ERROR_INVALID_PARAM = -2,
 
     /// <summary>Access denied (insufficient permissions).</summary>
-    Access = -3,
+    LIBUSB_ERROR_ACCESS = -3,
 
     /// <summary>No such device (it may have been disconnected).</summary>
-    NoDevice = -4,
+    LIBUSB_ERROR_NO_DEVICE = -4,
 
     /// <summary>Entity not found.</summary>
-    NotFound = -5,
+    LIBUSB_ERROR_NOT_FOUND = -5,
 
     /// <summary>Resource busy.</summary>
-    Busy = -6,
+    LIBUSB_ERROR_BUSY = -6,
 
     /// <summary>Operation timed out.</summary>
-    Timeout = -7,
+    LIBUSB_ERROR_TIMEOUT = -7,
 
     /// <summary>Overflow (device sent more data than requested).</summary>
-    Overflow = -8,
+    LIBUSB_ERROR_OVERFLOW = -8,
 
     /// <summary>Pipe error (stall).</summary>
-    Pipe = -9,
+    LIBUSB_ERROR_PIPE = -9,
 
     /// <summary>System call was interrupted (retry might succeed).</summary>
-    Interrupted = -10,
+    LIBUSB_ERROR_INTERRUPTED = -10,
 
     /// <summary>Insufficient memory.</summary>
-    NoMem = -11,
+    LIBUSB_ERROR_NO_MEM = -11,
 
     /// <summary>Operation not supported or unimplemented on this platform.</summary>
-    NotSupported = -12,
+    LIBUSB_ERROR_NOT_SUPPORTED = -12,
 
     // -99 is reserved as a catch-all
-    Other = -99,
+    LIBUSB_ERROR_OTHER = -99,
 }

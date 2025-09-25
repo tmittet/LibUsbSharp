@@ -18,7 +18,7 @@ public interface ISafeContext : IDisposable
 
     void SetOption(LibUsbOption opt, int value);
     void SetOption(LibUsbOption option, IntPtr value);
-    LibUsbError HandleEventsCompleted(IntPtr param);
+    libusb_error HandleEventsCompleted(IntPtr param);
     void InterruptEventHandler();
     (ISafeDeviceList, uint) GetDeviceList();
 }

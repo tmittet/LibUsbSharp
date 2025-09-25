@@ -29,7 +29,7 @@ internal sealed class SafeDeviceList : SafeHandle, ISafeDeviceList
                 context.DangerousAddRef(ref success);
                 if (!success)
                 {
-                    LibUsbException.ThrowIfError(LibUsbError.Other, "Failed to ref SafeHandle");
+                    LibUsbException.ThrowIfError(libusb_error.LIBUSB_ERROR_OTHER, "Failed to ref SafeHandle");
                 }
 
                 devices[i] = new SafeDevice(_context, devPtr);

@@ -4,7 +4,7 @@ namespace LibUsbNative.SafeHandles;
 
 public interface ISafeTransfer : IDisposable
 {
-    LibUsbError Submit();
-    LibUsbError Cancel();
+    libusb_error Submit();
+    libusb_error Cancel();
     IntPtr GetBufferPtr();
 }

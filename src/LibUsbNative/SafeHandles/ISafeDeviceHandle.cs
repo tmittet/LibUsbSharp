@@ -10,6 +10,6 @@ public interface ISafeDeviceHandle : IDisposable
     IntPtr DangerousGetHandle();
     string GetStringDescriptorAscii(byte index);
     ISafeDeviceInterface ClaimInterface(int interfaceNumber);
-    LibUsbError ResetDevice();
+    libusb_error ResetDevice();
     ISafeTransfer AllocateTransfer(int isoPackets = 0);
 }

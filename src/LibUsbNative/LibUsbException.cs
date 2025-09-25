@@ -4,7 +4,7 @@ namespace LibUsbNative;
 
 public sealed class LibUsbException : Exception
 {
-    public LibUsbError Error { get; }
+    public libusb_error Error { get; }
 
     // Build the message from the optional user message + mapped error text
     public override string Message
@@ -16,10 +16,10 @@ public sealed class LibUsbException : Exception
         }
     }
 
-    public LibUsbException(LibUsbError error, string? message)
+    public LibUsbException(libusb_error error, string? message)
         : base(message) => Error = error;
 
-    public static void ThrowIfError(LibUsbError rc, string? msg = null)
+    public static void ThrowIfError(libusb_error rc, string? msg = null)
     {
         if (rc >= 0)
             return;

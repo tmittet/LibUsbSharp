@@ -31,13 +31,13 @@ internal sealed class SafeTransfer : SafeHandle, ISafeTransfer
         return DangerousGetHandle();
     }
 
-    public LibUsbError Submit()
+    public libusb_error Submit()
     {
         SafeHelpers.ThrowIfClosed(this);
         return _context.api.libusb_submit_transfer(handle);
     }
 
-    public LibUsbError Cancel()
+    public libusb_error Cancel()
     {
         SafeHelpers.ThrowIfClosed(this);
         return _context.api.libusb_cancel_transfer(handle);

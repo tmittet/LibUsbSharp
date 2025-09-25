@@ -50,7 +50,7 @@ public class LibUsbNative : ILibUsbNative
     {
         var p = _api.libusb_get_version();
         if (p == IntPtr.Zero)
-            throw new LibUsbException(LibUsbError.Other, "libusb_get_version returned null pointer");
+            throw new LibUsbException(libusb_error.LIBUSB_ERROR_OTHER, "libusb_get_version returned null pointer");
 
         var native = Marshal.PtrToStructure<native_libusb_version>(p);
 
@@ -67,7 +67,7 @@ public class LibUsbNative : ILibUsbNative
         );
     }
 
-    public string StrError(LibUsbError usbError)
+    public string StrError(libusb_error usbError)
     {
         var ptr = _api.libusb_strerror(usbError);
         Debug.Assert(ptr != IntPtr.Zero, "libusb_strerror returned null pointer");

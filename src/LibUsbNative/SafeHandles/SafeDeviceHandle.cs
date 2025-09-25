@@ -58,7 +58,7 @@ internal sealed class SafeDeviceHandle : SafeHandle, ISafeDeviceHandle
         return new SafeDeviceInterface(this, interfaceNumber);
     }
 
-    public LibUsbError ResetDevice()
+    public libusb_error ResetDevice()
     {
         SafeHelpers.ThrowIfClosed(this);
         return _context.api.libusb_reset_device(handle);
@@ -69,7 +69,10 @@ internal sealed class SafeDeviceHandle : SafeHandle, ISafeDeviceHandle
         {
             var ptr = _context.api.libusb_alloc_transfer(isoPackets);
             if (ptr == IntPtr.Zero)
-                throw new LibUsbException(LibUsbError.NoMem, "Failed to allocate libusb transfer buffer.");
+                throw new LibUsbException(
+                    libusb_error.LIBUSB_ERROR_NO_MEM,
+                    "Failed to allocate libusb transfer buffer."
+                );
 
             return new SafeTransfer(_context, ptr);
         }

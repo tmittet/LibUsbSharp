@@ -11,5 +11,5 @@ public interface ILibUsbNative
 
     bool HasCapability(uint capability);
 
-    string StrError(LibUsbError usbError);
+    string StrError(libusb_error usbError);
 }
