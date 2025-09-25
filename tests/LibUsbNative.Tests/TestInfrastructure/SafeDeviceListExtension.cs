@@ -15,7 +15,7 @@ internal static class SafeDeviceListExtension
     }
 
     /// <summary>
-    /// Returns a device that can be opened, or throws SkipException.
+    /// Returns a device that can be opened and has a readable serial, or throws SkipException.
     /// </summary>
     /// <exception cref="SkipException">Thrown when no accessible device is found.</exception>
     public static ISafeDevice GetAccessibleDeviceOrSkipTest(this ISafeDeviceList deviceList)
@@ -29,7 +29,7 @@ internal static class SafeDeviceListExtension
         try
         {
             using var handle = device.Open();
-            return true;
+            return IsSerialNumberReadable(handle);
         }
         catch (LibUsbException ex)
             when (ex.Error
@@ -38,6 +38,19 @@ internal static class SafeDeviceListExtension
                         or libusb_error.LIBUSB_ERROR_NO_DEVICE
                         or libusb_error.LIBUSB_ERROR_NOT_SUPPORTED
             )
+        {
+            return false;
+        }
+    }
+
+    private static bool IsSerialNumberReadable(ISafeDeviceHandle handle)
+    {
+        try
+        {
+            var serialNumber = handle.GetStringDescriptorAscii(handle.Device.GetDeviceDescriptor().iSerialNumber);
+            return !string.IsNullOrEmpty(serialNumber);
+        }
+        catch (LibUsbException ex) when (ex.Error is libusb_error.LIBUSB_ERROR_INVALID_PARAM)
         {
             return false;
         }
