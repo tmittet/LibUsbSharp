@@ -18,7 +18,6 @@ public interface ILibUsbApi
 
     void libusb_interrupt_event_handler(IntPtr ctx);
 
-    void libusb_set_debug(IntPtr ctx, int level);
     IntPtr libusb_get_version();
 
     int libusb_has_capability(uint capability);
@@ -37,64 +36,16 @@ public interface ILibUsbApi
     byte libusb_get_bus_number(IntPtr dev);
     byte libusb_get_device_address(IntPtr dev);
     byte libusb_get_port_number(IntPtr dev);
-    int libusb_get_port_numbers(IntPtr dev, byte[] port_numbers, int len);
-    IntPtr libusb_get_parent(IntPtr dev);
-    int libusb_get_device_speed(IntPtr dev);
-    int libusb_get_max_packet_size(IntPtr dev, byte endpoint);
-    int libusb_get_max_iso_packet_size(IntPtr dev, byte endpoint);
 
     libusb_error libusb_open(IntPtr dev, out IntPtr handle);
     void libusb_close(IntPtr handle);
 
-    libusb_error libusb_set_configuration(IntPtr handle, int configuration);
-    libusb_error libusb_get_configuration(IntPtr handle, out int configuration);
     libusb_error libusb_claim_interface(IntPtr handle, int interfaceNumber);
+
     libusb_error libusb_release_interface(IntPtr handle, int interfaceNumber);
-    libusb_error libusb_set_interface_alt_setting(IntPtr handle, int interfaceNumber, int alternateSetting);
-
-    libusb_error libusb_kernel_driver_active(IntPtr handle, int interfaceNumber);
-    libusb_error libusb_detach_kernel_driver(IntPtr handle, int interfaceNumber);
-    libusb_error libusb_attach_kernel_driver(IntPtr handle, int interfaceNumber);
-    libusb_error libusb_set_auto_detach_kernel_driver(IntPtr handle, int enable);
-
     libusb_error libusb_get_string_descriptor_ascii(IntPtr handle, byte desc_index, byte[] data, int length);
-    libusb_error libusb_get_string_descriptor(IntPtr handle, byte desc_index, ushort langid, byte[] data, int length);
 
-    libusb_error libusb_control_transfer(
-        IntPtr handle,
-        byte bmRequestType,
-        byte bRequest,
-        ushort wValue,
-        ushort wIndex,
-        byte[] data,
-        ushort wLength,
-        uint timeout
-    );
-    libusb_error libusb_bulk_transfer(
-        IntPtr handle,
-        byte endpoint,
-        byte[] data,
-        int length,
-        out int transferred,
-        uint timeout
-    );
-    libusb_error libusb_interrupt_transfer(
-        IntPtr handle,
-        byte endpoint,
-        byte[] data,
-        int length,
-        out int transferred,
-        uint timeout
-    );
-
-    libusb_error libusb_clear_halt(IntPtr handle, byte endpoint);
     libusb_error libusb_reset_device(IntPtr handle);
-
-    libusb_error libusb_handle_events_timeout(IntPtr ctx, ref libusb_timeval tv);
-    libusb_error libusb_handle_events_timeout_completed(IntPtr ctx, ref libusb_timeval tv, IntPtr completed);
-    libusb_error libusb_handle_events(IntPtr ctx);
-    IntPtr libusb_get_pollfds(IntPtr ctx, out IntPtr pollfds);
-    void libusb_free_pollfds(IntPtr pollfds);
 
     IntPtr libusb_alloc_transfer(int iso_packets);
     void libusb_free_transfer(IntPtr transfer);

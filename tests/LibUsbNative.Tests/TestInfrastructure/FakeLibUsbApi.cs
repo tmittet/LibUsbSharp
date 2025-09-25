@@ -39,7 +39,7 @@ internal sealed class FakeLibusbApi : ILibUsbApi, IDisposable
     public byte[] ManufacturerUtf16 = MakeUtf16String("Acme Inc.");
     public byte[] ProductUtf16 = MakeUtf16String("USB Gizmo");
     public byte[] SerialAscii = Encoding.ASCII.GetBytes("SN123456");
-    public byte[] LangIdx0 = { 4, 3, 0x09, 0x04 }; // English (US)
+    public byte[] LangIdx0 = [4, 3, 0x09, 0x04]; // English (US)
 
     public static byte[] MakeUtf16String(string s)
     {
@@ -52,11 +52,11 @@ internal sealed class FakeLibusbApi : ILibUsbApi, IDisposable
     }
 
     // Device list: single fake device pointer
-    private readonly List<IntPtr> _devices = new() { new IntPtr(0x1000) };
+    private readonly List<IntPtr> _devices = [new IntPtr(0x1000)];
 
     // Allocations we must free
-    private readonly List<IntPtr> _deviceListBlocks = new();
-    private readonly List<ConfigAllocation> _configAllocs = new();
+    private readonly List<IntPtr> _deviceListBlocks = [];
+    private readonly List<ConfigAllocation> _configAllocs = [];
 
     private record struct ConfigAllocation(
         IntPtr Config,
@@ -70,9 +70,9 @@ internal sealed class FakeLibusbApi : ILibUsbApi, IDisposable
     public int LastCbHandle = 42;
 
     // State tracking
-    private readonly Dictionary<libusb_option, IntPtr> _options = new();
-    private readonly HashSet<IntPtr> _openHandles = new();
-    private readonly HashSet<(IntPtr Handle, int Interface)> _claimed = new();
+    private readonly Dictionary<libusb_option, IntPtr> _options = [];
+    private readonly HashSet<IntPtr> _openHandles = [];
+    private readonly HashSet<(IntPtr Handle, int Interface)> _claimed = [];
     private int _nextHandle = 0x3000;
     private int _nextTransfer = 0x4000;
 
@@ -107,7 +107,7 @@ internal sealed class FakeLibusbApi : ILibUsbApi, IDisposable
         _versionPtr = Marshal.AllocHGlobal(Marshal.SizeOf<native_libusb_version>());
         Marshal.StructureToPtr(verNative, _versionPtr, false);
 
-        _strErrorPtrs = new();
+        _strErrorPtrs = [];
         foreach (libusb_error e in Enum.GetValues(typeof(libusb_error)))
         {
             _strErrorPtrs[e] = AllocAnsi(e.ToString());
@@ -169,6 +169,8 @@ internal sealed class FakeLibusbApi : ILibUsbApi, IDisposable
         return error;
     }
 
+#pragma warning disable IDE0060 // Remove unused parameter
+
     // ------------- Context / Options -------------
     public libusb_error libusb_init(out IntPtr ctx)
     {
@@ -202,8 +204,6 @@ internal sealed class FakeLibusbApi : ILibUsbApi, IDisposable
 
     public void libusb_interrupt_event_handler(IntPtr ctx) { }
 
-    public void libusb_set_debug(IntPtr ctx, int level) { }
-
     public IntPtr libusb_get_version() => _versionPtr;
 
     public int libusb_has_capability(uint capability) => 1;
@@ -218,10 +218,10 @@ internal sealed class FakeLibusbApi : ILibUsbApi, IDisposable
         if (MaybeFail(nameof(libusb_get_device_list), out var err) != libusb_error.LIBUSB_SUCCESS)
             return err;
 
-        int count = _devices.Count;
-        int total = (count + 1) * IntPtr.Size;
+        var count = _devices.Count;
+        var total = (count + 1) * IntPtr.Size;
         var block = Marshal.AllocHGlobal(total);
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
             Marshal.WriteIntPtr(block, i * IntPtr.Size, _devices[i]);
         Marshal.WriteIntPtr(block, count * IntPtr.Size, IntPtr.Zero);
 
@@ -309,7 +309,7 @@ internal sealed class FakeLibusbApi : ILibUsbApi, IDisposable
         var interfaceArrayPtr = Marshal.AllocHGlobal(Marshal.SizeOf<native_libusb_interface>());
         Marshal.StructureToPtr(nativeInterface, interfaceArrayPtr, false);
 
-        ushort totalLength = (ushort)(
+        var totalLength = (ushort)(
             Marshal.SizeOf<native_libusb_config_descriptor>()
             + Marshal.SizeOf<native_libusb_interface>()
             + Marshal.SizeOf<native_libusb_interface_descriptor>()
@@ -343,7 +343,7 @@ internal sealed class FakeLibusbApi : ILibUsbApi, IDisposable
 
     public void libusb_free_config_descriptor(IntPtr config)
     {
-        for (int i = 0; i < _configAllocs.Count; i++)
+        for (var i = 0; i < _configAllocs.Count; i++)
         {
             if (_configAllocs[i].Config == config)
             {
@@ -364,21 +364,6 @@ internal sealed class FakeLibusbApi : ILibUsbApi, IDisposable
 
     public byte libusb_get_port_number(IntPtr dev) => 1;
 
-    public int libusb_get_port_numbers(IntPtr dev, byte[] port_numbers, int len)
-    {
-        if (len > 0)
-            port_numbers[0] = 1;
-        return 1;
-    }
-
-    public IntPtr libusb_get_parent(IntPtr dev) => IntPtr.Zero;
-
-    public int libusb_get_device_speed(IntPtr dev) => (int)libusb_speed.LIBUSB_SPEED_HIGH;
-
-    public int libusb_get_max_packet_size(IntPtr dev, byte endpoint) => 512;
-
-    public int libusb_get_max_iso_packet_size(IntPtr dev, byte ep) => 1024;
-
     // ------------- Open / close -------------
     public libusb_error libusb_open(IntPtr dev, out IntPtr handle)
     {
@@ -397,18 +382,6 @@ internal sealed class FakeLibusbApi : ILibUsbApi, IDisposable
     }
 
     // ------------- Config / Interface -------------
-    public libusb_error libusb_set_configuration(IntPtr handle, int configuration) =>
-        MaybeFail(nameof(libusb_set_configuration));
-
-    public libusb_error libusb_get_configuration(IntPtr handle, out int configuration)
-    {
-        configuration = 0;
-        if (MaybeFail(nameof(libusb_get_configuration), out var err) != libusb_error.LIBUSB_SUCCESS)
-            return err;
-        configuration = 1;
-        return libusb_error.LIBUSB_SUCCESS;
-    }
-
     public libusb_error libusb_claim_interface(IntPtr handle, int interfaceNumber)
     {
         var err = MaybeFail(nameof(libusb_claim_interface));
@@ -425,22 +398,6 @@ internal sealed class FakeLibusbApi : ILibUsbApi, IDisposable
         return err;
     }
 
-    public libusb_error libusb_set_interface_alt_setting(IntPtr handle, int interfaceNumber, int alternateSetting) =>
-        MaybeFail(nameof(libusb_set_interface_alt_setting));
-
-    // ------------- Kernel driver -------------
-    public libusb_error libusb_kernel_driver_active(IntPtr handle, int interfaceNumber) =>
-        MaybeFail(nameof(libusb_kernel_driver_active));
-
-    public libusb_error libusb_detach_kernel_driver(IntPtr handle, int interfaceNumber) =>
-        MaybeFail(nameof(libusb_detach_kernel_driver));
-
-    public libusb_error libusb_attach_kernel_driver(IntPtr handle, int interfaceNumber) =>
-        MaybeFail(nameof(libusb_attach_kernel_driver));
-
-    public libusb_error libusb_set_auto_detach_kernel_driver(IntPtr handle, int enable) =>
-        MaybeFail(nameof(libusb_set_auto_detach_kernel_driver));
-
     // ------------- Strings -------------
     public libusb_error libusb_get_string_descriptor_ascii(IntPtr h, byte idx, byte[] data, int length)
     {
@@ -456,118 +413,8 @@ internal sealed class FakeLibusbApi : ILibUsbApi, IDisposable
         return libusb_error.LIBUSB_ERROR_NOT_FOUND;
     }
 
-    public libusb_error libusb_get_string_descriptor(IntPtr h, byte idx, ushort langid, byte[] data, int length)
-    {
-        if (MaybeFail(nameof(libusb_get_string_descriptor), out var err) != libusb_error.LIBUSB_SUCCESS)
-            return err;
-
-        byte[] src = idx switch
-        {
-            0 => LangIdx0,
-            1 => ManufacturerUtf16,
-            2 => ProductUtf16,
-            3 => MakeUtf16String("SN123456"),
-            _ => Array.Empty<byte>(),
-        };
-        if (src.Length == 0)
-            return libusb_error.LIBUSB_ERROR_NOT_FOUND;
-
-        var n = Math.Min(length, src.Length);
-        Array.Copy(src, data, n);
-        return (libusb_error)n;
-    }
-
-    // ------------- Sync I/O -------------
-    public libusb_error libusb_control_transfer(
-        IntPtr handle,
-        byte bm,
-        byte bReq,
-        ushort wVal,
-        ushort wIdx,
-        byte[] data,
-        ushort wLen,
-        uint timeout
-    )
-    {
-        if (MaybeFail(nameof(libusb_control_transfer), out var err) != libusb_error.LIBUSB_SUCCESS)
-            return err;
-
-        if ((bm & 0x80) != 0 && data is not null)
-        {
-            int count = Math.Min(wLen, (ushort)data.Length);
-            for (int i = 0; i < count; i++)
-                data[i] = (byte)((bReq + i) & 0xFF);
-            return (libusb_error)count;
-        }
-        return (libusb_error)wLen;
-    }
-
-    public libusb_error libusb_bulk_transfer(
-        IntPtr handle,
-        byte ep,
-        byte[] data,
-        int len,
-        out int transferred,
-        uint timeout
-    )
-    {
-        transferred = 0;
-        if (MaybeFail(nameof(libusb_bulk_transfer), out var err) != libusb_error.LIBUSB_SUCCESS)
-            return err;
-
-        if ((ep & 0x80) != 0)
-        {
-            transferred = Math.Min(len, 8);
-            for (int i = 0; i < transferred; i++)
-                data[i] = (byte)(0xA0 + i);
-        }
-        else
-        {
-            transferred = len;
-        }
-        return libusb_error.LIBUSB_SUCCESS;
-    }
-
-    public libusb_error libusb_interrupt_transfer(
-        IntPtr handle,
-        byte ep,
-        byte[] data,
-        int len,
-        out int transferred,
-        uint timeout
-    )
-    {
-        transferred = 0;
-        if (MaybeFail(nameof(libusb_interrupt_transfer), out var err) != libusb_error.LIBUSB_SUCCESS)
-            return err;
-
-        transferred = Math.Min(len, 4);
-        for (int i = 0; i < transferred; i++)
-            data[i] = (byte)(0xB0 + i);
-        return libusb_error.LIBUSB_SUCCESS;
-    }
-
     // ------------- Halt / Reset -------------
-    public libusb_error libusb_clear_halt(IntPtr handle, byte endpoint) => MaybeFail(nameof(libusb_clear_halt));
-
     public libusb_error libusb_reset_device(IntPtr handle) => MaybeFail(nameof(libusb_reset_device));
-
-    // ------------- Events / async -------------
-    public libusb_error libusb_handle_events_timeout(IntPtr ctx, ref libusb_timeval tv) =>
-        MaybeFail(nameof(libusb_handle_events_timeout));
-
-    public libusb_error libusb_handle_events_timeout_completed(IntPtr ctx, ref libusb_timeval tv, IntPtr completed) =>
-        MaybeFail(nameof(libusb_handle_events_timeout_completed));
-
-    public libusb_error libusb_handle_events(IntPtr ctx) => MaybeFail(nameof(libusb_handle_events));
-
-    public IntPtr libusb_get_pollfds(IntPtr ctx, out IntPtr pollfds)
-    {
-        pollfds = IntPtr.Zero;
-        return IntPtr.Zero;
-    }
-
-    public void libusb_free_pollfds(IntPtr pollfds) { }
 
     // ------------- Transfers -------------
     public IntPtr libusb_alloc_transfer(int iso_packets) => new(_nextTransfer++);
@@ -608,9 +455,7 @@ internal sealed class FakeLibusbApi : ILibUsbApi, IDisposable
 #pragma warning restore CA2020 // Prevent behavioral change
     }
 
-    public void FireHotplugArrived(IntPtr ctx, IntPtr dev) => LastCb?.Invoke(ctx, dev, 0x01, IntPtr.Zero);
-
-    public void FireHotplugLeft(IntPtr ctx, IntPtr dev) => LastCb?.Invoke(ctx, dev, 0x02, IntPtr.Zero);
+#pragma warning restore IDE0060 // Remove unused parameter
 
     // ---------------------------
     // Disposal
