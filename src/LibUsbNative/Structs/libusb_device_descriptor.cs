@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Runtime.InteropServices;
+using System.Text.Json.Serialization;
 using LibUsbNative.Enums;
 
 namespace LibUsbNative.Structs;
@@ -6,6 +7,7 @@ namespace LibUsbNative.Structs;
 /// <summary>
 /// A structure representing the standard USB device descriptor.
 /// </summary>
+[StructLayout(LayoutKind.Sequential)]
 public readonly record struct libusb_device_descriptor
 {
     /// <summary>

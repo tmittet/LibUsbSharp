@@ -65,7 +65,7 @@ public sealed class PInvokeLibUsbApi : ILibUsbApi
     #region Device metadata
 
     [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
-    private static extern libusb_error libusb_get_device_descriptor(IntPtr dev, out native_libusb_device_descriptor d);
+    private static extern libusb_error libusb_get_device_descriptor(IntPtr dev, out libusb_device_descriptor d);
 
     [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
     private static extern libusb_error libusb_get_active_config_descriptor(IntPtr dev, out IntPtr cfg);
@@ -300,7 +300,7 @@ public sealed class PInvokeLibUsbApi : ILibUsbApi
 
     void ILibUsbApi.libusb_unref_device(IntPtr dev) => libusb_unref_device(dev);
 
-    libusb_error ILibUsbApi.libusb_get_device_descriptor(IntPtr dev, out native_libusb_device_descriptor d) =>
+    libusb_error ILibUsbApi.libusb_get_device_descriptor(IntPtr dev, out libusb_device_descriptor d) =>
         libusb_get_device_descriptor(dev, out d);
 
     libusb_error ILibUsbApi.libusb_get_active_config_descriptor(IntPtr dev, out IntPtr cfg) =>

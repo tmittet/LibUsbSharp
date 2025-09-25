@@ -18,23 +18,22 @@ internal sealed class FakeLibusbApi : ILibUsbApi, IDisposable
     // ---------------------------
     // Simple in-memory device model
     // ---------------------------
-    internal native_libusb_device_descriptor Device = new()
-    {
-        bLength = 18,
-        bDescriptorType = 1,
-        bcdUSB = 0x0200,
-        bDeviceClass = 0xEF, // Misc
-        bDeviceSubClass = 0x02,
-        bDeviceProtocol = 0x01,
-        bMaxPacketSize0 = 64,
-        idVendor = 0x1234,
-        idProduct = 0x5678,
-        bcdDevice = 0x0100,
-        iManufacturer = 1,
-        iProduct = 2,
-        iSerialNumber = 3,
-        bNumConfigurations = 1,
-    };
+    internal libusb_device_descriptor Device = new(
+        bLength: 18,
+        bDescriptorType: libusb_descriptor_type.LIBUSB_DT_DEVICE,
+        bcdUSB: 0x0200,
+        bDeviceClass: libusb_class_code.LIBUSB_CLASS_MISCELLANEOUS,
+        bDeviceSubClass: 0x02,
+        bDeviceProtocol: 0x01,
+        bMaxPacketSize0: 64,
+        idVendor: 0x1234,
+        idProduct: 0x5678,
+        bcdDevice: 0x0100,
+        iManufacturer: 1,
+        iProduct: 2,
+        iSerialNumber: 3,
+        bNumConfigurations: 1
+    );
 
     // String descriptors (index 0: LANGID table)
     public byte[] ManufacturerUtf16 = MakeUtf16String("Acme Inc.");
@@ -242,7 +241,7 @@ internal sealed class FakeLibusbApi : ILibUsbApi, IDisposable
     public void libusb_unref_device(IntPtr dev) { }
 
     // ------------- Device metadata -------------
-    public libusb_error libusb_get_device_descriptor(IntPtr dev, out native_libusb_device_descriptor desc)
+    public libusb_error libusb_get_device_descriptor(IntPtr dev, out libusb_device_descriptor desc)
     {
         desc = default;
         if (MaybeFail(nameof(libusb_get_device_descriptor), out var err) != libusb_error.LIBUSB_SUCCESS)

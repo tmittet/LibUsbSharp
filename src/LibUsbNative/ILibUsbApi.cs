@@ -29,7 +29,7 @@ public interface ILibUsbApi
     void libusb_ref_device(IntPtr dev);
     void libusb_unref_device(IntPtr dev);
 
-    libusb_error libusb_get_device_descriptor(IntPtr dev, out native_libusb_device_descriptor desc);
+    libusb_error libusb_get_device_descriptor(IntPtr dev, out libusb_device_descriptor desc);
     libusb_error libusb_get_active_config_descriptor(IntPtr dev, out IntPtr config);
     libusb_error libusb_get_config_descriptor(IntPtr dev, ushort index, out IntPtr config);
     void libusb_free_config_descriptor(IntPtr config);
