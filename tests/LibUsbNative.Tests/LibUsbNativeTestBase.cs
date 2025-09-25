@@ -26,8 +26,19 @@ public class LibUsbNativeTestBase(ITestOutputHelper _output, ILibUsbApi _api)
                 LibUsbOutput.Add(message);
             }
         );
+        try
+        {
+            context.SetOption(libusb_log_level.LIBUSB_LOG_LEVEL_INFO);
+        }
+        catch (LibUsbException ex)
+            when (OperatingSystem.IsMacOS() && ex.Error is libusb_error.LIBUSB_ERROR_INVALID_PARAM)
+        {
+            Output.WriteLine(
+                $"WARNING: SetOption failed. "
+                    + $"Option '{libusb_log_level.LIBUSB_LOG_LEVEL_INFO}' not supported on macOS arm64."
+            );
+        }
 
-        context.SetOption(libusb_log_level.LIBUSB_LOG_LEVEL_INFO);
         return context;
     }
 
