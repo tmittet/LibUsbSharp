@@ -164,6 +164,7 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
         api.libusb_hotplug_deregister_callback(handle, callbackHandle);
     }
 
+    // TODO: Using out parameter for count or returning List would be clearer
     public (ISafeDeviceList, uint) GetDeviceList()
     {
         SafeHelpers.ThrowIfClosed(this);
