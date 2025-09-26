@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using LibUsbNative.Enums;
 using LibUsbNative.SafeHandles;
 
 namespace LibUsbSharp.Internal.Transfer;
@@ -14,7 +15,7 @@ internal struct LibUsbTransferTemplate
         byte endpoint,
         GCHandle bufferHandle,
         int bufferLength,
-        LibUsbTransferType type,
+        libusb_endpoint_transfer_type type,
         uint timeout,
         LibUsbTransferCallback callback
     )
@@ -49,7 +50,7 @@ internal struct LibUsbTransferTemplate
     /// <summary>
     /// Type of the transfer from libusb_transfer_type.
     /// </summary>
-    internal LibUsbTransferType Type;
+    internal libusb_endpoint_transfer_type Type;
 
     /// <summary>
     /// Timeout for this transfer in milliseconds.

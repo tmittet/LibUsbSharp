@@ -1,3 +1,4 @@
+using LibUsbNative;
 using LibUsbSharp.Descriptor;
 using Microsoft.Extensions.Logging;
 

@@ -1,5 +1,6 @@
 using System.Runtime.InteropServices;
 using LibUsbNative.Enums;
+using LibUsbNative.Extensions;
 using LibUsbNative.SafeHandles;
 using Microsoft.Extensions.Logging;
 
@@ -65,8 +66,8 @@ internal sealed class LibUsbEventLoop : IDisposable
                 if (result != 0 && result != libusb_error.LIBUSB_ERROR_INTERRUPTED)
                 {
                     _logger.LogWarning(
-                        "LibUsb HandleEvents failed; exiting event loop. {ErrorMessage}",
-                        ((LibUsbResult)result).GetMessage()
+                        "LibUsb HandleEvents failed; exiting event loop. {ErrorMessage}.",
+                        result.GetString()
                     );
                     break;
                 }

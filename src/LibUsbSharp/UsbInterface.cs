@@ -1,7 +1,9 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
+using LibUsbNative.Enums;
 using LibUsbNative.SafeHandles;
 using LibUsbSharp.Descriptor;
+using LibUsbSharp.Internal;
 using LibUsbSharp.Internal.Transfer;
 using Microsoft.Extensions.Logging;
 
@@ -123,7 +125,7 @@ public sealed class UsbInterface : IUsbInterface
                 var result = LibUsbTransfer.ExecuteSync(
                     _logger,
                     _device.Handle,
-                    LibUsbTransferType.Bulk,
+                    libusb_endpoint_transfer_type.LIBUSB_ENDPOINT_TRANSFER_TYPE_BULK,
                     _readEndpoint.Value.EndpointAddress,
                     _bulkReadBufferHandle,
                     bufferLength,
@@ -135,7 +137,7 @@ public sealed class UsbInterface : IUsbInterface
                 {
                     _bulkReadBuffer.AsSpan(0, bytesRead).CopyTo(destination);
                 }
-                return result;
+                return result.ToLibUsbResult();
             }
         }
         catch (ObjectDisposedException ex)
@@ -165,17 +167,19 @@ public sealed class UsbInterface : IUsbInterface
             lock (_bulkWriteLock)
             {
                 source[..bufferLength].CopyTo(_bulkWriteBuffer.AsSpan(0, bufferLength));
-                return LibUsbTransfer.ExecuteSync(
-                    _logger,
-                    _device.Handle,
-                    LibUsbTransferType.Bulk,
-                    _writeEndpoint.Value.EndpointAddress,
-                    _bulkWriteBufferHandle,
-                    bufferLength,
-                    timeout > 0 ? (uint)timeout : 0,
-                    out bytesWritten,
-                    _disposeCts.Token
-                );
+                return LibUsbTransfer
+                    .ExecuteSync(
+                        _logger,
+                        _device.Handle,
+                        libusb_endpoint_transfer_type.LIBUSB_ENDPOINT_TRANSFER_TYPE_BULK,
+                        _writeEndpoint.Value.EndpointAddress,
+                        _bulkWriteBufferHandle,
+                        bufferLength,
+                        timeout > 0 ? (uint)timeout : 0,
+                        out bytesWritten,
+                        _disposeCts.Token
+                    )
+                    .ToLibUsbResult();
             }
         }
         catch (ObjectDisposedException ex)

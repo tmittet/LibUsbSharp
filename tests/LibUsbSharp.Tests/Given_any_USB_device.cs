@@ -1,3 +1,4 @@
+using LibUsbNative;
 using LibUsbSharp.Descriptor;
 using LibUsbSharp.Transfer;
 
@@ -55,7 +56,9 @@ public sealed class Given_any_USB_device : IDisposable
     {
         var invalidDeviceKey = UsbDeviceDescriptor.GetKey(0xFFFF, 0xFFFF, 255, 255);
         var act = () => _libUsb.OpenDevice(invalidDeviceKey);
-        act.Should().Throw<LibUsbException>().WithMessage("Failed to get device from list. Entity not found.");
+        act.Should()
+            .Throw<LibUsbException>()
+            .WithMessage("Failed to get device from list. LIBUSB_ERROR_NOT_FOUND: Entity not found.");
     }
 
     [SkippableFact]

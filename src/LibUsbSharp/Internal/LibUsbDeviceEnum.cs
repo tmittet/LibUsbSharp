@@ -1,5 +1,9 @@
 ﻿using System.Runtime.InteropServices;
+using LibUsbNative;
+using LibUsbNative.Enums;
+using LibUsbNative.Extensions;
 using LibUsbNative.SafeHandles;
+using LibUsbNative.Structs;
 using LibUsbSharp.Descriptor;
 using LibUsbSharp.Internal.Descriptor;
 using Microsoft.Extensions.Logging;
@@ -49,9 +53,9 @@ internal static class LibUsbDeviceEnum
         foreach (var device in devices)
         {
             var result = TryGetDeviceDescriptor(device, out var descriptor);
-            if (result != LibUsbResult.Success)
+            if (result != libusb_error.LIBUSB_SUCCESS)
             {
-                logger.LogWarning("Get device descriptor failed. {ErrorMessage}", result.GetMessage());
+                logger.LogWarning("Get device descriptor failed. {ErrorMessage}.", result.GetString());
             }
             else if (descriptor!.Value.BcdUsb > 0)
             {
@@ -64,36 +68,36 @@ internal static class LibUsbDeviceEnum
     /// Get the cached USB device descriptor for a given, alrady in memory, device descriptor.
     /// NOTE: since libusb-1.0.16, LIBUSBX_API_VERSION >= 0x01000102, this function always succeeds.
     /// </summary>
-    internal static LibUsbResult TryGetDeviceDescriptor(ISafeDevice device, out UsbDeviceDescriptor? descriptor)
+    internal static libusb_error TryGetDeviceDescriptor(ISafeDevice device, out UsbDeviceDescriptor? descriptor)
     {
-        var partialDescriptor = device.GetDeviceDescriptor();
+        libusb_device_descriptor partialDescriptor;
+        try
+        {
+            partialDescriptor = device.GetDeviceDescriptor();
+        }
+        catch (LibUsbException ex)
+        {
+            descriptor = null;
+            return ex.Error;
+        }
         descriptor = new UsbDeviceDescriptor(
             partialDescriptor,
             device.GetBusNumber(),
             device.GetDeviceAddress(),
             device.GetPortNumber()
         );
-        return LibUsbResult.Success;
+        return libusb_error.LIBUSB_SUCCESS;
     }
 
     /// <summary>
     /// Get the USB configuration descriptor for the currently active device configuration. This
     /// is a non-blocking function which does not involve any requests being sent to the device.
     /// </summary>
-    internal static LibUsbResult TryGetConfigDescriptor(ISafeDevice device, out IUsbConfigDescriptor? descriptor)
+    internal static void GetConfigDescriptor(ISafeDevice device, out IUsbConfigDescriptor? descriptor)
     {
-        descriptor = null;
-        try
-        {
-            using var safeConfigDescriptorPtr = device.GetActiveConfigDescriptorPtr();
-            descriptor = Marshal
-                .PtrToStructure<LibUsbConfigDescriptor>(safeConfigDescriptorPtr.GetUnmanagedPointer())
-                .ToUsbInterfaceDescriptor();
-            return LibUsbResult.Success;
-        }
-        catch (LibUsbNative.LibUsbException ex)
-        {
-            return (LibUsbResult)ex.Error;
-        }
+        using var safeConfigDescriptorPtr = device.GetActiveConfigDescriptorPtr();
+        descriptor = Marshal
+            .PtrToStructure<LibUsbConfigDescriptor>(safeConfigDescriptorPtr.GetUnmanagedPointer())
+            .ToUsbInterfaceDescriptor();
     }
 }

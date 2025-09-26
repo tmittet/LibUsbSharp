@@ -1,5 +1,7 @@
 using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
+using LibUsbNative;
+using LibUsbNative.Enums;
 using LibUsbNative.SafeHandles;
 using LibUsbSharp.Descriptor;
 using LibUsbSharp.Internal;
@@ -126,7 +128,7 @@ public sealed class UsbDevice : IUsbDevice
             var result = LibUsbTransfer.ExecuteSync(
                 _logger,
                 Handle,
-                LibUsbTransferType.Control,
+                libusb_endpoint_transfer_type.LIBUSB_ENDPOINT_TRANSFER_TYPE_CONTROL,
                 ControlRequestEndpoint,
                 bufferHandle,
                 buffer.Length,
@@ -135,13 +137,13 @@ public sealed class UsbDevice : IUsbDevice
                 _disposeCts.Token
             );
             bytesRead = (ushort)bytesReadInt;
-            if (result != LibUsbResult.Success || bytesRead <= 0)
+            if (result != libusb_error.LIBUSB_SUCCESS || bytesRead <= 0)
             {
                 destination = Array.Empty<byte>();
-                return result;
+                return result.ToLibUsbResult();
             }
             buffer.AsSpan(ControlRequestPacket.SetupSize, bytesRead).CopyTo(destination);
-            return result;
+            return result.ToLibUsbResult();
         }
         finally
         {
@@ -181,17 +183,19 @@ public sealed class UsbDevice : IUsbDevice
         var bufferHandle = GCHandle.Alloc(buffer, GCHandleType.Pinned);
         try
         {
-            return LibUsbTransfer.ExecuteSync(
-                _logger,
-                Handle,
-                LibUsbTransferType.Control,
-                ControlRequestEndpoint,
-                bufferHandle,
-                buffer.Length,
-                timeout > 0 ? (uint)timeout : 0,
-                out bytesWritten, // Length of data only (not setup)
-                _disposeCts.Token
-            );
+            return LibUsbTransfer
+                .ExecuteSync(
+                    _logger,
+                    Handle,
+                    libusb_endpoint_transfer_type.LIBUSB_ENDPOINT_TRANSFER_TYPE_CONTROL,
+                    ControlRequestEndpoint,
+                    bufferHandle,
+                    buffer.Length,
+                    timeout > 0 ? (uint)timeout : 0,
+                    out bytesWritten, // Length of data only (not setup)
+                    _disposeCts.Token
+                )
+                .ToLibUsbResult();
         }
         finally
         {

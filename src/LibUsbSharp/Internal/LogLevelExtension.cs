@@ -1,19 +1,20 @@
+using LibUsbNative.Enums;
 using Microsoft.Extensions.Logging;
 
 namespace LibUsbSharp.Internal;
 
 internal static class LogLevelExtension
 {
-    public static LibUsbLogLevel ToLibUsbLogLevel(this LogLevel logLevel) =>
+    internal static libusb_log_level ToLibUsbLogLevel(this LogLevel logLevel) =>
         logLevel switch
         {
             // LibUsbLogLevel.Debug is very verbose and is best mapped to .NET LogLevel.Trace
-            LogLevel.Trace => LibUsbLogLevel.Debug,
-            LogLevel.Debug => LibUsbLogLevel.Info,
-            LogLevel.Information => LibUsbLogLevel.Info,
-            LogLevel.Warning => LibUsbLogLevel.Warning,
-            LogLevel.Error => LibUsbLogLevel.Error,
-            LogLevel.Critical => LibUsbLogLevel.Error,
-            LogLevel.None => LibUsbLogLevel.None,
+            LogLevel.Trace => libusb_log_level.LIBUSB_LOG_LEVEL_DEBUG,
+            LogLevel.Debug => libusb_log_level.LIBUSB_LOG_LEVEL_INFO,
+            LogLevel.Information => libusb_log_level.LIBUSB_LOG_LEVEL_INFO,
+            LogLevel.Warning => libusb_log_level.LIBUSB_LOG_LEVEL_WARNING,
+            LogLevel.Error => libusb_log_level.LIBUSB_LOG_LEVEL_ERROR,
+            LogLevel.Critical => libusb_log_level.LIBUSB_LOG_LEVEL_ERROR,
+            LogLevel.None => libusb_log_level.LIBUSB_LOG_LEVEL_NONE,
         };
 }

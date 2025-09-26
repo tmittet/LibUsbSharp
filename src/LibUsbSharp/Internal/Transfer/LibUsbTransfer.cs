@@ -1,5 +1,7 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using LibUsbNative.Enums;
+using LibUsbNative.Extensions;
 using LibUsbNative.SafeHandles;
 using Microsoft.Extensions.Logging;
 
@@ -11,10 +13,10 @@ internal static class LibUsbTransfer
     /// Synchronously create, submit and wait for a transfer to complete, be canceled or fail.
     /// NOTE: On macOS, cancelling a transfer may cancel all transfers on specified endpoint.
     /// </summary>
-    public static LibUsbResult ExecuteSync(
+    public static libusb_error ExecuteSync(
         ILogger logger,
         ISafeDeviceHandle deviceHandle,
-        LibUsbTransferType transferType,
+        libusb_endpoint_transfer_type transferType,
         byte endpointAddress,
         GCHandle bufferHandle,
         int bufferLength,
@@ -26,7 +28,7 @@ internal static class LibUsbTransfer
         bytesTransferred = 0;
         if (ct.IsCancellationRequested)
         {
-            return LibUsbResult.Interrupted;
+            return libusb_error.LIBUSB_ERROR_INTERRUPTED;
         }
 
         using var transferCompleteEvent = new ManualResetEvent(false);
@@ -54,7 +56,7 @@ internal static class LibUsbTransfer
             // libusb_alloc_transfer returns zero pointer on error
             if (transferPtr == IntPtr.Zero)
             {
-                return LibUsbResult.OtherError;
+                return libusb_error.LIBUSB_ERROR_OTHER;
             }
             var transferTemplate = LibUsbTransferTemplate.Create(
                 deviceHandle,
@@ -72,8 +74,8 @@ internal static class LibUsbTransfer
 #endif
             // Submit the USB transfer and then return immediately.
             // The registered LibUsbTransferCallback is invoked on completion.
-            var submitResult = (LibUsbResult)transferBuffer.Submit();
-            if (submitResult is not LibUsbResult.Success)
+            var submitResult = transferBuffer.Submit();
+            if (submitResult is not libusb_error.LIBUSB_SUCCESS)
             {
                 return submitResult;
             }
@@ -84,12 +86,15 @@ internal static class LibUsbTransfer
             {
                 // Tell libusb to cancel the transfer, the final transfer status
                 // is received through the LibUsbTransferCallback.
-                var cancelResult = (LibUsbResult)transferBuffer.Cancel();
+                var cancelResult = transferBuffer.Cancel();
                 if (
-                    cancelResult is not LibUsbResult.NoDevice and not LibUsbResult.NotFound and not LibUsbResult.Success
+                    cancelResult
+                    is not libusb_error.LIBUSB_ERROR_NO_DEVICE
+                        and not libusb_error.LIBUSB_ERROR_NOT_FOUND
+                        and not libusb_error.LIBUSB_SUCCESS
                 )
                 {
-                    logger.LogError("Failed to cancel LibUsb transfer. {ErrorMessage}", cancelResult.GetMessage());
+                    logger.LogError("Failed to cancel LibUsb transfer. {ErrorMessage}.", cancelResult.GetString());
                 }
                 // We should not free the transfer or handle if there is still a chance
                 // that the callback is triggered, doing so may result in use-after-free.
@@ -99,8 +104,8 @@ internal static class LibUsbTransfer
             }
 
             Debug.Assert(
-                (int)transferBuffer.Cancel() == (int)LibUsbResult.NotFound,
-                "libusb_cancel_transfer should return NotFound, after transfer complete event."
+                transferBuffer.Cancel() == libusb_error.LIBUSB_ERROR_NOT_FOUND,
+                "libusb_cancel_transfer should return LIBUSB_ERROR_NOT_FOUND, after transfer complete event."
             );
 
             // The transfer is complete, canceled or failed; map status to result and return

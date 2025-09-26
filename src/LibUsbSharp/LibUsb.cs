@@ -1,5 +1,7 @@
 using System.Collections.Concurrent;
+using LibUsbNative;
 using LibUsbNative.Enums;
+using LibUsbNative.Extensions;
 using LibUsbNative.SafeHandles;
 using LibUsbSharp.Descriptor;
 using LibUsbSharp.Internal;
@@ -88,28 +90,22 @@ public sealed class LibUsb : ILibUsb
 
         try
         {
-            context.RegisterLogCallback((level, message) => LibUsbLogHandler((LibUsbLogLevel)level, message));
+            context.RegisterLogCallback((level, message) => LibUsbLogHandler(level, message));
         }
-        catch (LibUsbNative.LibUsbException ex)
+        catch (LibUsbException ex)
         {
-            _logger.LogWarning(
-                "Failed to set LibUsbOption.LogCallback. {ErrorMessage}",
-                ((LibUsbResult)ex.Error).GetMessage()
-            );
+            _logger.LogWarning("Failed to set LibUsbOption.LogCallback. {ErrorMessage}.", ex.Error.GetString());
             return; // Only attempt to set log level if callback registration succeeded
         }
 
         var libUsbLogLevel = logLevel.ToLibUsbLogLevel();
         try
         {
-            context.SetOption((int)LibUsbOption.LogLevel, (int)libUsbLogLevel);
+            context.SetOption(libusb_option.LIBUSB_OPTION_LOG_LEVEL, (int)libUsbLogLevel);
         }
-        catch (LibUsbNative.LibUsbException ex)
+        catch (LibUsbException ex)
         {
-            _logger.LogWarning(
-                "Failed to set LibUsbOption.LogLevel. {ErrorMessage}",
-                ((LibUsbResult)ex.Error).GetMessage()
-            );
+            _logger.LogWarning("Failed to set LibUsbOption.LogLevel. {ErrorMessage}.", ex.Error.GetString());
         }
     }
 
@@ -178,9 +174,9 @@ public sealed class LibUsb : ILibUsb
 
         // TODO: Test on macOS and linux; "most functions that take a device handle are not safe"
         var result = LibUsbDeviceEnum.TryGetDeviceDescriptor(device, out var deviceDescriptor);
-        if (result != LibUsbResult.Success)
+        if (result != libusb_error.LIBUSB_SUCCESS)
         {
-            _logger.LogWarning("Failed to get device descriptor. {ErrorMessage}", result.GetMessage());
+            _logger.LogWarning("Failed to get device descriptor. {ErrorMessage}.", result.GetString());
             return libusb_hotplug_return.REARM;
         }
         var descriptor = deviceDescriptor!.Value;
@@ -243,8 +239,8 @@ public sealed class LibUsb : ILibUsb
             if (!_openDevices.TryAdd(deviceKey, device))
             {
                 device.Dispose();
-                throw LibUsbException.FromResult(
-                    LibUsbResult.OtherError,
+                throw LibUsbException.FromError(
+                    libusb_error.LIBUSB_ERROR_OTHER,
                     $"Device with key '{deviceKey}' is already open."
                 );
             }
@@ -264,26 +260,11 @@ public sealed class LibUsb : ILibUsb
             .FirstOrDefault(d => d.Descriptor.DeviceKey == deviceKey);
         if (device is null)
         {
-            throw LibUsbException.FromResult(LibUsbResult.NotFound, "Failed to get device from list.");
+            throw LibUsbException.FromError(libusb_error.LIBUSB_ERROR_NOT_FOUND, "Failed to get device from list.");
         }
-        var configResult = LibUsbDeviceEnum.TryGetConfigDescriptor(device, out var configDescriptor);
-        if (configResult != 0)
-        {
-            throw LibUsbException.FromResult(
-                configResult,
-                $"Failed to get active config descriptor for '{deviceKey}'."
-            );
-        }
-
-        try
-        {
-            var deviceHandle = device.Open();
-            return new UsbDevice(_loggerFactory, this, context, deviceHandle, descriptor, configDescriptor!);
-        }
-        catch (LibUsbNative.LibUsbException ex)
-        {
-            throw new LibUsbException(ex.Message, (LibUsbResult)ex.Error);
-        }
+        LibUsbDeviceEnum.GetConfigDescriptor(device, out var configDescriptor);
+        var deviceHandle = device.Open();
+        return new UsbDevice(_loggerFactory, this, context, deviceHandle, descriptor, configDescriptor!);
     }
 
     /// <summary>
@@ -366,24 +347,24 @@ public sealed class LibUsb : ILibUsb
         }
     }
 
-    private static void LibUsbLogHandler(LibUsbLogLevel level, string message)
+    private static void LibUsbLogHandler(libusb_log_level level, string message)
     {
         switch (level)
         {
-            case LibUsbLogLevel.Error:
+            case libusb_log_level.LIBUSB_LOG_LEVEL_ERROR:
                 _staticLogger?.LogError("{LibUsbMessage}", message.TrimEnd());
                 break;
-            case LibUsbLogLevel.Warning:
+            case libusb_log_level.LIBUSB_LOG_LEVEL_WARNING:
                 _staticLogger?.LogWarning("{LibUsbMessage}", message.TrimEnd());
                 break;
-            case LibUsbLogLevel.Info:
+            case libusb_log_level.LIBUSB_LOG_LEVEL_INFO:
                 _staticLogger?.LogInformation("{LibUsbMessage}", message.TrimEnd());
                 break;
             // LibUsbLogLevel.Debug is very verbose and is best mapped to .NET LogLevel.Trace
-            case LibUsbLogLevel.Debug:
+            case libusb_log_level.LIBUSB_LOG_LEVEL_DEBUG:
                 _staticLogger?.LogTrace("{LibUsbMessage}", message.TrimEnd());
                 break;
-            case LibUsbLogLevel.None:
+            case libusb_log_level.LIBUSB_LOG_LEVEL_NONE:
                 break;
             // Catch the unlikely case that libusb adds another log level in a future version
             default:
