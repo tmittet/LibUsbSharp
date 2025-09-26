@@ -12,8 +12,7 @@ public sealed class Given_no_USB_device : IDisposable
     [Fact]
     public void GetVersion_returns_a_valid_version_of_at_least_1_0_27()
     {
-        using var libUsb = new LibUsb(_loggerFactory);
-        var version = libUsb.GetVersion();
+        var version = LibUsb.GetVersion();
         // Log callback requires v1.0.27 or above
         version.Should().BeGreaterThanOrEqualTo(new Version(1, 0, 27));
     }
