@@ -36,7 +36,7 @@ public sealed class PInvokeLibUsbApi : ILibUsbApi
     private static extern IntPtr libusb_get_version();
 
     [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
-    private static extern int libusb_has_capability(uint capability);
+    private static extern int libusb_has_capability(libusb_capability capability);
 
     [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
     private static extern IntPtr libusb_strerror(libusb_error errcode);
@@ -140,8 +140,8 @@ public sealed class PInvokeLibUsbApi : ILibUsbApi
     [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
     private static extern libusb_error libusb_hotplug_register_callback(
         IntPtr ctx,
-        int events,
-        int flags,
+        libusb_hotplug_event events,
+        libusb_hotplug_flag flags,
         int vendor,
         int product,
         int devClass,
@@ -182,7 +182,7 @@ public sealed class PInvokeLibUsbApi : ILibUsbApi
     IntPtr ILibUsbApi.libusb_get_version() => libusb_get_version();
 
     /// <inheritdoc />
-    int ILibUsbApi.libusb_has_capability(uint capability) => libusb_has_capability(capability);
+    int ILibUsbApi.libusb_has_capability(libusb_capability capability) => libusb_has_capability(capability);
 
     /// <inheritdoc />
     IntPtr ILibUsbApi.libusb_strerror(libusb_error errorCode) => libusb_strerror(errorCode);
@@ -232,10 +232,10 @@ public sealed class PInvokeLibUsbApi : ILibUsbApi
     void ILibUsbApi.libusb_close(IntPtr h) => libusb_close(h);
 
     /// <inheritdoc />
-    libusb_error ILibUsbApi.libusb_claim_interface(IntPtr h, int i) => libusb_claim_interface(h, i);
+    libusb_error ILibUsbApi.libusb_claim_interface(IntPtr h, byte i) => libusb_claim_interface(h, i);
 
     /// <inheritdoc />
-    libusb_error ILibUsbApi.libusb_release_interface(IntPtr h, int i) => libusb_release_interface(h, i);
+    libusb_error ILibUsbApi.libusb_release_interface(IntPtr h, byte i) => libusb_release_interface(h, i);
 
     /// <inheritdoc />
     libusb_error ILibUsbApi.libusb_get_string_descriptor_ascii(IntPtr h, byte idx, byte[] data, int len) =>
@@ -259,8 +259,8 @@ public sealed class PInvokeLibUsbApi : ILibUsbApi
     /// <inheritdoc />
     libusb_error ILibUsbApi.libusb_hotplug_register_callback(
         IntPtr ctx,
-        int events,
-        int flags,
+        libusb_hotplug_event events,
+        libusb_hotplug_flag flags,
         int vendorId,
         int productId,
         int devClass,

@@ -72,7 +72,7 @@ internal sealed class FakeLibusbApi : ILibUsbApi, IDisposable
     // State tracking
     private readonly Dictionary<libusb_option, IntPtr> _options = [];
     private readonly HashSet<IntPtr> _openHandles = [];
-    private readonly HashSet<(IntPtr Handle, int Interface)> _claimed = [];
+    private readonly HashSet<(IntPtr Handle, byte Interface)> _claimed = [];
     private int _nextHandle = 0x3000;
     private int _nextTransfer = 0x4000;
 
@@ -206,7 +206,7 @@ internal sealed class FakeLibusbApi : ILibUsbApi, IDisposable
 
     public IntPtr libusb_get_version() => _versionPtr;
 
-    public int libusb_has_capability(uint capability) => 1;
+    public int libusb_has_capability(libusb_capability capability) => 1;
 
     public IntPtr libusb_strerror(libusb_error errorCode) =>
         _strErrorPtrs.TryGetValue(errorCode, out var p) ? p : _strErrorPtrs[libusb_error.LIBUSB_ERROR_OTHER];
@@ -382,19 +382,19 @@ internal sealed class FakeLibusbApi : ILibUsbApi, IDisposable
     }
 
     // ------------- Config / Interface -------------
-    public libusb_error libusb_claim_interface(IntPtr handle, int interfaceNumber)
+    public libusb_error libusb_claim_interface(IntPtr handle, byte interface_number)
     {
         var err = MaybeFail(nameof(libusb_claim_interface));
         if (err == libusb_error.LIBUSB_SUCCESS)
-            _claimed.Add((handle, interfaceNumber));
+            _claimed.Add((handle, interface_number));
         return err;
     }
 
-    public libusb_error libusb_release_interface(IntPtr handle, int interfaceNumber)
+    public libusb_error libusb_release_interface(IntPtr handle, byte interface_number)
     {
         var err = MaybeFail(nameof(libusb_release_interface));
         if (err == libusb_error.LIBUSB_SUCCESS)
-            _claimed.Remove((handle, interfaceNumber));
+            _claimed.Remove((handle, interface_number));
         return err;
     }
 
@@ -428,8 +428,8 @@ internal sealed class FakeLibusbApi : ILibUsbApi, IDisposable
     // ------------- Hotplug -------------
     public libusb_error libusb_hotplug_register_callback(
         IntPtr ctx,
-        int events,
-        int flags,
+        libusb_hotplug_event events,
+        libusb_hotplug_flag flags,
         int vendorId,
         int productId,
         int devClass,

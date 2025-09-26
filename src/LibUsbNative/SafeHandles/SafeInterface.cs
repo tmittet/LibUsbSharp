@@ -5,9 +5,9 @@ namespace LibUsbNative.SafeHandles;
 internal sealed class SafeDeviceInterface : SafeHandle, ISafeDeviceInterface
 {
     private readonly SafeDeviceHandle _deviceHandle;
-    private readonly int _interfaceNumber;
+    private readonly byte _interfaceNumber;
 
-    public SafeDeviceInterface(SafeDeviceHandle deviceHandle, int interfaceNumber)
+    public SafeDeviceInterface(SafeDeviceHandle deviceHandle, byte interfaceNumber)
         : base(IntPtr.Zero, true)
     {
         _deviceHandle = deviceHandle;

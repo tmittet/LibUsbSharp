@@ -75,7 +75,7 @@ internal sealed class SafeDeviceHandle : SafeHandle, ISafeDeviceHandle
         return false;
     }
 
-    public ISafeDeviceInterface ClaimInterface(int interfaceNumber)
+    public ISafeDeviceInterface ClaimInterface(byte interfaceNumber)
     {
         SafeHelpers.ThrowIfClosed(this);
 

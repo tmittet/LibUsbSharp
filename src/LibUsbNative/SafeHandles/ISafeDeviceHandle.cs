@@ -44,7 +44,7 @@ public interface ISafeDeviceHandle : IDisposable
     /// </summary>
     /// <exception cref="ObjectDisposedException">Thrown when the SafeDeviceHandle is disposed.</exception>
     /// <exception cref="LibUsbException">Thrown when the USB device interface claim operation fails.</exception>
-    ISafeDeviceInterface ClaimInterface(int interfaceNumber);
+    ISafeDeviceInterface ClaimInterface(byte interfaceNumber);
 
     /// <summary>
     /// WARNING: Use very carefully! Performs a USB port reset to reconnect/reinitialize the device.

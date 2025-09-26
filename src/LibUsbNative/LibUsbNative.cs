@@ -23,7 +23,7 @@ public class LibUsbNative : ILibUsbNative
         return new SafeContext(_api);
     }
 
-    public bool HasCapability(uint capability) => _api.libusb_has_capability((uint)capability) != 0;
+    public bool HasCapability(libusb_capability capability) => _api.libusb_has_capability(capability) != 0;
 
     /// <summary>
     /// Returns the full libusb version structure.

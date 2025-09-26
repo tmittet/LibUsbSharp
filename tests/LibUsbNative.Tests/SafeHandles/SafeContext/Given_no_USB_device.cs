@@ -46,7 +46,7 @@ public abstract class Given_no_USB_device(ITestOutputHelper output, ILibUsbApi a
                     0,
                     (p1, p2, p3, p4) =>
                     {
-                        return true;
+                        return Enums.libusb_hotplug_return.REARM;
                     }
                 );
             };

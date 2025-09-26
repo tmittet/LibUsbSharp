@@ -61,7 +61,7 @@ public interface ILibUsbApi
     /// Check at runtime if the loaded library has a given capability. This call should be performed
     /// after libusb_init_context(), to ensure the backend has updated its capability set.
     /// </summary>
-    int libusb_has_capability(uint capability);
+    int libusb_has_capability(libusb_capability capability);
 
     /// <summary>
     /// Returns a constant string with a short description of the given error code, this description
@@ -88,7 +88,9 @@ public interface ILibUsbApi
     /// NOTE: If the unref_devices parameter is set, the reference count of each device
     /// in the list is decremented by 1.
     /// </summary>
-    void libusb_free_device_list(IntPtr list, int unrefDevices);
+    /// <param name="list">The list to free.</param>
+    /// <param name="unref_devices">Whether to unref the devices in the list; 0 or 1.</param>
+    void libusb_free_device_list(IntPtr list, int unref_devices);
 
     /// <summary>
     /// Increment the reference count of a device.
@@ -168,7 +170,7 @@ public interface ILibUsbApi
     /// is used to instruct the underlying operating system that your application wishes to take
     /// ownership of the interface.
     /// </summary>
-    libusb_error libusb_claim_interface(IntPtr handle, int interfaceNumber);
+    libusb_error libusb_claim_interface(IntPtr handle, byte interface_number);
 
     /// <summary>
     /// Release an interface previously claimed with libusb_claim_interface(). You should release
@@ -177,7 +179,7 @@ public interface ILibUsbApi
     /// first alternate setting. If auto_detach_kernel_driver is set to 1 for dev, the kernel driver
     /// will be re-attached after releasing the interface.
     /// </summary>
-    libusb_error libusb_release_interface(IntPtr handle, int interfaceNumber);
+    libusb_error libusb_release_interface(IntPtr handle, byte interface_number);
 
     /// <summary>
     /// Wrapper around libusb_get_string_descriptor(). Uses the first language supported by the
@@ -271,8 +273,8 @@ public interface ILibUsbApi
     /// </summary>
     libusb_error libusb_hotplug_register_callback(
         IntPtr ctx,
-        int events,
-        int flags,
+        libusb_hotplug_event events,
+        libusb_hotplug_flag flags,
         int vendorId,
         int productId,
         int devClass,
@@ -289,7 +291,12 @@ public interface ILibUsbApi
 }
 
 [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-public delegate int libusb_hotplug_callback_fn(IntPtr ctx, IntPtr dev, int eventType, IntPtr userData);
+public delegate libusb_hotplug_return libusb_hotplug_callback_fn(
+    IntPtr ctx,
+    IntPtr dev,
+    libusb_hotplug_event eventType,
+    IntPtr userData
+);
 
 [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-public delegate void libusb_log_callback(IntPtr context, int level, string message);
+public delegate void libusb_log_callback(IntPtr context, libusb_log_level level, string message);

@@ -10,7 +10,7 @@ public interface ILibUsbNative
 
     libusb_version GetVersion();
 
-    bool HasCapability(uint capability);
+    bool HasCapability(libusb_capability capability);
 
     string StrError(libusb_error usbError);
 }

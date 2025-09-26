@@ -1,8 +1,8 @@
 using System.Collections.Concurrent;
+using LibUsbNative.Enums;
 using LibUsbNative.SafeHandles;
 using LibUsbSharp.Descriptor;
 using LibUsbSharp.Internal;
-using LibUsbSharp.Internal.Hotplug;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -20,7 +20,7 @@ public sealed class LibUsb : ILibUsb
     private readonly LibUsbNative.LibUsbNative _libUsbNative;
     private ISafeContext? _context;
     private LibUsbEventLoop? _eventLoop;
-    private int _hotplugCallbackHandle;
+    private nint _hotplugCallbackHandle;
     private bool _disposed;
 
     /// <summary>
@@ -120,8 +120,7 @@ public sealed class LibUsb : ILibUsb
         ushort? productId = default
     )
     {
-        const int HotPlugMatchAny = -1;
-        var supported = _libUsbNative.HasCapability((uint)LibUsbCapability.HasHotplug);
+        var supported = _libUsbNative.HasCapability(libusb_capability.LIBUSB_CAP_HAS_HOTPLUG);
         if (!supported)
         {
             _logger.LogDebug("Hotplug not supported or unimplemented on this platform.");
@@ -130,27 +129,26 @@ public sealed class LibUsb : ILibUsb
         lock (_lock)
         {
             CheckDisposed();
+            var context = GetInitializedContextOrThrow();
             // We do not follow the recommended libusb init pattern: hotplug first then event loop.
             // See: https://libusb.sourceforge.io/api-1.0/group__libusb__asyncio.html#eventthread
             // This should not have any adverse effects as long as we register callback with the
             // LibUsbHotplugFlag.Enumerate flag, as it will allow catching up with current devices.
-            _hotplugCallbackHandle = (int)
-                GetInitializedContextOrThrow()
-                    .HotplugRegisterCallback(
-                        (int)(LibUsbHotplugEvent.DeviceArrived | LibUsbHotplugEvent.DeviceLeft),
-                        // Set flag LibUsbHotplugFlag.Enumerate to immediately invoke the
-                        // HotplugEventCallback method for currently attached devices on register
-                        (int)LibUsbHotplugFlag.Enumerate,
-                        vendorId is null ? HotPlugMatchAny : (int)vendorId,
-                        productId is null ? HotPlugMatchAny : (int)productId,
-                        deviceClass is null ? HotPlugMatchAny : (int)deviceClass,
-                        IntPtr.Zero,
-                        (context, device, type, data) =>
-                        {
-                            return HotplugEventCallback(context, device, (LibUsbHotplugEvent)type, data)
-                                == LibUsbHotplugReturn.Rearm;
-                        }
-                    );
+            _hotplugCallbackHandle = context.HotplugRegisterCallback(
+                libusb_hotplug_event.LIBUSB_HOTPLUG_EVENT_DEVICE_ARRIVED
+                    | libusb_hotplug_event.LIBUSB_HOTPLUG_EVENT_DEVICE_LEFT,
+                // Set flag LibUsbHotplugFlag.Enumerate to immediately invoke the
+                // HotplugEventCallback method for currently attached devices on register
+                libusb_hotplug_flag.LIBUSB_HOTPLUG_ENUMERATE,
+                vendorId,
+                productId,
+                deviceClass is null ? null : (libusb_class_code)deviceClass,
+                IntPtr.Zero,
+                (context, device, type, data) =>
+                {
+                    return HotplugEventCallback(context, device, type, data);
+                }
+            );
         }
         return true;
     }
@@ -166,10 +164,10 @@ public sealed class LibUsb : ILibUsb
     /// These functions must be used outside of the context of the hotplug callback.
     /// When handling a DeviceLeft event the only safe function is libusb_get_device_descriptor().
     /// </summary>
-    private LibUsbHotplugReturn HotplugEventCallback(
+    private libusb_hotplug_return HotplugEventCallback(
         ISafeContext context,
         ISafeDevice device,
-        LibUsbHotplugEvent type,
+        libusb_hotplug_event eventType,
 #pragma warning disable IDE0060 // Remove unused parameter
         IntPtr userData
 #pragma warning restore IDE0060 // Remove unused parameter
@@ -178,13 +176,12 @@ public sealed class LibUsb : ILibUsb
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(device);
 
-        LibUsbHotplugEvent eventType = (LibUsbHotplugEvent)type;
         // TODO: Test on macOS and linux; "most functions that take a device handle are not safe"
         var result = LibUsbDeviceEnum.TryGetDeviceDescriptor(device, out var deviceDescriptor);
         if (result != LibUsbResult.Success)
         {
             _logger.LogWarning("Failed to get device descriptor. {ErrorMessage}", result.GetMessage());
-            return LibUsbHotplugReturn.Rearm;
+            return libusb_hotplug_return.REARM;
         }
         var descriptor = deviceDescriptor!.Value;
         _logger.LogInformation(
@@ -193,7 +190,7 @@ public sealed class LibUsb : ILibUsb
             descriptor.DeviceClass,
             descriptor.DeviceKey
         );
-        return LibUsbHotplugReturn.Rearm;
+        return libusb_hotplug_return.REARM;
     }
 
     /// <inheritdoc />

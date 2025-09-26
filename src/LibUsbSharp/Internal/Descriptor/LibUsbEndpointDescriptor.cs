@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using LibUsbNative.Enums;
 using LibUsbSharp.Descriptor;
 
 namespace LibUsbSharp.Internal.Descriptor;
@@ -14,7 +15,7 @@ internal struct LibUsbEndpointDescriptor
     /// <summary>
     /// Descriptor type.
     /// </summary>
-    public LibUsbDescriptorType DescriptorType;
+    public libusb_descriptor_type DescriptorType;
 
     /// <summary>
     /// The address of the endpoint described by this descriptor.

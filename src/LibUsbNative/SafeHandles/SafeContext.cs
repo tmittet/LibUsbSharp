@@ -65,12 +65,14 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
     }
 
     /// <inheritdoc />
-    public void RegisterLogCallback(Action<int, string> logHandler)
+    public void RegisterLogCallback(Action<libusb_log_level, string> logHandler)
     {
         SafeHelpers.ThrowIfClosed(this);
         ArgumentNullException.ThrowIfNull(logHandler);
 
-        var callback = new libusb_log_callback((nint _, int level, string message) => logHandler(level, message));
+        var callback = new libusb_log_callback(
+            (nint _, libusb_log_level level, string message) => logHandler(level, message)
+        );
         var gcHandle = GCHandle.Alloc(callback);
 
         try
@@ -87,21 +89,22 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
 
     /// <inheritdoc />
     public nint HotplugRegisterCallback(
-        int events,
-        int flags,
-        int vendorId,
-        int productId,
-        int deviceClass,
+        libusb_hotplug_event events,
+        libusb_hotplug_flag flags,
+        ushort? vendorId,
+        ushort? productId,
+        libusb_class_code? deviceClass,
         nint userData,
-        Func<ISafeContext, ISafeDevice, int, nint, bool> hotplugCallback
+        Func<ISafeContext, ISafeDevice, libusb_hotplug_event, nint, libusb_hotplug_return> hotplugCallback
     )
     {
+        const int HotPlugMatchAny = -1;
+
         SafeHelpers.ThrowIfClosed(this);
         ArgumentNullException.ThrowIfNull(hotplugCallback);
 
         var callback = new libusb_hotplug_callback_fn(
-            (_, dev, eventType, userData) =>
-                hotplugCallback(this, new SafeDevice(this, dev), eventType, userData) ? 1 : 0
+            (_, dev, eventType, userData) => hotplugCallback(this, new SafeDevice(this, dev), eventType, userData)
         );
         var gcHandle = GCHandle.Alloc(callback);
 
@@ -109,9 +112,9 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
             handle,
             events,
             flags,
-            vendorId,
-            productId,
-            deviceClass,
+            vendorId ?? HotPlugMatchAny,
+            productId ?? HotPlugMatchAny,
+            deviceClass is null ? HotPlugMatchAny : (int)deviceClass,
             callback,
             userData,
             out var callbackHandle

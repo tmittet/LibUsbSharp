@@ -13,23 +13,23 @@ public interface ISafeContext : IDisposable
     /// </summary>
     /// <exception cref="ObjectDisposedException">Thrown when the SafeContext is disposed.</exception>
     /// <exception cref="LibUsbException">Thrown when log callback registration fails.</exception>
-    void RegisterLogCallback(Action<int, string> logHandler);
+    void RegisterLogCallback(Action<libusb_log_level, string> logHandler);
 
     /// <summary>
     /// Registers a "hotplug" callback by calling
-    /// <see cref="ILibUsbApi.libusb_hotplug_register_callback(IntPtr, int, int, int, int, int, libusb_hotplug_callback_fn, IntPtr, out int)" />.
+    /// <see cref="ILibUsbApi.libusb_hotplug_register_callback" />.
     /// </summary>
     /// <returns>A pointer to the handle of the allocated callback (can be zero).</returns>
     /// <exception cref="ObjectDisposedException">Thrown when the SafeContext is disposed.</exception>
     /// <exception cref="LibUsbException">Thrown when hotplug callback registration fails.</exception>
     nint HotplugRegisterCallback(
-        int events,
-        int flags,
-        int vendorId,
-        int productId,
-        int deviceClass,
+        libusb_hotplug_event events,
+        libusb_hotplug_flag flags,
+        ushort? vendorId,
+        ushort? productId,
+        libusb_class_code? deviceClass,
         nint userData,
-        Func<ISafeContext, ISafeDevice, int, nint, bool> hotPlugCallback
+        Func<ISafeContext, ISafeDevice, libusb_hotplug_event, nint, libusb_hotplug_return> hotPlugCallback
     );
 
     /// <summary>

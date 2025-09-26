@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using LibUsbNative.Enums;
 
 namespace LibUsbSharp.Internal.Descriptor;
 
@@ -13,7 +14,7 @@ internal struct LibUsbDeviceDescriptor
     /// <summary>
     /// Descriptor type.
     /// </summary>
-    public LibUsbDescriptorType DescriptorType;
+    public libusb_descriptor_type DescriptorType;
 
     /// <summary>
     /// USB specification release number in binary-coded decimal.
