@@ -35,7 +35,7 @@ internal static class LibUsbTransfer
 
         GCHandle callbackHandle = default;
         var transferPtr = IntPtr.Zero;
-        var transferStatus = (int)LibUsbTransferStatus.Error;
+        var transferStatus = (int)libusb_transfer_status.LIBUSB_TRANSFER_ERROR;
         var transferLength = 0;
         try
         {
@@ -110,7 +110,7 @@ internal static class LibUsbTransfer
 
             // The transfer is complete, canceled or failed; map status to result and return
             bytesTransferred = Volatile.Read(ref transferLength);
-            return ((LibUsbTransferStatus)Volatile.Read(ref transferStatus)).ToLibUsbError();
+            return ((libusb_transfer_status)Volatile.Read(ref transferStatus)).ToLibUsbError();
         }
         finally
         {

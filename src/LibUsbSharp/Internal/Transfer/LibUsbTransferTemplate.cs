@@ -40,7 +40,7 @@ internal struct LibUsbTransferTemplate
     /// <summary>
     /// A bitwise OR combination of libusb_transfer_flags.
     /// </summary>
-    internal LibUsbTransferFlag Flags;
+    internal libusb_transfer_flags Flags;
 
     /// <summary>
     /// Address of the endpoint where this transfer will be sent.
@@ -60,7 +60,7 @@ internal struct LibUsbTransferTemplate
     /// <summary>
     /// The status of the transfer.
     /// </summary>
-    internal LibUsbTransferStatus Status;
+    internal libusb_transfer_status Status;
 
     /// <summary>
     /// Length of the data buffer.
