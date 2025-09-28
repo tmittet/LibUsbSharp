@@ -1,9 +1,14 @@
-﻿namespace LibUsbSharp.Native.Enums;
+﻿using System.Text.Json.Serialization;
+
+namespace LibUsbSharp.Native.Enums;
 
 /// <summary>
 /// Bitwise or of hotplug events that will trigger the callback.
 /// </summary>
 [Flags]
+#if NET8_0_OR_GREATER
+[JsonConverter(typeof(JsonStringEnumConverter<libusb_hotplug_event>))]
+#endif
 public enum libusb_hotplug_event : int
 {
     NONE = 0,

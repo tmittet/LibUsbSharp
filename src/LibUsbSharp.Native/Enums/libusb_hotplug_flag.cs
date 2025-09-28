@@ -1,9 +1,14 @@
-﻿namespace LibUsbSharp.Native.Enums;
+﻿using System.Text.Json.Serialization;
+
+namespace LibUsbSharp.Native.Enums;
 
 /// <summary>
 /// Bitwise or of hotplug flags that affect registration.
 /// </summary>
 [Flags]
+#if NET8_0_OR_GREATER
+[JsonConverter(typeof(JsonStringEnumConverter<libusb_hotplug_flag>))]
+#endif
 public enum libusb_hotplug_flag
 {
     NONE = 0,

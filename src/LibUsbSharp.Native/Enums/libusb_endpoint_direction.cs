@@ -1,6 +1,11 @@
-﻿namespace LibUsbSharp.Native.Enums;
+﻿using System.Text.Json.Serialization;
+
+namespace LibUsbSharp.Native.Enums;
 
 /// <summary>Endpoint direction. Values for bit 7 of the endpoint address scheme.</summary>
+#if NET8_0_OR_GREATER
+[JsonConverter(typeof(JsonStringEnumConverter<libusb_endpoint_direction>))]
+#endif
 public enum libusb_endpoint_direction : byte
 {
     /// <summary>Out: host-to-device.</summary>

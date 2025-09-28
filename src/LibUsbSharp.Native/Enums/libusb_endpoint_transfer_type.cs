@@ -1,6 +1,11 @@
-﻿namespace LibUsbSharp.Native.Enums;
+﻿using System.Text.Json.Serialization;
+
+namespace LibUsbSharp.Native.Enums;
 
 /// <summary>Endpoint transfer type.</summary>
+#if NET8_0_OR_GREATER
+[JsonConverter(typeof(JsonStringEnumConverter<libusb_endpoint_transfer_type>))]
+#endif
 public enum libusb_endpoint_transfer_type : byte
 {
     /// <summary>Control endpoint.</summary>

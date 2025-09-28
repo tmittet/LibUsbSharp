@@ -1,6 +1,11 @@
-﻿namespace LibUsbSharp.Native.Enums;
+﻿using System.Text.Json.Serialization;
+
+namespace LibUsbSharp.Native.Enums;
 
 [Flags]
+#if NET8_0_OR_GREATER
+[JsonConverter(typeof(JsonStringEnumConverter<libusb_transfer_flags>))]
+#endif
 public enum libusb_transfer_flags : byte
 {
     NONE = 0,

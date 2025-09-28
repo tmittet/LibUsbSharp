@@ -1,8 +1,13 @@
-﻿namespace LibUsbSharp.Native.Enums;
+﻿using System.Text.Json.Serialization;
+
+namespace LibUsbSharp.Native.Enums;
 
 /// <summary>
 /// Available option values for libusb_set_option() and libusb_init_context().
 /// </summary>
+#if NET8_0_OR_GREATER
+[JsonConverter(typeof(JsonStringEnumConverter<libusb_option>))]
+#endif
 public enum libusb_option
 {
     /// <summary>

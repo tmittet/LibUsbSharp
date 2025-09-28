@@ -1,6 +1,11 @@
-﻿namespace LibUsbSharp.Native.Enums;
+﻿using System.Text.Json.Serialization;
+
+namespace LibUsbSharp.Native.Enums;
 
 /// <summary>Indicates the speed at which the device is operating.</summary>
+#if NET8_0_OR_GREATER
+[JsonConverter(typeof(JsonStringEnumConverter<libusb_speed>))]
+#endif
 public enum libusb_speed
 {
     /// <summary>The OS doesn't report or know the device speed.</summary>

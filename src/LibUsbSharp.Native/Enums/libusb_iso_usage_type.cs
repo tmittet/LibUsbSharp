@@ -1,9 +1,14 @@
-﻿namespace LibUsbSharp.Native.Enums;
+﻿using System.Text.Json.Serialization;
+
+namespace LibUsbSharp.Native.Enums;
 
 /// <summary>
 /// Usage type for isochronous endpoints.
 /// Values for bits 4:5 of the bmAttributes field in libusb_endpoint_descriptor.
 /// </summary>
+#if NET8_0_OR_GREATER
+[JsonConverter(typeof(JsonStringEnumConverter<libusb_iso_usage_type>))]
+#endif
 public enum libusb_iso_usage_type : byte
 {
     /// <summary>Data endpoint.</summary>

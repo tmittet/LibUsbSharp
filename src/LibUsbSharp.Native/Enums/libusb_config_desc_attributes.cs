@@ -1,9 +1,14 @@
-﻿namespace LibUsbSharp.Native.Enums;
+﻿using System.Text.Json.Serialization;
+
+namespace LibUsbSharp.Native.Enums;
 
 /// <summary>
 /// bmAttributes byte of the USB configuration descriptor.
 /// </summary>
 [Flags]
+#if NET8_0_OR_GREATER
+[JsonConverter(typeof(JsonStringEnumConverter<libusb_config_desc_attributes>))]
+#endif
 public enum libusb_config_desc_attributes : byte
 {
     /// <summary>

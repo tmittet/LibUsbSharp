@@ -1,5 +1,10 @@
-﻿namespace LibUsbSharp.Native.Enums;
+﻿using System.Text.Json.Serialization;
 
+namespace LibUsbSharp.Native.Enums;
+
+#if NET8_0_OR_GREATER
+[JsonConverter(typeof(JsonStringEnumConverter<libusb_endpoint_number>))]
+#endif
 public enum libusb_endpoint_number : byte
 {
     EP_00 = 0,

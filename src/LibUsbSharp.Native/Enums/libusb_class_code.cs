@@ -1,6 +1,11 @@
-﻿namespace LibUsbSharp.Native.Enums;
+﻿using System.Text.Json.Serialization;
+
+namespace LibUsbSharp.Native.Enums;
 
 /// <summary>Device and/or Interface Class codes.</summary>
+#if NET8_0_OR_GREATER
+[JsonConverter(typeof(JsonStringEnumConverter<libusb_class_code>))]
+#endif
 public enum libusb_class_code : byte
 {
     /// <summary>

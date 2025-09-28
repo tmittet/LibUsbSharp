@@ -1,8 +1,13 @@
-﻿namespace LibUsbSharp.Native.Enums;
+﻿using System.Text.Json.Serialization;
+
+namespace LibUsbSharp.Native.Enums;
 
 /// <summary>
 /// libusb return codes. Most libusb functions return 0 on success or a negative error code.
 /// </summary>
+#if NET8_0_OR_GREATER
+[JsonConverter(typeof(JsonStringEnumConverter<libusb_error>))]
+#endif
 public enum libusb_error : int
 {
     LIBUSB_SUCCESS = 0,

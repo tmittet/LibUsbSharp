@@ -1,10 +1,15 @@
-﻿namespace LibUsbSharp.Native.Enums;
+﻿using System.Text.Json.Serialization;
+
+namespace LibUsbSharp.Native.Enums;
 
 /// <summary>
 /// Capabilities supported by an instance of libusb on the current running platform.
 /// Test if the loaded library supports a given capability by calling libusb_has_capability().
 /// </summary>
 [Flags]
+#if NET8_0_OR_GREATER
+[JsonConverter(typeof(JsonStringEnumConverter<libusb_capability>))]
+#endif
 public enum libusb_capability : uint
 {
     NONE = 0,

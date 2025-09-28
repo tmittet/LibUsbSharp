@@ -3,17 +3,7 @@ using LibUsbSharp.Native.Structs;
 
 namespace LibUsbSharp.Native;
 
-[JsonSourceGenerationOptions(
-    // TODO: Converters not available in .NET6
-    //Converters = new[]
-    //{
-    //    typeof(JsonStringEnumConverter<LibUsbError>),
-    //},
-    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-    // TODO: IndentSize not available in .NET6
-    //IndentSize = 2,
-    WriteIndented = true
-)]
+[JsonSourceGenerationOptions(DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull, WriteIndented = true)]
 [JsonSerializable(typeof(libusb_config_descriptor))]
 [JsonSerializable(typeof(libusb_config_descriptor[]))]
 [JsonSerializable(typeof(IReadOnlyList<libusb_config_descriptor>))]
@@ -29,4 +19,5 @@ namespace LibUsbSharp.Native;
 [JsonSerializable(typeof(libusb_interface_descriptor))]
 [JsonSerializable(typeof(libusb_interface_descriptor[]))]
 [JsonSerializable(typeof(IReadOnlyList<libusb_interface_descriptor>))]
-internal partial class SerializationContext : JsonSerializerContext { }
+[JsonSerializable(typeof(libusb_version))]
+public partial class LibUsbSharpNativeSerializationContext : JsonSerializerContext { }

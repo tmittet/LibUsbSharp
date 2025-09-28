@@ -1,6 +1,11 @@
-﻿namespace LibUsbSharp.Native.Enums;
+﻿using System.Text.Json.Serialization;
+
+namespace LibUsbSharp.Native.Enums;
 
 /// <summary>Descriptor types as defined by the USB specification.</summary>
+#if NET8_0_OR_GREATER
+[JsonConverter(typeof(JsonStringEnumConverter<libusb_descriptor_type>))]
+#endif
 public enum libusb_descriptor_type : byte
 {
     /// <summary>Device descriptor.</summary>

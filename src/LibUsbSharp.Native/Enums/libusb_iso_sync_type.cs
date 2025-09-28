@@ -1,9 +1,14 @@
-﻿namespace LibUsbSharp.Native.Enums;
+﻿using System.Text.Json.Serialization;
+
+namespace LibUsbSharp.Native.Enums;
 
 /// <summary>
 /// Synchronization type for isochronous endpoints.
 /// Values for bits 2:3 of the bmAttributes field in libusb_endpoint_descriptor.
 /// </summary>
+#if NET8_0_OR_GREATER
+[JsonConverter(typeof(JsonStringEnumConverter<libusb_iso_sync_type>))]
+#endif
 public enum libusb_iso_sync_type : byte
 {
     /// <summary>No synchronization.</summary>
