@@ -132,7 +132,7 @@ static class SamplePrinter
 
     private static string RemapIndent(string input)
     {
-        var lines = input.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
+        var lines = input.Split(["\r\n", "\n"], StringSplitOptions.None);
         for (int i = 0; i < lines.Length; i++)
         {
             int count = 0;
