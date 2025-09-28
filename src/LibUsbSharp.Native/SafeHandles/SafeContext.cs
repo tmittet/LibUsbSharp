@@ -13,7 +13,7 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
         var result = api.libusb_init(out var raw);
         if (result != 0 || raw == IntPtr.Zero)
         {
-            throw LibUsbException.FromError(result, nameof(api.libusb_init));
+            throw LibUsbException.FromApiError(result, nameof(api.libusb_init));
         }
 
         this.api = api;

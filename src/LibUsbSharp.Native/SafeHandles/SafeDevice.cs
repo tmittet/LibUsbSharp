@@ -35,25 +35,9 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
     {
         SafeHelpers.ThrowIfClosed(this);
 
-        var result = _context.api.libusb_get_device_descriptor(handle, out var d);
+        var result = _context.api.libusb_get_device_descriptor(handle, out var descriptor);
         LibUsbException.ThrowIfApiError(result, nameof(_context.api.libusb_get_device_descriptor));
-
-        return new libusb_device_descriptor(
-            d.bLength,
-            d.bDescriptorType,
-            d.bcdUSB,
-            d.bDeviceClass,
-            d.bDeviceSubClass,
-            d.bDeviceProtocol,
-            d.bMaxPacketSize0,
-            d.idVendor,
-            d.idProduct,
-            d.bcdDevice,
-            d.iManufacturer,
-            d.iProduct,
-            d.iSerialNumber,
-            d.bNumConfigurations
-        );
+        return descriptor;
     }
 
     /// <inheritdoc />

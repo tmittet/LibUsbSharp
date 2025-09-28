@@ -48,7 +48,7 @@ internal sealed class SafeDeviceHandle : SafeHandle, ISafeDeviceHandle
     {
         return TryGetStringDescriptorAscii(index, out var value, out var error)
             ? value
-            : throw LibUsbException.FromError(error.Value, nameof(_context.api.libusb_get_string_descriptor_ascii));
+            : throw LibUsbException.FromApiError(error.Value, nameof(_context.api.libusb_get_string_descriptor_ascii));
     }
 
     /// <inheritdoc />

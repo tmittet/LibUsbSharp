@@ -8,21 +8,43 @@ public class Given_any_USB_device_Real(ITestOutputHelper output) : Given_any_USB
 public abstract class Given_any_USB_device(ITestOutputHelper output, ILibUsbApi api) : LibUsbNativeTestBase(output, api)
 {
     [SkippableFact]
-    public void TestGetDeviceDescriptor()
+    public void GetDeviceDescriptor_succeeds_given_active_context()
     {
         EnterReadLock(() =>
         {
             using var context = GetContext();
             using var list = context.GetDeviceList();
             var device = list.GetAnyDeviceOrSkipTest();
-
             var descriptor = device.GetDeviceDescriptor();
+
+            // Dispose here to free any native allocations
+            list.Dispose();
+            context.Dispose();
+
             descriptor.bDescriptorType.Should().Be(libusb_descriptor_type.LIBUSB_DT_DEVICE);
         });
     }
 
     [SkippableFact]
-    public void TestGetActiveConfigDescriptor()
+    public void GetActiveConfigDescriptor_succeeds_given_active_context()
+    {
+        EnterReadLock(() =>
+        {
+            using var context = GetContext();
+            using var list = context.GetDeviceList();
+            var device = list.GetAnyDeviceOrSkipTest();
+            var descriptor = device.GetActiveConfigDescriptor();
+
+            // Dispose here to free any native allocations
+            list.Dispose();
+            context.Dispose();
+
+            descriptor.bDescriptorType.Should().Be(libusb_descriptor_type.LIBUSB_DT_CONFIG);
+        });
+    }
+
+    [SkippableFact]
+    public void GetDeviceDescriptor_throws_given_disposed_context()
     {
         EnterReadLock(() =>
         {
@@ -30,8 +52,28 @@ public abstract class Given_any_USB_device(ITestOutputHelper output, ILibUsbApi 
             using var list = context.GetDeviceList();
             var device = list.GetAnyDeviceOrSkipTest();
 
-            var descriptor = device.GetActiveConfigDescriptor();
-            descriptor.bDescriptorType.Should().Be(libusb_descriptor_type.LIBUSB_DT_CONFIG);
+            list.Dispose();
+            context.Dispose();
+
+            var act = () => device.GetDeviceDescriptor();
+            act.Should().Throw<InvalidOperationException>();
+        });
+    }
+
+    [SkippableFact]
+    public void GetActiveConfigDescriptor_throws_given_disposed_context()
+    {
+        EnterReadLock(() =>
+        {
+            using var context = GetContext();
+            using var list = context.GetDeviceList();
+            var device = list.GetAnyDeviceOrSkipTest();
+
+            list.Dispose();
+            context.Dispose();
+
+            var act = () => device.GetActiveConfigDescriptor();
+            act.Should().Throw<InvalidOperationException>();
         });
     }
 };
