@@ -1,5 +1,5 @@
-using LibUsbNative;
 using LibUsbSharp.Descriptor;
+using LibUsbSharp.Native;
 using Microsoft.Extensions.Logging;
 
 namespace LibUsbSharp;

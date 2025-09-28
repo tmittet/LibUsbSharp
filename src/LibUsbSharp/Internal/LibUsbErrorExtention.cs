@@ -1,4 +1,4 @@
-﻿using LibUsbNative.Enums;
+﻿using LibUsbSharp.Native.Enums;
 
 namespace LibUsbSharp.Internal;
 

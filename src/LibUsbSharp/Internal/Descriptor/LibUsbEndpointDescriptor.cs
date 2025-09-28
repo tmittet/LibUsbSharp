@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
-using LibUsbNative.Enums;
 using LibUsbSharp.Descriptor;
+using LibUsbSharp.Native.Enums;
 
 namespace LibUsbSharp.Internal.Descriptor;
 

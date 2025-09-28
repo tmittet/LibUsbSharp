@@ -1,10 +1,10 @@
 using System.Collections.Concurrent;
-using LibUsbNative;
-using LibUsbNative.Enums;
-using LibUsbNative.Extensions;
-using LibUsbNative.SafeHandles;
 using LibUsbSharp.Descriptor;
 using LibUsbSharp.Internal;
+using LibUsbSharp.Native;
+using LibUsbSharp.Native.Enums;
+using LibUsbSharp.Native.Extensions;
+using LibUsbSharp.Native.SafeHandles;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -19,7 +19,7 @@ public sealed class LibUsb : ILibUsb
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger<LibUsb> _logger;
     private readonly ConcurrentDictionary<string, UsbDevice> _openDevices = new();
-    private readonly LibUsbNative.LibUsbNative _libUsbNative;
+    private readonly LibUsbSharp.Native.LibUsbNative _libUsbNative;
     private ISafeContext? _context;
     private LibUsbEventLoop? _eventLoop;
     private nint _hotplugCallbackHandle;
@@ -30,7 +30,7 @@ public sealed class LibUsb : ILibUsb
     /// </summary>
     public static Version GetVersion()
     {
-        var libusbNative = new LibUsbNative.LibUsbNative();
+        var libusbNative = new LibUsbSharp.Native.LibUsbNative();
         var version = libusbNative.GetVersion();
         return new Version(version.major, version.minor, version.micro, version.nano);
     }
@@ -53,7 +53,7 @@ public sealed class LibUsb : ILibUsb
             _loggerFactory = loggerFactory ?? new NullLoggerFactory();
             _logger = _loggerFactory.CreateLogger<LibUsb>();
             _staticLogger = _logger;
-            _libUsbNative = new LibUsbNative.LibUsbNative();
+            _libUsbNative = new LibUsbSharp.Native.LibUsbNative();
         }
         catch (Exception)
         {

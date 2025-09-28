@@ -1,5 +1,5 @@
-using LibUsbNative;
 using LibUsbSharp.Descriptor;
+using LibUsbSharp.Native;
 
 namespace LibUsbSharp;
 

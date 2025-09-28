@@ -1,10 +1,10 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
-using LibUsbNative.Enums;
-using LibUsbNative.SafeHandles;
 using LibUsbSharp.Descriptor;
 using LibUsbSharp.Internal;
 using LibUsbSharp.Internal.Transfer;
+using LibUsbSharp.Native.Enums;
+using LibUsbSharp.Native.SafeHandles;
 using Microsoft.Extensions.Logging;
 
 namespace LibUsbSharp;

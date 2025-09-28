@@ -78,10 +78,10 @@ jobs:
       run: |
         dotnet restore --runtime ${{ matrix.config.runtime }}
 
-    - name: Build LibUsbNative
+    - name: Build LibUsbSharp.Native
       shell: bash
       run: |
-        dotnet build src/LibUsbNative/LibUsbNative.csproj \
+        dotnet build src/LibUsbSharp.Native/LibUsbSharp.Native.csproj \
           --no-restore \
           --runtime ${{ matrix.config.runtime }}
 
@@ -92,10 +92,10 @@ jobs:
           --no-restore \
           --runtime ${{ matrix.config.runtime }}
 
-    - name: Build LibUsbNative.Tests
+    - name: Build LibUsbSharp.Native.Tests
       shell: bash
       run: |
-        dotnet build tests/LibUsbNative.Tests/LibUsbNative.Tests.csproj \
+        dotnet build tests/LibUsbSharp.Native.Tests/LibUsbSharp.Native.Tests.csproj \
           --no-restore \
           --runtime ${{ matrix.config.runtime }}
 
@@ -120,10 +120,10 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y libusb-1.0-0-dev
 
-    - name: Run LibUsbNative.Tests
+    - name: Run LibUsbSharp.Native.Tests
       shell: bash
       run: |
-        dotnet test tests/LibUsbNative.Tests/LibUsbNative.Tests.csproj \
+        dotnet test tests/LibUsbSharp.Native.Tests/LibUsbSharp.Native.Tests.csproj \
           --no-build \
           --runtime ${{ matrix.config.runtime }} \
           --logger "junit;LogFilePath=TestResults/results.xml" \

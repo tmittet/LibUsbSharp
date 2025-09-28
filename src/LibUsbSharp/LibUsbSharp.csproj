@@ -31,6 +31,6 @@
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="..\LibUsbNative\LibUsbNative.csproj" />
+        <ProjectReference Include="..\LibUsbSharp.Native\LibUsbSharp.Native.csproj" />
     </ItemGroup>
 </Project>

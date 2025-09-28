@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
-using LibUsbNative.Enums;
-using LibUsbNative.SafeHandles;
+using LibUsbSharp.Native.Enums;
+using LibUsbSharp.Native.SafeHandles;
 
 namespace LibUsbSharp.Internal.Transfer;
 

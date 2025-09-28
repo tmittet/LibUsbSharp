@@ -1,7 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
-using LibUsbNative;
-using LibUsbNative.Enums;
 using LibUsbSharp.Descriptor;
+using LibUsbSharp.Native;
+using LibUsbSharp.Native.Enums;
 
 namespace LibUsbSharp.TestInfrastructure;
 

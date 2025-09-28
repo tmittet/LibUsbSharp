@@ -1,7 +1,7 @@
 using System.Runtime.InteropServices;
-using LibUsbNative.Enums;
-using LibUsbNative.Extensions;
-using LibUsbNative.SafeHandles;
+using LibUsbSharp.Native.Enums;
+using LibUsbSharp.Native.Extensions;
+using LibUsbSharp.Native.SafeHandles;
 using Microsoft.Extensions.Logging;
 
 namespace LibUsbSharp.Internal;

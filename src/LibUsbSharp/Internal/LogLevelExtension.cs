@@ -1,4 +1,4 @@
-using LibUsbNative.Enums;
+using LibUsbSharp.Native.Enums;
 using Microsoft.Extensions.Logging;
 
 namespace LibUsbSharp.Internal;

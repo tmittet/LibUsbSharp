@@ -1,11 +1,11 @@
 ﻿using System.Runtime.InteropServices;
-using LibUsbNative;
-using LibUsbNative.Enums;
-using LibUsbNative.Extensions;
-using LibUsbNative.SafeHandles;
-using LibUsbNative.Structs;
 using LibUsbSharp.Descriptor;
 using LibUsbSharp.Internal.Descriptor;
+using LibUsbSharp.Native;
+using LibUsbSharp.Native.Enums;
+using LibUsbSharp.Native.Extensions;
+using LibUsbSharp.Native.SafeHandles;
+using LibUsbSharp.Native.Structs;
 using Microsoft.Extensions.Logging;
 
 namespace LibUsbSharp.Internal;
@@ -26,7 +26,7 @@ internal static class LibUsbDeviceEnum
         HashSet<ushort>? productIds
     )
     {
-        // TODO: Verify error handling, behavior has changed with LibUsbNative
+        // TODO: Verify error handling, behavior has changed with LibUsbSharp.Native
         using var deviceList = libusbContext.GetDeviceList();
 
         return GetDeviceDescriptors(logger, deviceList)
@@ -48,7 +48,7 @@ internal static class LibUsbDeviceEnum
         IReadOnlyList<ISafeDevice> devices
     )
     {
-        // TODO: Verify error handling, behavior has changed with LibUsbNative
+        // TODO: Verify error handling, behavior has changed with LibUsbSharp.Native
 
         foreach (var device in devices)
         {

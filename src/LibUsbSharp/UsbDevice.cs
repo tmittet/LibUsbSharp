@@ -1,11 +1,11 @@
 using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
-using LibUsbNative;
-using LibUsbNative.Enums;
-using LibUsbNative.SafeHandles;
 using LibUsbSharp.Descriptor;
 using LibUsbSharp.Internal;
 using LibUsbSharp.Internal.Transfer;
+using LibUsbSharp.Native;
+using LibUsbSharp.Native.Enums;
+using LibUsbSharp.Native.SafeHandles;
 using LibUsbSharp.Transfer;
 using Microsoft.Extensions.Logging;
 

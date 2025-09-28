@@ -1,5 +1,5 @@
-using LibUsbNative.Enums;
-using LibUsbNative.Extensions;
+using LibUsbSharp.Native.Enums;
+using LibUsbSharp.Native.Extensions;
 
 namespace LibUsbSharp;
 
