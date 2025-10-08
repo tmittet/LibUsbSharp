@@ -21,7 +21,7 @@ internal sealed class SafeTransfer : SafeHandle, ISafeTransfer
         if (IsInvalid)
             return true;
 
-        _context.api.libusb_free_transfer(handle);
+        _context.Api.libusb_free_transfer(handle);
         return true;
     }
 
@@ -34,12 +34,12 @@ internal sealed class SafeTransfer : SafeHandle, ISafeTransfer
     public libusb_error Submit()
     {
         SafeHelpers.ThrowIfClosed(this);
-        return _context.api.libusb_submit_transfer(handle);
+        return _context.Api.libusb_submit_transfer(handle);
     }
 
     public libusb_error Cancel()
     {
         SafeHelpers.ThrowIfClosed(this);
-        return _context.api.libusb_cancel_transfer(handle);
+        return _context.Api.libusb_cancel_transfer(handle);
     }
 }

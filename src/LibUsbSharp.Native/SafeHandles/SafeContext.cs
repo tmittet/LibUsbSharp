@@ -5,7 +5,7 @@ namespace LibUsbSharp.Native.SafeHandles;
 
 internal sealed class SafeContext : SafeHandle, ISafeContext
 {
-    internal readonly ILibUsbApi api;
+    internal ILibUsbApi Api { get; init; }
 
     public SafeContext(ILibUsbApi api)
         : base(IntPtr.Zero, ownsHandle: true)
@@ -13,11 +13,10 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
         var result = api.libusb_init(out var raw);
         if (result != 0 || raw == IntPtr.Zero)
         {
-            throw LibUsbException.FromApiError(result, nameof(api.libusb_init));
+            throw LibUsbException.FromApiError(result, nameof(Api.libusb_init));
         }
-
-        this.api = api;
         SetHandle(raw);
+        Api = api;
     }
 
     public override bool IsInvalid => handle == IntPtr.Zero;
@@ -27,7 +26,7 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
         if (IsInvalid)
             return true;
 
-        api.libusb_exit(handle);
+        Api.libusb_exit(handle);
         return true;
     }
 
@@ -35,16 +34,16 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
     public void SetOption(libusb_option libusbOption, int value)
     {
         SafeHelpers.ThrowIfClosed(this);
-        var result = api.libusb_set_option(handle, libusbOption, value);
-        LibUsbException.ThrowIfApiError(result, nameof(api.libusb_set_option));
+        var result = Api.libusb_set_option(handle, libusbOption, value);
+        LibUsbException.ThrowIfApiError(result, nameof(Api.libusb_set_option));
     }
 
     /// <inheritdoc />
     public void SetOption(libusb_option libusbOption, nint value)
     {
         SafeHelpers.ThrowIfClosed(this);
-        var result = api.libusb_set_option(handle, libusbOption, value);
-        LibUsbException.ThrowIfApiError(result, nameof(api.libusb_set_option));
+        var result = Api.libusb_set_option(handle, libusbOption, value);
+        LibUsbException.ThrowIfApiError(result, nameof(Api.libusb_set_option));
     }
 
     /// <inheritdoc />
@@ -54,14 +53,14 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
 
         return completedPtr == IntPtr.Zero // TODO: Zero pointer OK according to libusb docs.
             ? throw new ArgumentNullException(nameof(completedPtr))
-            : api.libusb_handle_events_completed(handle, completedPtr);
+            : Api.libusb_handle_events_completed(handle, completedPtr);
     }
 
     /// <inheritdoc />
     public void InterruptEventHandler()
     {
         SafeHelpers.ThrowIfClosed(this);
-        api.libusb_interrupt_event_handler(handle);
+        Api.libusb_interrupt_event_handler(handle);
     }
 
     /// <inheritdoc />
@@ -108,7 +107,7 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
         );
         var gcHandle = GCHandle.Alloc(callback);
 
-        var result = api.libusb_hotplug_register_callback(
+        var result = Api.libusb_hotplug_register_callback(
             handle,
             events,
             flags,
@@ -123,7 +122,7 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
         try
         {
             // TODO: On success GCHandle is never freed in this implementation
-            LibUsbException.ThrowIfApiError(result, nameof(api.libusb_hotplug_register_callback));
+            LibUsbException.ThrowIfApiError(result, nameof(Api.libusb_hotplug_register_callback));
         }
         catch
         {
@@ -142,7 +141,7 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
         if (callbackHandle == IntPtr.Zero)
             throw new ArgumentNullException(nameof(callbackHandle));
 
-        api.libusb_hotplug_deregister_callback(handle, callbackHandle);
+        Api.libusb_hotplug_deregister_callback(handle, callbackHandle);
     }
 
     /// <inheritdoc />
@@ -150,14 +149,14 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
     {
         SafeHelpers.ThrowIfClosed(this);
 
-        var rc = api.libusb_get_device_list(handle, out var list);
-        LibUsbException.ThrowIfApiError(rc, nameof(api.libusb_get_device_list));
+        var rc = Api.libusb_get_device_list(handle, out var list);
+        LibUsbException.ThrowIfApiError(rc, nameof(Api.libusb_get_device_list));
 
         var success = false;
         DangerousAddRef(ref success);
         if (!success)
         {
-            api.libusb_free_device_list(list, 1);
+            Api.libusb_free_device_list(list, 1);
             throw LibUsbException.FromError(libusb_error.LIBUSB_ERROR_OTHER, "Failed to ref SafeHandle.");
         }
 

@@ -24,13 +24,13 @@ internal sealed class SafeDeviceInterface : SafeHandle, ISafeDeviceInterface
 
     protected override bool ReleaseHandle()
     {
-        var result = _deviceHandle._context.api.libusb_release_interface(
+        var result = _deviceHandle._context.Api.libusb_release_interface(
             _deviceHandle.DangerousGetHandle(),
             _interfaceNumber
         );
         LibUsbException.ThrowIfApiError(
             result,
-            nameof(_deviceHandle._context.api.libusb_release_interface),
+            nameof(_deviceHandle._context.Api.libusb_release_interface),
             $"Interface {_interfaceNumber}."
         );
         return true;

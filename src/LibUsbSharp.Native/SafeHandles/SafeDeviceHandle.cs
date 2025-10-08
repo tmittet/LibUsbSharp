@@ -37,7 +37,7 @@ internal sealed class SafeDeviceHandle : SafeHandle, ISafeDeviceHandle
         if (IsInvalid)
             return true;
 
-        _context.api.libusb_close(handle);
+        _context.Api.libusb_close(handle);
         _device.Dispose();
         _context.DangerousRelease();
         return true;
@@ -48,7 +48,7 @@ internal sealed class SafeDeviceHandle : SafeHandle, ISafeDeviceHandle
     {
         return TryGetStringDescriptorAscii(index, out var value, out var error)
             ? value
-            : throw LibUsbException.FromApiError(error.Value, nameof(_context.api.libusb_get_string_descriptor_ascii));
+            : throw LibUsbException.FromApiError(error.Value, nameof(_context.Api.libusb_get_string_descriptor_ascii));
     }
 
     /// <inheritdoc />
@@ -61,7 +61,7 @@ internal sealed class SafeDeviceHandle : SafeHandle, ISafeDeviceHandle
         SafeHelpers.ThrowIfClosed(this);
 
         var buffer = new byte[256];
-        var result = _context.api.libusb_get_string_descriptor_ascii(handle, index, buffer, buffer.Length);
+        var result = _context.Api.libusb_get_string_descriptor_ascii(handle, index, buffer, buffer.Length);
 
         if (result >= 0)
         {
@@ -79,10 +79,10 @@ internal sealed class SafeDeviceHandle : SafeHandle, ISafeDeviceHandle
     {
         SafeHelpers.ThrowIfClosed(this);
 
-        var result = _context.api.libusb_claim_interface(handle, interfaceNumber);
+        var result = _context.Api.libusb_claim_interface(handle, interfaceNumber);
         LibUsbException.ThrowIfApiError(
             result,
-            nameof(_context.api.libusb_claim_interface),
+            nameof(_context.Api.libusb_claim_interface),
             $"Interface {interfaceNumber}."
         );
         return new SafeDeviceInterface(this, interfaceNumber);
@@ -92,8 +92,8 @@ internal sealed class SafeDeviceHandle : SafeHandle, ISafeDeviceHandle
     public void ResetDevice()
     {
         SafeHelpers.ThrowIfClosed(this);
-        var result = _context.api.libusb_reset_device(handle);
-        LibUsbException.ThrowIfApiError(result, nameof(_context.api.libusb_reset_device));
+        var result = _context.Api.libusb_reset_device(handle);
+        LibUsbException.ThrowIfApiError(result, nameof(_context.Api.libusb_reset_device));
     }
 
     /// <inheritdoc />
@@ -102,11 +102,11 @@ internal sealed class SafeDeviceHandle : SafeHandle, ISafeDeviceHandle
         if (isoPackets < 0)
             throw new ArgumentOutOfRangeException(nameof(isoPackets), "Must be greater than or equal to zero.");
 
-        var ptr = _context.api.libusb_alloc_transfer(isoPackets);
+        var ptr = _context.Api.libusb_alloc_transfer(isoPackets);
         return ptr == IntPtr.Zero
             ? throw new LibUsbException(
                 libusb_error.LIBUSB_ERROR_NO_MEM,
-                $"LibUsbApi '{nameof(_context.api.libusb_alloc_transfer)}' failed."
+                $"LibUsbApi '{nameof(_context.Api.libusb_alloc_transfer)}' failed."
             )
             : (ISafeTransfer)new SafeTransfer(_context, ptr);
     }

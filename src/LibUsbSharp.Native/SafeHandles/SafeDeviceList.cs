@@ -84,7 +84,7 @@ internal sealed class SafeDeviceList : SafeHandle, ISafeDeviceList
             }
         }
 
-        _context.api.libusb_free_device_list(handle, unref_devices: 1);
+        _context.Api.libusb_free_device_list(handle, unref_devices: 1);
         _context.DangerousRelease();
         return true;
     }

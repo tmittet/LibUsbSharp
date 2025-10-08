@@ -22,7 +22,7 @@ internal sealed class SafeConfigDescriptorPtr : SafeHandle, ISafeConfigDescripto
         if (IsInvalid || IsClosed)
             return true;
 
-        _device._context.api.libusb_free_config_descriptor(handle);
+        _device._context.Api.libusb_free_config_descriptor(handle);
         _device.DangerousRelease();
         return true;
     }
