@@ -145,9 +145,9 @@ public sealed class PInvokeLibUsbApi : ILibUsbApi
         int vendor,
         int product,
         int devClass,
-        libusb_hotplug_callback_fn cb,
+        libusb_hotplug_callback cb,
         IntPtr user_data,
-        out int callbackHandle
+        out IntPtr callbackHandle
     );
 
     [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
@@ -264,9 +264,9 @@ public sealed class PInvokeLibUsbApi : ILibUsbApi
         int vendorId,
         int productId,
         int devClass,
-        libusb_hotplug_callback_fn cb,
+        libusb_hotplug_callback cb,
         IntPtr user_data,
-        out int handle
+        out IntPtr handle
     ) => libusb_hotplug_register_callback(ctx, events, flags, vendorId, productId, devClass, cb, user_data, out handle);
 
     /// <inheritdoc />

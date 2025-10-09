@@ -66,7 +66,7 @@ internal sealed class FakeLibusbApi : ILibUsbApi, IDisposable
     );
 
     // Hotplug
-    public libusb_hotplug_callback_fn? LastCb;
+    public libusb_hotplug_callback? LastCb;
     public int LastCbHandle = 42;
 
     // State tracking
@@ -433,9 +433,9 @@ internal sealed class FakeLibusbApi : ILibUsbApi, IDisposable
         int vendorId,
         int productId,
         int devClass,
-        libusb_hotplug_callback_fn cb,
+        libusb_hotplug_callback cb,
         IntPtr user_data,
-        out int callbackHandle
+        out IntPtr callbackHandle
     )
     {
         callbackHandle = 0;

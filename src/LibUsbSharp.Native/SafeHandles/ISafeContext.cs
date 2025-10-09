@@ -24,21 +24,39 @@ public interface ISafeContext : IDisposable
     /// <returns>A pointer to the handle of the allocated callback (can be zero).</returns>
     /// <exception cref="ObjectDisposedException">Thrown when the SafeContext is disposed.</exception>
     /// <exception cref="LibUsbException">Thrown when hotplug callback registration fails.</exception>
-    nint HotplugRegisterCallback(
+    nint RegisterHotplugCallback(
         libusb_hotplug_event events,
         libusb_hotplug_flag flags,
-        ushort? vendorId,
-        ushort? productId,
-        libusb_class_code? deviceClass,
+        Func<ISafeContext, ISafeDevice, libusb_hotplug_event, libusb_hotplug_return> callback,
+        libusb_class_code? deviceClass = default,
+        ushort? vendorId = default,
+        ushort? productId = default
+    );
+
+    /// <summary>
+    /// Registers a "hotplug" callback by calling
+    /// <see cref="ILibUsbApi.libusb_hotplug_register_callback" />.
+    /// </summary>
+    /// <returns>A pointer to the handle of the allocated callback (can be zero).</returns>
+    /// <exception cref="ObjectDisposedException">Thrown when the SafeContext is disposed.</exception>
+    /// <exception cref="LibUsbException">Thrown when hotplug callback registration fails.</exception>
+    nint RegisterHotplugCallback(
+        libusb_hotplug_event events,
+        libusb_hotplug_flag flags,
+        Func<ISafeContext, ISafeDevice, libusb_hotplug_event, nint, libusb_hotplug_return> callback,
         nint userData,
-        Func<ISafeContext, ISafeDevice, libusb_hotplug_event, nint, libusb_hotplug_return> hotPlugCallback
+        libusb_class_code? deviceClass = default,
+        ushort? vendorId = default,
+        ushort? productId = default
     );
 
     /// <summary>
     /// Deregisters a "hotplug" callback by calling
     /// <see cref="ILibUsbApi.libusb_hotplug_deregister_callback(IntPtr, IntPtr)" />.
+    /// Registers a "hotplug" callback by calling
+    /// <see cref="ILibUsbApi.libusb_hotplug_register_callback" />.
     /// </summary>
-    void HotplugDeregisterCallback(nint callbackHandle);
+    void DeregisterHotplugCallback(nint callbackHandle);
 
     /// <summary>
     /// Set an option in the library. Use this function to configure a specific option within the

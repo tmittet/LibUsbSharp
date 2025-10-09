@@ -1,4 +1,6 @@
-﻿namespace LibUsbSharp.Native.Tests.SafeHandles.SafeContext;
+﻿using LibUsbSharp.Native.Enums;
+
+namespace LibUsbSharp.Native.Tests.SafeHandles.SafeContext;
 
 public class Given_no_USB_device_Fake(ITestOutputHelper output) : Given_no_USB_device(output, new FakeLibusbApi());
 
@@ -74,25 +76,11 @@ public abstract class Given_no_USB_device(ITestOutputHelper output, ILibUsbApi a
     }
 
     [Fact]
-    public void HotplugRegisterCallback_throws_ObjectDisposedException_after_SafeContext_Dispose()
+    public void RegisterHotplugCallback_throws_ObjectDisposedException_after_SafeContext_Dispose()
     {
         var context = GetContext();
         context.Dispose();
-        var act = () =>
-        {
-            context.HotplugRegisterCallback(
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                (p1, p2, p3, p4) =>
-                {
-                    return Enums.libusb_hotplug_return.REARM;
-                }
-            );
-        };
+        var act = () => context.RegisterHotplugCallback(0, 0, (c, d, e) => libusb_hotplug_return.REARM);
         act.Should().Throw<ObjectDisposedException>();
     }
 

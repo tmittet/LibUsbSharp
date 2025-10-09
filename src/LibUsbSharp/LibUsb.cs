@@ -131,20 +131,19 @@ public sealed class LibUsb : ILibUsb
             // See: https://libusb.sourceforge.io/api-1.0/group__libusb__asyncio.html#eventthread
             // This should not have any adverse effects as long as we register callback with the
             // LibUsbHotplugFlag.Enumerate flag, as it will allow catching up with current devices.
-            _hotplugCallbackHandle = context.HotplugRegisterCallback(
+            _hotplugCallbackHandle = context.RegisterHotplugCallback(
                 libusb_hotplug_event.LIBUSB_HOTPLUG_EVENT_DEVICE_ARRIVED
                     | libusb_hotplug_event.LIBUSB_HOTPLUG_EVENT_DEVICE_LEFT,
                 // Set flag LibUsbHotplugFlag.Enumerate to immediately invoke the
                 // HotplugEventCallback method for currently attached devices on register
                 libusb_hotplug_flag.LIBUSB_HOTPLUG_ENUMERATE,
-                vendorId,
-                productId,
-                deviceClass is null ? null : (libusb_class_code)deviceClass,
-                IntPtr.Zero,
-                (context, device, type, data) =>
+                (context, device, type) =>
                 {
-                    return HotplugEventCallback(context, device, type, data);
-                }
+                    return HotplugEventCallback(context, device, type);
+                },
+                deviceClass is null ? null : (libusb_class_code)deviceClass,
+                vendorId,
+                productId
             );
         }
         return true;
@@ -164,10 +163,7 @@ public sealed class LibUsb : ILibUsb
     private libusb_hotplug_return HotplugEventCallback(
         ISafeContext context,
         ISafeDevice device,
-        libusb_hotplug_event eventType,
-#pragma warning disable IDE0060 // Remove unused parameter
-        IntPtr userData
-#pragma warning restore IDE0060 // Remove unused parameter
+        libusb_hotplug_event eventType
     )
     {
         ArgumentNullException.ThrowIfNull(context);
@@ -324,7 +320,7 @@ public sealed class LibUsb : ILibUsb
                 if (_hotplugCallbackHandle != 0)
                 {
                     // NOTE: Callbacks for a context are automatically deregistered by libusb_exit()
-                    _context.HotplugDeregisterCallback((IntPtr)_hotplugCallbackHandle);
+                    _context.DeregisterHotplugCallback((IntPtr)_hotplugCallbackHandle);
                 }
                 _eventLoop?.Dispose();
                 // Close any devices, interfaces and transfers that remain open or are ongoing

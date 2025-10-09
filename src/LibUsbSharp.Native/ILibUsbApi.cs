@@ -278,9 +278,9 @@ public interface ILibUsbApi
         int vendorId,
         int productId,
         int devClass,
-        libusb_hotplug_callback_fn cb,
+        libusb_hotplug_callback cb,
         IntPtr user_data,
-        out int callbackHandle
+        out IntPtr callbackHandle
     );
 
     /// <summary>
@@ -291,7 +291,7 @@ public interface ILibUsbApi
 }
 
 [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-public delegate libusb_hotplug_return libusb_hotplug_callback_fn(
+public delegate libusb_hotplug_return libusb_hotplug_callback(
     IntPtr ctx,
     IntPtr dev,
     libusb_hotplug_event eventType,

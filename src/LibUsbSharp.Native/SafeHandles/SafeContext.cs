@@ -82,25 +82,44 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
     }
 
     /// <inheritdoc />
-    public nint HotplugRegisterCallback(
+    public nint RegisterHotplugCallback(
         libusb_hotplug_event events,
         libusb_hotplug_flag flags,
-        ushort? vendorId,
-        ushort? productId,
+        Func<ISafeContext, ISafeDevice, libusb_hotplug_event, libusb_hotplug_return> callback,
         libusb_class_code? deviceClass,
+        ushort? vendorId,
+        ushort? productId
+    ) =>
+        RegisterHotplugCallback(
+            events,
+            flags,
+            (context, device, eventType, _) => callback(context, device, eventType),
+            IntPtr.Zero,
+            deviceClass,
+            vendorId,
+            productId
+        );
+
+    /// <inheritdoc />
+    public nint RegisterHotplugCallback(
+        libusb_hotplug_event events,
+        libusb_hotplug_flag flags,
+        Func<ISafeContext, ISafeDevice, libusb_hotplug_event, nint, libusb_hotplug_return> callback,
         nint userData,
-        Func<ISafeContext, ISafeDevice, libusb_hotplug_event, nint, libusb_hotplug_return> hotplugCallback
+        libusb_class_code? deviceClass,
+        ushort? vendorId,
+        ushort? productId
     )
     {
         const int HotPlugMatchAny = -1;
 
         SafeHelpers.ThrowIfClosed(this);
-        ArgumentNullException.ThrowIfNull(hotplugCallback);
+        ArgumentNullException.ThrowIfNull(callback);
 
-        var callback = new libusb_hotplug_callback_fn(
-            (_, dev, eventType, userData) => hotplugCallback(this, new SafeDevice(this, dev), eventType, userData)
+        var hotplugCallback = new libusb_hotplug_callback(
+            (_, dev, eventType, userData) => callback(this, new SafeDevice(this, dev), eventType, userData)
         );
-        var gcHandle = GCHandle.Alloc(callback);
+        var gcHandle = GCHandle.Alloc(hotplugCallback);
 
         var result = Api.libusb_hotplug_register_callback(
             handle,
@@ -109,7 +128,7 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
             vendorId ?? HotPlugMatchAny,
             productId ?? HotPlugMatchAny,
             deviceClass is null ? HotPlugMatchAny : (int)deviceClass,
-            callback,
+            hotplugCallback,
             userData,
             out var callbackHandle
         );
@@ -129,7 +148,7 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
     }
 
     /// <inheritdoc />
-    public void HotplugDeregisterCallback(nint callbackHandle)
+    public void DeregisterHotplugCallback(nint callbackHandle)
     {
         SafeHelpers.ThrowIfClosed(this);
 
