@@ -1,4 +1,5 @@
-﻿using LibUsbSharp.Native.Enums;
+﻿using System.ComponentModel.DataAnnotations;
+using LibUsbSharp.Native.Enums;
 using LibUsbSharp.Native.Extensions;
 using LibUsbSharp.Native.SafeHandles;
 
@@ -13,12 +14,22 @@ public class LibUsbNativeTestBase(ITestOutputHelper _output, ILibUsbApi _api)
     protected ITestOutputHelper Output { get; } = _output;
     protected List<string> LibUsbOutput { get; } = [];
 
-    protected ISafeContext GetContext()
+    protected ISafeContext GetContext(libusb_log_level logLevel = libusb_log_level.LIBUSB_LOG_LEVEL_INFO)
     {
         var version = _libUsb.GetVersion();
         Output.WriteLine(version.ToString());
 
         var context = _libUsb.CreateContext();
+        RegisterLogCallback(context, logLevel);
+        return context;
+    }
+
+    private void RegisterLogCallback(ISafeContext context, libusb_log_level logLevel)
+    {
+        if (logLevel is libusb_log_level.LIBUSB_LOG_LEVEL_NONE)
+        {
+            return;
+        }
         context.RegisterLogCallback(
             (level, message) =>
             {
@@ -28,18 +39,16 @@ public class LibUsbNativeTestBase(ITestOutputHelper _output, ILibUsbApi _api)
         );
         try
         {
-            context.SetOption(libusb_log_level.LIBUSB_LOG_LEVEL_INFO);
+            context.SetOption(logLevel);
         }
         catch (LibUsbException ex)
             when (OperatingSystem.IsMacOS() && ex.Error is libusb_error.LIBUSB_ERROR_INVALID_PARAM)
         {
             Output.WriteLine(
                 $"WARNING: SetOption failed. "
-                    + $"Option '{libusb_log_level.LIBUSB_LOG_LEVEL_INFO}' not supported on macOS arm64."
+                    + $"Option '{libusb_option.LIBUSB_OPTION_LOG_LEVEL}' not supported on macOS arm64."
             );
         }
-
-        return context;
     }
 
     protected static void EnterReadLock(Action action)
