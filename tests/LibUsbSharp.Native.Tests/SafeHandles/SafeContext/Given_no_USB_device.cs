@@ -43,6 +43,25 @@ public abstract class Given_no_USB_device(ITestOutputHelper output, ILibUsbApi a
     }
 
     [Fact]
+    public void RegisterLogCallback_is_successful_when_called_once()
+    {
+        using var context = GetContext(Enums.libusb_log_level.LIBUSB_LOG_LEVEL_NONE);
+        context.RegisterLogCallback((_, message) => Output.WriteLine(message));
+    }
+
+    [Fact]
+    public void RegisterLogCallback_throws_InvalidOperationException_when_called_more_than_once()
+    {
+        using var context = GetContext(Enums.libusb_log_level.LIBUSB_LOG_LEVEL_NONE);
+        context.RegisterLogCallback((_, message) => { });
+        var act = () =>
+        {
+            context.RegisterLogCallback((level, message) => { });
+        };
+        act.Should().Throw<InvalidOperationException>();
+    }
+
+    [Fact]
     public void RegisterLogCallback_throws_ObjectDisposedException_after_SafeContext_Dispose()
     {
         var context = GetContext();

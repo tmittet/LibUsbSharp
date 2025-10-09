@@ -5,6 +5,9 @@ namespace LibUsbSharp.Native.SafeHandles;
 
 internal sealed class SafeContext : SafeHandle, ISafeContext
 {
+    private int _logCallbackRegistered;
+    private GCHandle? _logCallbackHandle;
+
     internal ILibUsbApi Api { get; init; }
 
     public SafeContext(ILibUsbApi api)
@@ -27,6 +30,7 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
             return true;
 
         Api.libusb_exit(handle);
+        _logCallbackHandle?.Free();
         return true;
     }
 
@@ -69,21 +73,12 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
         SafeHelpers.ThrowIfClosed(this);
         ArgumentNullException.ThrowIfNull(logHandler);
 
-        var callback = new libusb_log_callback(
-            (nint _, libusb_log_level level, string message) => logHandler(level, message)
-        );
-        var gcHandle = GCHandle.Alloc(callback);
+        if (Interlocked.CompareExchange(ref _logCallbackRegistered, 1, 0) != 0)
+            throw new InvalidOperationException("Log callback is already registered.");
 
-        try
-        {
-            // TODO: On Success GCHandle is never freed in this implementation
-            SetOption(libusb_option.LIBUSB_OPTION_LOG_CB, Marshal.GetFunctionPointerForDelegate(callback));
-        }
-        catch
-        {
-            gcHandle.Free();
-            throw;
-        }
+        var callback = new libusb_log_callback((_, level, message) => logHandler(level, message));
+        _logCallbackHandle = GCHandle.Alloc(callback);
+        SetOption(libusb_option.LIBUSB_OPTION_LOG_CB, Marshal.GetFunctionPointerForDelegate(callback));
     }
 
     /// <inheritdoc />

@@ -7,10 +7,12 @@ public interface ISafeContext : IDisposable
     /// <summary>
     /// Registers a log callback by calling
     /// <see cref="SetOption(libusb_option, nint)">SetOption(ibusb_option.LIBUSB_OPTION_LOG_CB, function_pointer)</see>.
+    /// Only call the RegisterLogCallback method once, consecutive attempts will throw InvalidOperationException.
     ///
     /// NOTE: On osx-arm64 with libusb version 1.0.29 it's not supported and throws LibUsbException with
     /// <see cref="libusb_error.LIBUSB_ERROR_INVALID_PARAM" />.
     /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown when callback is registered more than once.</exception>
     /// <exception cref="ObjectDisposedException">Thrown when the SafeContext is disposed.</exception>
     /// <exception cref="LibUsbException">Thrown when log callback registration fails.</exception>
     void RegisterLogCallback(Action<libusb_log_level, string> logHandler);
