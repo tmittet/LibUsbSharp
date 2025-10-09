@@ -75,6 +75,44 @@ public abstract class Given_no_USB_device(ITestOutputHelper output, ILibUsbApi a
         act.Should().Throw<ObjectDisposedException>();
     }
 
+    private const libusb_hotplug_event HpEvents =
+        libusb_hotplug_event.LIBUSB_HOTPLUG_EVENT_DEVICE_ARRIVED
+        | libusb_hotplug_event.LIBUSB_HOTPLUG_EVENT_DEVICE_LEFT;
+    private const libusb_hotplug_flag HpFlags = libusb_hotplug_flag.NONE;
+
+    [SkippableTheory]
+    [InlineData(5)]
+    public void RegisterHotplugCallback_can_have_many_active_callbacks(int callbackCount)
+    {
+        Skip.If(!OperatingSystem.IsLinux() && !OperatingSystem.IsMacOS(), "Hotplug only supported on linux and macOS.");
+
+        using var context = GetContext();
+        var callbacks = Enumerable
+            .Range(0, callbackCount)
+            .Select(_ => context.RegisterHotplugCallback(HpEvents, HpFlags, (c, d, e) => libusb_hotplug_return.REARM));
+
+        foreach (var callback in callbacks)
+        {
+            callback.Dispose();
+        }
+    }
+
+    [SkippableFact]
+    public void Not_disposing_RegisterHotplugCallback_handle_blocks_SafeContext_handle_close()
+    {
+        Skip.If(!OperatingSystem.IsLinux() && !OperatingSystem.IsMacOS(), "Hotplug only supported on linux and macOS.");
+
+        using var context = GetContext();
+        var cbHandle = context.RegisterHotplugCallback(HpEvents, HpFlags, (c, d, e) => libusb_hotplug_return.REARM);
+        context.Dispose();
+
+        // SafeContext handle will not be closed until after SafeHotplugCallbackHandle is disposed
+        var internalSafeContext = (Native.SafeHandles.SafeContext)context;
+        internalSafeContext.IsClosed.Should().BeFalse();
+        cbHandle.Dispose();
+        internalSafeContext.IsClosed.Should().BeTrue();
+    }
+
     [Fact]
     public void RegisterHotplugCallback_throws_ObjectDisposedException_after_SafeContext_Dispose()
     {

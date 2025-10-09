@@ -60,25 +60,21 @@ public sealed class Given_no_USB_device : IDisposable
         act.Should().Throw<ObjectDisposedException>();
     }
 
-    [Fact]
+    [SkippableFact]
     public void RegisterHotplug_throws_when_called_without_Initialize_on_supported_platform()
     {
-        if (!OperatingSystem.IsLinux() && !OperatingSystem.IsMacOS())
-        {
-            return;
-        }
+        Skip.If(!OperatingSystem.IsLinux() && !OperatingSystem.IsMacOS(), "Hotplug only supported on linux and macOS.");
+
         using var libUsb = new LibUsb(_loggerFactory);
         var act = () => libUsb.RegisterHotplug(vendorId: 0x2BD9);
         act.Should().Throw<InvalidOperationException>();
     }
 
-    [Fact]
+    [SkippableFact]
     public void RegisterHotplug_returns_true_when_called_after_Initialize_on_supported_platform()
     {
-        if (!OperatingSystem.IsLinux() && !OperatingSystem.IsMacOS())
-        {
-            return;
-        }
+        Skip.If(!OperatingSystem.IsLinux() && !OperatingSystem.IsMacOS(), "Hotplug only supported on linux and macOS.");
+
         using var libUsb = new LibUsb(_loggerFactory);
         libUsb.Initialize(LogLevel.Information);
         var success = libUsb.RegisterHotplug(vendorId: 0x2BD9);

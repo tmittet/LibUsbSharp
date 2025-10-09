@@ -22,7 +22,7 @@ public sealed class LibUsb : ILibUsb
     private readonly LibUsbNative _libUsbNative;
     private ISafeContext? _context;
     private LibUsbEventLoop? _eventLoop;
-    private nint _hotplugCallbackHandle;
+    private ISafeCallbackHandle? _hotplugCallbackHandle;
     private bool _disposed;
 
     /// <summary>
@@ -137,10 +137,7 @@ public sealed class LibUsb : ILibUsb
                 // Set flag LibUsbHotplugFlag.Enumerate to immediately invoke the
                 // HotplugEventCallback method for currently attached devices on register
                 libusb_hotplug_flag.LIBUSB_HOTPLUG_ENUMERATE,
-                (context, device, type) =>
-                {
-                    return HotplugEventCallback(context, device, type);
-                },
+                HotplugEventCallback,
                 deviceClass is null ? null : (libusb_class_code)deviceClass,
                 vendorId,
                 productId
@@ -317,11 +314,8 @@ public sealed class LibUsb : ILibUsb
                 // Disabling hotplug here makes most sense, although done differently in sample code.
                 // To ensure event loop exit, libusb_interrupt_event_handler is called on dispose.
                 // See: https://libusb.sourceforge.io/api-1.0/group__libusb__asyncio.html#eventthread
-                if (_hotplugCallbackHandle != 0)
-                {
-                    // NOTE: Callbacks for a context are automatically deregistered by libusb_exit()
-                    _context.DeregisterHotplugCallback((IntPtr)_hotplugCallbackHandle);
-                }
+                // NOTE: Callbacks for a context are automatically deregistered by libusb_exit()
+                _hotplugCallbackHandle?.Dispose();
                 _eventLoop?.Dispose();
                 // Close any devices, interfaces and transfers that remain open or are ongoing
                 foreach (var device in _openDevices)

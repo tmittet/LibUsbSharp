@@ -82,7 +82,7 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
     }
 
     /// <inheritdoc />
-    public nint RegisterHotplugCallback(
+    public ISafeCallbackHandle RegisterHotplugCallback(
         libusb_hotplug_event events,
         libusb_hotplug_flag flags,
         Func<ISafeContext, ISafeDevice, libusb_hotplug_event, libusb_hotplug_return> callback,
@@ -101,7 +101,7 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
         );
 
     /// <inheritdoc />
-    public nint RegisterHotplugCallback(
+    public ISafeCallbackHandle RegisterHotplugCallback(
         libusb_hotplug_event events,
         libusb_hotplug_flag flags,
         Func<ISafeContext, ISafeDevice, libusb_hotplug_event, nint, libusb_hotplug_return> callback,
@@ -116,11 +116,13 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
         SafeHelpers.ThrowIfClosed(this);
         ArgumentNullException.ThrowIfNull(callback);
 
+        // Create hotplug hotplugCallback with pinned handle
         var hotplugCallback = new libusb_hotplug_callback(
             (_, dev, eventType, userData) => callback(this, new SafeDevice(this, dev), eventType, userData)
         );
-        var gcHandle = GCHandle.Alloc(hotplugCallback);
+        var gcHandle = GCHandle.Alloc(hotplugCallback, GCHandleType.Normal);
 
+        // Register hotplug hotplugCallback
         var result = Api.libusb_hotplug_register_callback(
             handle,
             events,
@@ -132,30 +134,24 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
             userData,
             out var callbackHandle
         );
-
-        try
-        {
-            // TODO: On success GCHandle is never freed in this implementation
-            LibUsbException.ThrowIfApiError(result, nameof(Api.libusb_hotplug_register_callback));
-        }
-        catch
+        if (result is not libusb_error.LIBUSB_SUCCESS)
         {
             gcHandle.Free();
-            throw;
+        }
+        LibUsbException.ThrowIfApiError(result, nameof(Api.libusb_hotplug_register_callback));
+
+        // Increment SafeHandle reference counter
+        var success = false;
+        DangerousAddRef(ref success);
+        if (!success)
+        {
+            Api.libusb_hotplug_deregister_callback(handle, callbackHandle);
+            gcHandle.Free();
+            throw LibUsbException.FromError(libusb_error.LIBUSB_ERROR_OTHER, "Failed to ref SafeHandle.");
         }
 
-        return callbackHandle;
-    }
-
-    /// <inheritdoc />
-    public void DeregisterHotplugCallback(nint callbackHandle)
-    {
-        SafeHelpers.ThrowIfClosed(this);
-
-        if (callbackHandle == IntPtr.Zero)
-            throw new ArgumentNullException(nameof(callbackHandle));
-
-        Api.libusb_hotplug_deregister_callback(handle, callbackHandle);
+        // Create and return SafeHotplugCallbackHandle that deregister hotplugCallback and decrements ref counter on release
+        return new SafeHotplugCallbackHandle(this, gcHandle, callbackHandle);
     }
 
     /// <inheritdoc />

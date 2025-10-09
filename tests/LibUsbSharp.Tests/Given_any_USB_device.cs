@@ -35,6 +35,7 @@ public sealed class Given_any_USB_device : IDisposable
     {
         var descriptors = _libUsb.GetDeviceList();
         Skip.If(descriptors.Count == 0, "No USB device available.");
+
         descriptors.Should().HaveCountGreaterThanOrEqualTo(1);
         foreach (var descriptor in descriptors)
         {

@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using LibUsbSharp.Native.Enums;
+﻿using LibUsbSharp.Native.Enums;
 using LibUsbSharp.Native.Extensions;
 using LibUsbSharp.Native.SafeHandles;
 
