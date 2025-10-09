@@ -3,7 +3,7 @@
         <TargetFrameworks>net8.0;net6.0</TargetFrameworks>
         <Platforms>AnyCPU;x64;arm64</Platforms>
         <RuntimeIdentifiers>linux-arm64;linux-x64;maccatalyst-arm64;maccatalyst-x64;osx-arm64;osx-x64;win-arm64;win-x64</RuntimeIdentifiers>
-        <RootNamespace>LibUsbNative</RootNamespace>
+        <RootNamespace>LibUsbSharp.Native</RootNamespace>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <Authors>Stian Myhre, Thomas Mittet</Authors>
