@@ -9,9 +9,27 @@ public abstract class Given_no_USB_device(ITestOutputHelper output, ILibUsbApi a
     [Fact]
     public void Disposing_SafeContext_with_open_SafeDeviceList_blocks_context_ReleaseHandle()
     {
-        var context = GetContext();
+        var context = (Native.SafeHandles.SafeContext)GetContext();
         var list = context.GetDeviceList();
         context.Dispose();
+
+        // SafeContext handle will not be closed until after SafeDeviceList is disposed
+        context.IsClosed.Should().BeFalse();
+        _ = LibUsbOutput.Should().NotContain(s => s.Contains("still referenced"));
+
+        list.Dispose();
+    }
+
+    [Fact]
+    public void SafeContext_does_ReleaseHandle_when_open_SafeDeviceList_is_disposed()
+    {
+        var context = (Native.SafeHandles.SafeContext)GetContext();
+        var list = context.GetDeviceList();
+        context.Dispose();
+        list.Dispose();
+
+        // SafeContext handle should be closed when SafeDeviceList is disposed
+        context.IsClosed.Should().BeTrue();
         _ = LibUsbOutput.Should().NotContain(s => s.Contains("still referenced"));
     }
 
