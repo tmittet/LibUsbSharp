@@ -155,8 +155,5 @@ jobs:
         check_name: XUnit Test Report - ${{ matrix.config.runtime }}
         detailed_summary: true
         annotate_notice: true
-        annotate_warning: true
-        annotate_failure: true
-        fail_on_error: true
-
-
+        fail_on_parse_error: true
+        include_time_in_summary: true
