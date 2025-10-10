@@ -27,19 +27,19 @@ internal sealed class SafeTransfer : SafeHandle, ISafeTransfer
 
     public nint GetBufferPtr()
     {
-        SafeHelpers.ThrowIfClosed(this);
+        SafeHelper.ThrowIfClosed(this);
         return DangerousGetHandle();
     }
 
     public libusb_error Submit()
     {
-        SafeHelpers.ThrowIfClosed(this);
+        SafeHelper.ThrowIfClosed(this);
         return _context.Api.libusb_submit_transfer(handle);
     }
 
     public libusb_error Cancel()
     {
-        SafeHelpers.ThrowIfClosed(this);
+        SafeHelper.ThrowIfClosed(this);
         return _context.Api.libusb_cancel_transfer(handle);
     }
 }

@@ -16,7 +16,7 @@ internal sealed class SafeDeviceInterface : SafeHandle, ISafeDeviceInterface
 
     public int GetInterfaceNumber()
     {
-        SafeHelpers.ThrowIfClosed(this);
+        SafeHelper.ThrowIfClosed(this);
         return _interfaceNumber;
     }
 

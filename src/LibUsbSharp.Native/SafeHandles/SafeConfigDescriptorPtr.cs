@@ -29,7 +29,7 @@ internal sealed class SafeConfigDescriptorPtr : SafeHandle, ISafeConfigDescripto
 
     public nint GetUnmanagedPointer()
     {
-        SafeHelpers.ThrowIfClosed(this);
+        SafeHelper.ThrowIfClosed(this);
         return DangerousGetHandle();
     }
 }

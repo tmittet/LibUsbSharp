@@ -51,20 +51,20 @@ internal sealed class SafeDeviceList : SafeHandle, ISafeDeviceList
     {
         get
         {
-            SafeHelpers.ThrowIfClosed(this);
+            SafeHelper.ThrowIfClosed(this);
             return _count;
         }
     }
 
     public IEnumerator<ISafeDevice> GetEnumerator()
     {
-        SafeHelpers.ThrowIfClosed(this);
+        SafeHelper.ThrowIfClosed(this);
         return _lazyDevices.Value.GetEnumerator();
     }
 
     IEnumerator IEnumerable.GetEnumerator()
     {
-        SafeHelpers.ThrowIfClosed(this);
+        SafeHelper.ThrowIfClosed(this);
         return _lazyDevices.Value.GetEnumerator();
     }
 

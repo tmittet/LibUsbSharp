@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace LibUsbSharp.Native.SafeHandles;
 
-internal static class SafeHelpers
+internal static class SafeHelper
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void ThrowIfClosed(SafeHandle safeHandle, string? objectName = "SafeHandle")

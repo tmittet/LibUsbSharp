@@ -15,7 +15,7 @@ internal sealed class SafeDeviceHandle : SafeHandle, ISafeDeviceHandle
     {
         get
         {
-            SafeHelpers.ThrowIfClosed(this);
+            SafeHelper.ThrowIfClosed(this);
             return _device;
         }
     }
@@ -58,7 +58,7 @@ internal sealed class SafeDeviceHandle : SafeHandle, ISafeDeviceHandle
         [NotNullWhen(false)] out libusb_error? usbError
     )
     {
-        SafeHelpers.ThrowIfClosed(this);
+        SafeHelper.ThrowIfClosed(this);
 
         var buffer = new byte[256];
         var result = _context.Api.libusb_get_string_descriptor_ascii(handle, index, buffer, buffer.Length);
@@ -77,7 +77,7 @@ internal sealed class SafeDeviceHandle : SafeHandle, ISafeDeviceHandle
 
     public ISafeDeviceInterface ClaimInterface(byte interfaceNumber)
     {
-        SafeHelpers.ThrowIfClosed(this);
+        SafeHelper.ThrowIfClosed(this);
 
         var result = _context.Api.libusb_claim_interface(handle, interfaceNumber);
         LibUsbException.ThrowIfApiError(
@@ -91,7 +91,7 @@ internal sealed class SafeDeviceHandle : SafeHandle, ISafeDeviceHandle
     /// <inheritdoc />
     public void ResetDevice()
     {
-        SafeHelpers.ThrowIfClosed(this);
+        SafeHelper.ThrowIfClosed(this);
         var result = _context.Api.libusb_reset_device(handle);
         LibUsbException.ThrowIfApiError(result, nameof(_context.Api.libusb_reset_device));
     }

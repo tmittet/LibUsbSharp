@@ -33,7 +33,7 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
     /// <inheritdoc />
     public libusb_device_descriptor GetDeviceDescriptor()
     {
-        SafeHelpers.ThrowIfClosed(this);
+        SafeHelper.ThrowIfClosed(this);
 
         var result = _context.Api.libusb_get_device_descriptor(handle, out var descriptor);
         LibUsbException.ThrowIfApiError(result, nameof(_context.Api.libusb_get_device_descriptor));
@@ -43,7 +43,7 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
     /// <inheritdoc />
     public ISafeConfigDescriptorPtr GetActiveConfigDescriptorPtr()
     {
-        SafeHelpers.ThrowIfClosed(this);
+        SafeHelper.ThrowIfClosed(this);
 
         var result = _context.Api.libusb_get_active_config_descriptor(handle, out var descriptor);
         LibUsbException.ThrowIfApiError(result, nameof(_context.Api.libusb_get_active_config_descriptor));
@@ -62,7 +62,7 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
     /// <inheritdoc />
     public libusb_config_descriptor GetActiveConfigDescriptor()
     {
-        SafeHelpers.ThrowIfClosed(this);
+        SafeHelper.ThrowIfClosed(this);
 
         var result = _context.Api.libusb_get_active_config_descriptor(handle, out var descriptor);
         LibUsbException.ThrowIfApiError(result, nameof(_context.Api.libusb_get_active_config_descriptor));
@@ -80,7 +80,7 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
     /// <inheritdoc />
     public ISafeConfigDescriptorPtr GetConfigDescriptorPtr(byte config_index)
     {
-        SafeHelpers.ThrowIfClosed(this);
+        SafeHelper.ThrowIfClosed(this);
 
         var result = _context.Api.libusb_get_config_descriptor(handle, config_index, out var descriptor);
         LibUsbException.ThrowIfApiError(result, nameof(_context.Api.libusb_get_config_descriptor));
@@ -99,7 +99,7 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
     /// <inheritdoc />
     public libusb_config_descriptor GetConfigDescriptor(byte config_index)
     {
-        SafeHelpers.ThrowIfClosed(this);
+        SafeHelper.ThrowIfClosed(this);
 
         var result = _context.Api.libusb_get_config_descriptor(handle, config_index, out var descriptor);
         LibUsbException.ThrowIfApiError(result, nameof(_context.Api.libusb_get_config_descriptor));
@@ -117,28 +117,28 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
     /// <inheritdoc />
     public byte GetBusNumber()
     {
-        SafeHelpers.ThrowIfClosed(this);
+        SafeHelper.ThrowIfClosed(this);
         return _context.Api.libusb_get_bus_number(handle);
     }
 
     /// <inheritdoc />
     public byte GetDeviceAddress()
     {
-        SafeHelpers.ThrowIfClosed(this);
+        SafeHelper.ThrowIfClosed(this);
         return _context.Api.libusb_get_device_address(handle);
     }
 
     /// <inheritdoc />
     public byte GetPortNumber()
     {
-        SafeHelpers.ThrowIfClosed(this);
+        SafeHelper.ThrowIfClosed(this);
         return _context.Api.libusb_get_port_number(handle);
     }
 
     /// <inheritdoc />
     public ISafeDeviceHandle Open()
     {
-        SafeHelpers.ThrowIfClosed(this);
+        SafeHelper.ThrowIfClosed(this);
 
         var result = _context.Api.libusb_open(handle, out var ptr);
         LibUsbException.ThrowIfApiError(result, nameof(_context.Api.libusb_open));

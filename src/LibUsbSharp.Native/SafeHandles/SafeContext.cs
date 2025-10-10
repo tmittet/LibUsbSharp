@@ -37,7 +37,7 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
     /// <inheritdoc />
     public void SetOption(libusb_option libusbOption, int value)
     {
-        SafeHelpers.ThrowIfClosed(this);
+        SafeHelper.ThrowIfClosed(this);
         var result = Api.libusb_set_option(handle, libusbOption, value);
         LibUsbException.ThrowIfApiError(result, nameof(Api.libusb_set_option));
     }
@@ -45,7 +45,7 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
     /// <inheritdoc />
     public void SetOption(libusb_option libusbOption, nint value)
     {
-        SafeHelpers.ThrowIfClosed(this);
+        SafeHelper.ThrowIfClosed(this);
         var result = Api.libusb_set_option(handle, libusbOption, value);
         LibUsbException.ThrowIfApiError(result, nameof(Api.libusb_set_option));
     }
@@ -53,7 +53,7 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
     /// <inheritdoc />
     public libusb_error HandleEventsCompleted(nint completedPtr)
     {
-        SafeHelpers.ThrowIfClosed(this);
+        SafeHelper.ThrowIfClosed(this);
 
         return completedPtr == IntPtr.Zero // TODO: Zero pointer OK according to libusb docs.
             ? throw new ArgumentNullException(nameof(completedPtr))
@@ -63,14 +63,14 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
     /// <inheritdoc />
     public void InterruptEventHandler()
     {
-        SafeHelpers.ThrowIfClosed(this);
+        SafeHelper.ThrowIfClosed(this);
         Api.libusb_interrupt_event_handler(handle);
     }
 
     /// <inheritdoc />
     public void RegisterLogCallback(Action<libusb_log_level, string> logHandler)
     {
-        SafeHelpers.ThrowIfClosed(this);
+        SafeHelper.ThrowIfClosed(this);
         ArgumentNullException.ThrowIfNull(logHandler);
 
         if (Interlocked.CompareExchange(ref _logCallbackRegistered, 1, 0) != 0)
@@ -113,7 +113,7 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
     {
         const int HotPlugMatchAny = -1;
 
-        SafeHelpers.ThrowIfClosed(this);
+        SafeHelper.ThrowIfClosed(this);
         ArgumentNullException.ThrowIfNull(callback);
 
         // Create hotplug hotplugCallback with pinned handle
@@ -157,7 +157,7 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
     /// <inheritdoc />
     public ISafeDeviceList GetDeviceList()
     {
-        SafeHelpers.ThrowIfClosed(this);
+        SafeHelper.ThrowIfClosed(this);
 
         var rc = Api.libusb_get_device_list(handle, out var list);
         LibUsbException.ThrowIfApiError(rc, nameof(Api.libusb_get_device_list));
