@@ -6,7 +6,9 @@ namespace LibUsbSharp.Native.SafeHandles;
 
 internal sealed class SafeDevice : SafeHandle, ISafeDevice
 {
-    internal readonly SafeContext _context;
+    private readonly SafeContext _context;
+
+    internal ILibUsbApi Api => _context.Api;
 
     public SafeDevice(SafeContext context, nint dev)
         : base(dev, ownsHandle: true)
