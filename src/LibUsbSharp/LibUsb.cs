@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using LibUsbSharp.Descriptor;
 using LibUsbSharp.Internal;
 using LibUsbSharp.Native;
@@ -76,8 +77,8 @@ public sealed class LibUsb : ILibUsb
             _context = _libUsbNative.CreateContext();
             _logger.LogInformation("LibUsb v{LibUsbVersion} initialized.", GetVersion());
 
-            InitializeLogging(_context!, logLevel);
-            _eventLoop = new LibUsbEventLoop(_loggerFactory, _context!);
+            InitializeLogging(_context, logLevel);
+            _eventLoop = new LibUsbEventLoop(_loggerFactory, _context);
             _eventLoop.Start();
         }
     }
@@ -95,7 +96,7 @@ public sealed class LibUsb : ILibUsb
         }
         catch (LibUsbException ex)
         {
-            _logger.LogWarning("Failed to set LibUsbOption.LogCallback. {ErrorMessage}.", ex.Error.GetString());
+            _logger.LogWarning("Failed to register log callback. {ErrorMessage}.", ex.Error.GetString());
             return; // Only attempt to set log level if callback registration succeeded
         }
 
@@ -106,7 +107,7 @@ public sealed class LibUsb : ILibUsb
         }
         catch (LibUsbException ex)
         {
-            _logger.LogWarning("Failed to set LibUsbOption.LogLevel. {ErrorMessage}.", ex.Error.GetString());
+            _logger.LogWarning("Failed to set LIBUSB_OPTION_LOG_LEVEL. {ErrorMessage}.", ex.Error.GetString());
         }
     }
 
@@ -329,7 +330,13 @@ public sealed class LibUsb : ILibUsb
                 }
 
                 _context.Dispose();
-                _context = null;
+                Debug.Assert(_context.IsClosed, "SafeContext not closed after dispose.");
+                if (!_context.IsClosed)
+                {
+                    _logger.LogWarning(
+                        "Failed to clean up all LibUsb resources. SafeContext not closed after dispose."
+                    );
+                }
             }
             _staticLogger = null;
             _logger.LogDebug("LibUsb disposed.");
