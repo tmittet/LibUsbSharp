@@ -29,7 +29,7 @@ public interface ISafeDevice
     /// </summary>
     /// <exception cref="ObjectDisposedException">Thrown when the ISafeDevice is disposed.</exception>
     /// <exception cref="LibUsbException">Thrown when the get pointer operation fails.</exception>
-    ISafeConfigDescriptorPtr GetActiveConfigDescriptorPtr();
+    ISafeConfigDescriptor GetActiveConfigDescriptorPtr();
 
     /// <summary>
     /// Get a USB configuration descriptor based on its index.
@@ -43,7 +43,7 @@ public interface ISafeDevice
     /// </summary>
     /// <exception cref="ObjectDisposedException">Thrown when the ISafeDevice is disposed.</exception>
     /// <exception cref="LibUsbException">Thrown when the get pointer operation fails.</exception>
-    ISafeConfigDescriptorPtr GetConfigDescriptorPtr(byte configIndex);
+    ISafeConfigDescriptor GetConfigDescriptorPtr(byte configIndex);
 
     /// <summary>
     /// Get the number of the bus that the device is connected to.

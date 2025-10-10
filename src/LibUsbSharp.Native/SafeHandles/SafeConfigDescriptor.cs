@@ -2,20 +2,21 @@
 
 namespace LibUsbSharp.Native.SafeHandles;
 
-internal sealed class SafeConfigDescriptorPtr : SafeHandle, ISafeConfigDescriptorPtr
+internal sealed class SafeConfigDescriptor : SafeHandle, ISafeConfigDescriptor
 {
     private readonly SafeDevice _device;
 
-    public SafeConfigDescriptorPtr(SafeDevice device, nint configPtr)
-        : base(configPtr, ownsHandle: true)
+    public override bool IsInvalid => handle == IntPtr.Zero;
+
+    public SafeConfigDescriptor(SafeDevice device, nint configHandle)
+        : base(IntPtr.Zero, ownsHandle: true)
     {
-        if (configPtr == IntPtr.Zero)
-            throw new ArgumentNullException(nameof(configPtr));
+        if (configHandle == IntPtr.Zero)
+            throw new ArgumentNullException(nameof(configHandle));
 
         _device = device;
+        handle = configHandle;
     }
-
-    public override bool IsInvalid => handle == IntPtr.Zero;
 
     protected override bool ReleaseHandle()
     {

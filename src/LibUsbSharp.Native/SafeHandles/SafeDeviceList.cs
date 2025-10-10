@@ -10,16 +10,19 @@ internal sealed class SafeDeviceList : SafeHandle, ISafeDeviceList
     private readonly Lazy<IReadOnlyList<SafeDevice>> _lazyDevices;
     private readonly SafeContext _context;
 
-    public SafeDeviceList(SafeContext context, nint listPtr, int count)
-        : base(listPtr, ownsHandle: true)
+    public override bool IsInvalid => handle == IntPtr.Zero;
+
+    public SafeDeviceList(SafeContext context, nint listHandle, int count)
+        : base(IntPtr.Zero, ownsHandle: true)
     {
-        if (listPtr == IntPtr.Zero)
-            throw new ArgumentNullException(nameof(listPtr));
+        if (listHandle == IntPtr.Zero)
+            throw new ArgumentNullException(nameof(listHandle));
         if (count < 0)
             throw new ArgumentOutOfRangeException(nameof(count), "Must be greater than or equal to zero.");
 
         _context = context;
         _count = count;
+        handle = listHandle;
         _lazyDevices = new Lazy<IReadOnlyList<SafeDevice>>(() => GetDevices(context, handle, count));
     }
 
@@ -44,8 +47,6 @@ internal sealed class SafeDeviceList : SafeHandle, ISafeDeviceList
     }
 
     public ISafeDevice this[int index] => _lazyDevices.Value[index];
-
-    public override bool IsInvalid => handle == IntPtr.Zero;
 
     public int Count
     {

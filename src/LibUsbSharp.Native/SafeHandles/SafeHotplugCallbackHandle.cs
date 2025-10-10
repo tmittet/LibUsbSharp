@@ -1,23 +1,29 @@
 ﻿using System.Runtime.InteropServices;
-using Microsoft.Win32.SafeHandles;
 
 namespace LibUsbSharp.Native.SafeHandles;
 
-internal sealed class SafeHotplugCallbackHandle : SafeHandleZeroOrMinusOneIsInvalid, ISafeCallbackHandle
+internal sealed class SafeHotplugCallbackHandle : SafeHandle, ISafeCallbackHandle
 {
     private readonly SafeContext _context;
     private readonly GCHandle _gcHandle;
 
-    public SafeHotplugCallbackHandle(SafeContext context, GCHandle gcHandle, nint handle)
-        : base(ownsHandle: true)
+    public override bool IsInvalid => handle == IntPtr.Zero;
+
+    public SafeHotplugCallbackHandle(SafeContext context, GCHandle gcHandle, nint callbackHandle)
+        : base(IntPtr.Zero, ownsHandle: true)
     {
         if (!gcHandle.IsAllocated)
         {
             throw new ArgumentException("GCHandle not allocated.", nameof(gcHandle));
         }
+        if (callbackHandle == IntPtr.Zero)
+        {
+            throw new ArgumentNullException(nameof(callbackHandle));
+        }
+
         _context = context;
         _gcHandle = gcHandle;
-        this.handle = handle;
+        handle = callbackHandle;
     }
 
     protected override bool ReleaseHandle()

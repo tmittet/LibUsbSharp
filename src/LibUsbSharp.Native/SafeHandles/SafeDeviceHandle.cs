@@ -12,6 +12,8 @@ internal sealed class SafeDeviceHandle : SafeHandle, ISafeDeviceHandle
 
     internal ILibUsbApi Api => _context.Api;
 
+    public override bool IsInvalid => handle == IntPtr.Zero;
+
     /// <inheritdoc />
     public ISafeDevice Device
     {
@@ -23,16 +25,15 @@ internal sealed class SafeDeviceHandle : SafeHandle, ISafeDeviceHandle
     }
 
     public SafeDeviceHandle(SafeContext context, nint deviceHandle, SafeDevice device)
-        : base(deviceHandle, ownsHandle: true)
+        : base(IntPtr.Zero, ownsHandle: true)
     {
         if (deviceHandle == IntPtr.Zero)
             throw new ArgumentNullException(nameof(deviceHandle));
 
         _context = context;
         _device = device;
+        handle = deviceHandle;
     }
-
-    public override bool IsInvalid => handle == IntPtr.Zero;
 
     protected override bool ReleaseHandle()
     {

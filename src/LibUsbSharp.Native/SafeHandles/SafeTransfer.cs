@@ -7,14 +7,18 @@ internal sealed class SafeTransfer : SafeHandle, ISafeTransfer
 {
     private readonly SafeContext _context;
 
-    public SafeTransfer(SafeContext context, nint ptr)
-        : base(ptr, true)
-    {
-        _context = context;
-        SetHandle(ptr);
-    }
-
     public override bool IsInvalid => handle == IntPtr.Zero;
+
+    public SafeTransfer(SafeContext context, nint transferHandle)
+        : base(IntPtr.Zero, true)
+    {
+        if (transferHandle == IntPtr.Zero)
+        {
+            throw new ArgumentNullException(nameof(transferHandle));
+        }
+        _context = context;
+        handle = transferHandle;
+    }
 
     protected override bool ReleaseHandle()
     {

@@ -10,17 +10,18 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
 
     internal ILibUsbApi Api => _context.Api;
 
-    public SafeDevice(SafeContext context, nint dev)
-        : base(dev, ownsHandle: true)
+    public override bool IsInvalid => handle == IntPtr.Zero;
+
+    public SafeDevice(SafeContext context, nint devicePtr)
+        : base(IntPtr.Zero, ownsHandle: true)
     {
-        if (dev == IntPtr.Zero)
-            throw new ArgumentNullException(nameof(dev));
+        if (devicePtr == IntPtr.Zero)
+            throw new ArgumentNullException(nameof(devicePtr));
 
         _context = context;
-        _context.Api.libusb_ref_device(dev);
+        _context.Api.libusb_ref_device(devicePtr);
+        handle = devicePtr;
     }
-
-    public override bool IsInvalid => handle == IntPtr.Zero;
 
     protected override bool ReleaseHandle()
     {
@@ -43,7 +44,7 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
     }
 
     /// <inheritdoc />
-    public ISafeConfigDescriptorPtr GetActiveConfigDescriptorPtr()
+    public ISafeConfigDescriptor GetActiveConfigDescriptorPtr()
     {
         SafeHelper.ThrowIfClosed(this);
 
@@ -58,7 +59,7 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
             throw LibUsbException.FromError(libusb_error.LIBUSB_ERROR_OTHER, "Failed to ref SafeHandle.");
         }
 
-        return new SafeConfigDescriptorPtr(this, descriptor);
+        return new SafeConfigDescriptor(this, descriptor);
     }
 
     /// <inheritdoc />
@@ -80,7 +81,7 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
     }
 
     /// <inheritdoc />
-    public ISafeConfigDescriptorPtr GetConfigDescriptorPtr(byte config_index)
+    public ISafeConfigDescriptor GetConfigDescriptorPtr(byte config_index)
     {
         SafeHelper.ThrowIfClosed(this);
 
@@ -95,7 +96,7 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
             throw LibUsbException.FromError(libusb_error.LIBUSB_ERROR_OTHER, "Failed to ref SafeHandle.");
         }
 
-        return new SafeConfigDescriptorPtr(this, descriptor);
+        return new SafeConfigDescriptor(this, descriptor);
     }
 
     /// <inheritdoc />

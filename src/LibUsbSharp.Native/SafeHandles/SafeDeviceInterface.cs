@@ -7,11 +7,16 @@ internal sealed class SafeDeviceInterface : SafeHandle, ISafeDeviceInterface
     private readonly SafeDeviceHandle _deviceHandle;
     private readonly byte _interfaceNumber;
 
+    public override bool IsInvalid => handle == IntPtr.Zero;
+
     public SafeDeviceInterface(SafeDeviceHandle deviceHandle, byte interfaceNumber)
         : base(IntPtr.Zero, true)
     {
         _deviceHandle = deviceHandle;
         _interfaceNumber = interfaceNumber;
+        // The handle of SafeDeviceInterface is not used. A value other than zero set here
+        // to make IsInvalid return the correct bool value once ReleaseHandle is done.
+        handle = new IntPtr(-1);
     }
 
     public int GetInterfaceNumber()
@@ -19,8 +24,6 @@ internal sealed class SafeDeviceInterface : SafeHandle, ISafeDeviceInterface
         SafeHelper.ThrowIfClosed(this);
         return _interfaceNumber;
     }
-
-    public override bool IsInvalid => false;
 
     protected override bool ReleaseHandle()
     {

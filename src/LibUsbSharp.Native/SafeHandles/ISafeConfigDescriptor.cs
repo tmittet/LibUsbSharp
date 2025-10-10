@@ -1,6 +1,6 @@
 ﻿namespace LibUsbSharp.Native.SafeHandles;
 
-public interface ISafeConfigDescriptorPtr : IDisposable
+public interface ISafeConfigDescriptor : IDisposable
 {
     nint GetUnmanagedPointer();
 }

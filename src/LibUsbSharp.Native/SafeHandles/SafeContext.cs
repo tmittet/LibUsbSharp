@@ -10,19 +10,19 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
 
     internal ILibUsbApi Api { get; init; }
 
+    public override bool IsInvalid => handle == IntPtr.Zero;
+
     public SafeContext(ILibUsbApi api)
         : base(IntPtr.Zero, ownsHandle: true)
     {
-        var result = api.libusb_init(out var raw);
-        if (result != 0 || raw == IntPtr.Zero)
+        var result = api.libusb_init(out var rawHandle);
+        if (result != 0 || rawHandle == IntPtr.Zero)
         {
             throw LibUsbException.FromApiError(result, nameof(Api.libusb_init));
         }
-        SetHandle(raw);
         Api = api;
+        handle = rawHandle;
     }
-
-    public override bool IsInvalid => handle == IntPtr.Zero;
 
     protected override bool ReleaseHandle()
     {
