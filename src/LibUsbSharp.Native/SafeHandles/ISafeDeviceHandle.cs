@@ -10,8 +10,6 @@ public interface ISafeDeviceHandle : IDisposable
     /// </summary>
     ISafeDevice Device { get; }
 
-    bool IsClosed { get; }
-
     nint DangerousGetHandle();
 
     /// <summary>
@@ -64,4 +62,10 @@ public interface ISafeDeviceHandle : IDisposable
     /// <exception cref="ArgumentOutOfRangeException">Thrown when isoPackets is below zero.</exception>
     /// <exception cref="LibUsbException">Thrown with usbError LIBUSB_ERROR_NO_MEM when allocation failed.</exception>
     ISafeTransfer AllocateTransfer(int isoPackets = 0);
+
+    /// <summary>
+    /// Gets a value indicating whether the underlying handle is closed or not.
+    /// NOTE: Even though the safe type is disposed, the handle may remain open.
+    /// </summary>
+    bool IsClosed { get; }
 }

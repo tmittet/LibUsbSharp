@@ -76,12 +76,9 @@ internal sealed class SafeDeviceList : SafeHandle, ISafeDeviceList
 
         if (_lazyDevices.IsValueCreated)
         {
-            foreach (var device in _lazyDevices.Value)
+            foreach (var device in _lazyDevices.Value.Where(d => !d.IsClosed))
             {
-                if (!device.IsClosed)
-                {
-                    device.Dispose();
-                }
+                device.Dispose();
             }
         }
 
