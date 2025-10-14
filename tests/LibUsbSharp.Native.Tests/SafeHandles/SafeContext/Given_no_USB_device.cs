@@ -42,6 +42,9 @@ public abstract class Given_no_USB_device(ITestOutputHelper output, ILibUsbApi a
         context.Dispose();
         Action act = () => context.GetDeviceList();
         act.Should().Throw<ObjectDisposedException>();
+
+        // Verify context is closed after dispose
+        context.IsClosed.Should().BeTrue();
     }
 
     [Fact]
@@ -49,6 +52,10 @@ public abstract class Given_no_USB_device(ITestOutputHelper output, ILibUsbApi a
     {
         using var context = GetContext(Enums.libusb_log_level.LIBUSB_LOG_LEVEL_NONE);
         context.RegisterLogCallback((_, message) => Output.WriteLine(message));
+
+        // Verify context is closed after dispose
+        context.Dispose();
+        context.IsClosed.Should().BeTrue();
     }
 
     [Fact]
@@ -61,6 +68,10 @@ public abstract class Given_no_USB_device(ITestOutputHelper output, ILibUsbApi a
             context.RegisterLogCallback((level, message) => { });
         };
         act.Should().Throw<InvalidOperationException>();
+
+        // Verify context is closed after dispose
+        context.Dispose();
+        context.IsClosed.Should().BeTrue();
     }
 
     [Fact]
@@ -73,6 +84,9 @@ public abstract class Given_no_USB_device(ITestOutputHelper output, ILibUsbApi a
             context.RegisterLogCallback((level, message) => { });
         };
         act.Should().Throw<ObjectDisposedException>();
+
+        // Verify context is closed after dispose
+        context.IsClosed.Should().BeTrue();
     }
 
     private const libusb_hotplug_event HpEvents =
@@ -95,6 +109,10 @@ public abstract class Given_no_USB_device(ITestOutputHelper output, ILibUsbApi a
         {
             callback.Dispose();
         }
+
+        // Verify context is closed after dispose
+        context.Dispose();
+        context.IsClosed.Should().BeTrue();
     }
 
     [SkippableFact]
@@ -119,6 +137,9 @@ public abstract class Given_no_USB_device(ITestOutputHelper output, ILibUsbApi a
         context.Dispose();
         var act = () => context.RegisterHotplugCallback(0, 0, (c, d, e) => libusb_hotplug_return.REARM);
         act.Should().Throw<ObjectDisposedException>();
+
+        // Verify context is closed after dispose
+        context.IsClosed.Should().BeTrue();
     }
 
     [Fact]
@@ -128,6 +149,9 @@ public abstract class Given_no_USB_device(ITestOutputHelper output, ILibUsbApi a
         context.Dispose();
         var act = () => context.SetOption(0, 0);
         act.Should().Throw<ObjectDisposedException>();
+
+        // Verify context is closed after dispose
+        context.IsClosed.Should().BeTrue();
     }
 
     [Fact]
@@ -137,6 +161,9 @@ public abstract class Given_no_USB_device(ITestOutputHelper output, ILibUsbApi a
         context.Dispose();
         var act = () => context.SetOption(0, IntPtr.Zero);
         act.Should().Throw<ObjectDisposedException>();
+
+        // Verify context is closed after dispose
+        context.IsClosed.Should().BeTrue();
     }
 
     [Fact]
@@ -146,5 +173,8 @@ public abstract class Given_no_USB_device(ITestOutputHelper output, ILibUsbApi a
         context.Dispose();
         var act = () => context.HandleEventsCompleted(0);
         act.Should().Throw<ObjectDisposedException>();
+
+        // Verify context is closed after dispose
+        context.IsClosed.Should().BeTrue();
     }
 };

@@ -11,37 +11,46 @@ public abstract class Given_an_accessible_USB_device(ITestOutputHelper output, I
     : LibUsbNativeTestBase(output, api)
 {
     [SkippableFact]
-    public void TestNoListOrHandleDispose()
+    public void Context_dispose_is_blocked_until_SafeDeviceList_and_SafeDeviceHandle_are_disposed()
     {
         EnterWriteLock(() =>
         {
             var context = GetContext();
-            var list = context.GetDeviceList();
-            var device = list.GetAccessibleDeviceOrSkipTest();
+            var deviceList = context.GetDeviceList();
+            var device = deviceList.GetAccessibleDeviceOrSkipTest();
 
             var deviceHandle = device.Open();
             context.Dispose();
             _ = LibUsbOutput.Should().NotContain(s => s.Contains("still referenced"));
+            context.IsClosed.Should().BeFalse();
+
+            // Verify context is closed after dispose
+            deviceHandle.Dispose();
+            deviceList.Dispose();
+            context.IsClosed.Should().BeTrue();
         });
     }
 
     [SkippableFact]
-    public void TestDisposeInWrongOrder()
+    public void The_order_of_SafeDeviceList_and_SafeDeviceHandle_disposal_does_not_matter()
     {
         EnterWriteLock(() =>
         {
             var context = GetContext();
-            var list = context.GetDeviceList();
-            var device = list.GetAccessibleDeviceOrSkipTest();
+            var deviceList = context.GetDeviceList();
+            var device = deviceList.GetAccessibleDeviceOrSkipTest();
 
             var deviceHandle = device.Open();
 
             context.Dispose();
-            list.Dispose();
+            deviceList.Dispose();
 
             deviceHandle.IsClosed.Should().BeFalse();
             deviceHandle.Dispose();
             _ = LibUsbOutput.Should().NotContain(s => s.Contains("still referenced"));
+
+            // Verify context is closed after dispose
+            context.IsClosed.Should().BeTrue();
         });
     }
 };

@@ -8,36 +8,48 @@ public abstract class Given_an_accessible_USB_device(ITestOutputHelper output, I
     : LibUsbNativeTestBase(output, api)
 {
     [SkippableFact]
-    public void TestOpenDeviceHandle()
+    public void SafeDevice_Open_returns_an_open_SafeDeviceHandle()
     {
         EnterReadLock(() =>
         {
             using var context = GetContext();
-            using var list = context.GetDeviceList();
-            var device = list.GetAccessibleDeviceOrSkipTest();
+            using var deviceList = context.GetDeviceList();
+            var device = deviceList.GetAccessibleDeviceOrSkipTest();
 
             using var deviceHandle = device.Open();
             deviceHandle.IsClosed.Should().BeFalse();
+
+            // Verify context is closed after dispose
+            context.Dispose();
+            deviceList.Dispose();
+            deviceHandle.Dispose();
+            context.IsClosed.Should().BeTrue();
         });
     }
 
     [SkippableFact]
-    public void TestReadSerialNumber()
+    public void GetStringDescriptorAscii_successfully_returns_a_non_empty_string()
     {
         EnterReadLock(() =>
         {
             using var context = GetContext();
-            using var list = context.GetDeviceList();
-            var device = list.GetAccessibleDeviceOrSkipTest();
+            using var deviceList = context.GetDeviceList();
+            var device = deviceList.GetAccessibleDeviceOrSkipTest();
 
             using var deviceHandle = device.Open();
             deviceHandle.IsClosed.Should().BeFalse();
+
             var serialNumber = deviceHandle.GetStringDescriptorAscii(
                 deviceHandle.Device.GetDeviceDescriptor().iSerialNumber
             );
             serialNumber.Should().NotBeNullOrEmpty();
-
             Output.WriteLine($"Serial Number: {serialNumber}");
+
+            // Verify context is closed after dispose
+            deviceHandle.Dispose();
+            deviceList.Dispose();
+            context.Dispose();
+            context.IsClosed.Should().BeTrue();
         });
     }
 
@@ -47,27 +59,34 @@ public abstract class Given_an_accessible_USB_device(ITestOutputHelper output, I
         EnterReadLock(() =>
         {
             using var context = GetContext();
-            using var list = context.GetDeviceList();
-            var device = list.GetAccessibleDeviceOrSkipTest();
+            using var deviceList = context.GetDeviceList();
+            var device = deviceList.GetAccessibleDeviceOrSkipTest();
 
             using var deviceHandle = device.Open();
+
             var snIndex = device.GetDeviceDescriptor().iSerialNumber;
             var result = deviceHandle.TryGetStringDescriptorAscii(snIndex, out var value, out var error);
             result.Should().BeTrue();
             value.Should().NotBeNullOrEmpty();
             error.Should().BeNull();
             Output.WriteLine($"Serial Number: {value}");
+
+            // Verify context is closed after dispose
+            deviceHandle.Dispose();
+            deviceList.Dispose();
+            context.Dispose();
+            context.IsClosed.Should().BeTrue();
         });
     }
 
     [SkippableFact]
-    public void TestFailsAfterDispose()
+    public void Methods_throw_ObjectDisposedException_after_SafeDeviceHandle_Dispose()
     {
         EnterReadLock(() =>
         {
             using var context = GetContext();
-            using var list = context.GetDeviceList();
-            var device = list.GetAccessibleDeviceOrSkipTest();
+            using var deviceList = context.GetDeviceList();
+            var device = deviceList.GetAccessibleDeviceOrSkipTest();
 
             var deviceHandle = device.Open();
             deviceHandle.Dispose();
@@ -86,6 +105,11 @@ public abstract class Given_an_accessible_USB_device(ITestOutputHelper output, I
 
             act = () => deviceHandle.ResetDevice();
             act.Should().Throw<ObjectDisposedException>();
+
+            // Verify context is closed after dispose
+            deviceList.Dispose();
+            context.Dispose();
+            context.IsClosed.Should().BeTrue();
         });
     }
 };

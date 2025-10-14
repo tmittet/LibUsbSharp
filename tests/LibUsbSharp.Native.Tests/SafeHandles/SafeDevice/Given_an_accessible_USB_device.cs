@@ -35,6 +35,10 @@ public abstract class Given_an_accessible_USB_device(ITestOutputHelper output, I
 
             act = () => device.GetDeviceDescriptor();
             act.Should().Throw<ObjectDisposedException>();
+
+            // Verify context is closed after dispose
+            context.Dispose();
+            context.IsClosed.Should().BeTrue();
         });
     }
 };
