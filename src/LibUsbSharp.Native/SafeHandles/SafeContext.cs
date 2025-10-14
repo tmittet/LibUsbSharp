@@ -116,9 +116,9 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
         SafeHelper.ThrowIfClosed(this);
         ArgumentNullException.ThrowIfNull(callback);
 
-        // Create hotplug hotplugCallback with pinned handle
+        // Create hotplug hotplugCallback with a pinned handle
         var hotplugCallback = new libusb_hotplug_callback(
-            (_, dev, eventType, userData) => callback(this, new SafeDevice(this, dev), eventType, userData)
+            (_, dev, eventType, userData) => TriggerExternalCallback(dev, eventType, userData, callback)
         );
         var gcHandle = GCHandle.Alloc(hotplugCallback, GCHandleType.Normal);
 
@@ -140,7 +140,7 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
         }
         LibUsbException.ThrowIfApiError(result, nameof(Api.libusb_hotplug_register_callback));
 
-        // Increment SafeHandle reference counter
+        // Increment context reference counter, SafeHotplugCallbackHandle will decrement on dispose
         var success = false;
         DangerousAddRef(ref success);
         if (!success)
@@ -152,6 +152,21 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
 
         // Create and return SafeHotplugCallbackHandle that deregister hotplugCallback and decrements ref counter on release
         return new SafeHotplugCallbackHandle(this, gcHandle, callbackHandle);
+    }
+
+    private libusb_hotplug_return TriggerExternalCallback(
+        nint devicePtr,
+        libusb_hotplug_event eventType,
+        nint userData,
+        Func<ISafeContext, ISafeDevice, libusb_hotplug_event, nint, libusb_hotplug_return> callback
+    )
+    {
+        var success = false;
+        // Increment context ref counter, SafeDevice will decrement it on dispose.
+        DangerousAddRef(ref success);
+        return success
+            ? callback(this, new SafeDevice(this, devicePtr), eventType, userData)
+            : throw LibUsbException.FromError(libusb_error.LIBUSB_ERROR_OTHER, "Failed to ref SafeContext handle.");
     }
 
     /// <inheritdoc />

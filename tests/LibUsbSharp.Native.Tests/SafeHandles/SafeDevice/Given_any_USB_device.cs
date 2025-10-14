@@ -22,6 +22,9 @@ public abstract class Given_any_USB_device(ITestOutputHelper output, ILibUsbApi 
             context.Dispose();
 
             descriptor.bDescriptorType.Should().Be(libusb_descriptor_type.LIBUSB_DT_DEVICE);
+
+            // Verify context is properly closed
+            context.IsClosed.Should().BeTrue();
         });
     }
 

@@ -24,14 +24,16 @@ internal sealed class SafeDeviceHandle : SafeHandle, ISafeDeviceHandle
         }
     }
 
-    public SafeDeviceHandle(SafeContext context, nint deviceHandle, SafeDevice device)
+    public SafeDeviceHandle(SafeContext context, nint deviceHandle, nint devicePtr)
         : base(IntPtr.Zero, ownsHandle: true)
     {
         if (deviceHandle == IntPtr.Zero)
             throw new ArgumentNullException(nameof(deviceHandle));
 
         _context = context;
-        _device = device;
+        // Create a new SafeDevice here with a lifetime that's owned by the SafeDeviceHandle.
+        // SafeContext ref count is decremented to "release" devicePtr when SafeDevice is disposed.
+        _device = new SafeDevice(_context, devicePtr);
         handle = deviceHandle;
     }
 
@@ -41,8 +43,9 @@ internal sealed class SafeDeviceHandle : SafeHandle, ISafeDeviceHandle
             return true;
 
         _context.Api.libusb_close(handle);
+        // There is no need to decrement any reference counters here, by calling DangerousRelease,
+        // SafeContext ref count is decremented to "release" devicePtr when SafeDevice is disposed.
         _device.Dispose();
-        _context.DangerousRelease();
         return true;
     }
 

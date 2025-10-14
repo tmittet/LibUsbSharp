@@ -2,7 +2,7 @@ using LibUsbSharp.Native.Structs;
 
 namespace LibUsbSharp.Native.SafeHandles;
 
-public interface ISafeDevice
+public interface ISafeDevice : IDisposable
 {
     /// <summary>
     /// Open the USB device. Enables you to perform I/O on the device.

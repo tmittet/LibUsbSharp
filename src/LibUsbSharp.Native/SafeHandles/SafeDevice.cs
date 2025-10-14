@@ -25,7 +25,7 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
 
     protected override bool ReleaseHandle()
     {
-        if (IsInvalid || IsClosed)
+        if (IsInvalid)
             return true;
 
         _context.Api.libusb_unref_device(handle);
@@ -143,18 +143,20 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
     {
         SafeHelper.ThrowIfClosed(this);
 
-        var result = _context.Api.libusb_open(handle, out var ptr);
+        var result = _context.Api.libusb_open(handle, out var deviceHandle);
         LibUsbException.ThrowIfApiError(result, nameof(_context.Api.libusb_open));
 
+        // Ref counter for context incremented here, not the SafeDevice ref counter.
+        // This is intentional since the device pointer is "owned" by the context,
+        // it's not related to something that was created by this SafeDevice.
         var success = false;
         _context.DangerousAddRef(ref success);
         if (!success)
         {
-            _context.Api.libusb_close(ptr);
+            _context.Api.libusb_close(deviceHandle);
             throw LibUsbException.FromError(libusb_error.LIBUSB_ERROR_OTHER, "Failed to ref SafeHandle.");
         }
-
-        return new SafeDeviceHandle(_context, ptr, new SafeDevice(_context, handle));
+        return new SafeDeviceHandle(_context, deviceHandle, handle);
     }
 
     private static libusb_config_descriptor FromPointer(nint pConfigDescriptor)

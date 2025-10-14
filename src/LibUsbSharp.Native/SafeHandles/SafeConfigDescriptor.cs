@@ -20,7 +20,7 @@ internal sealed class SafeConfigDescriptor : SafeHandle, ISafeConfigDescriptor
 
     protected override bool ReleaseHandle()
     {
-        if (IsInvalid || IsClosed)
+        if (IsInvalid)
             return true;
 
         _device.Api.libusb_free_config_descriptor(handle);
