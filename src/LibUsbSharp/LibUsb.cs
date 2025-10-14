@@ -181,6 +181,7 @@ public sealed class LibUsb : ILibUsb
             descriptor.DeviceClass,
             descriptor.DeviceKey
         );
+        device.Dispose();
         return libusb_hotplug_return.REARM;
     }
 
