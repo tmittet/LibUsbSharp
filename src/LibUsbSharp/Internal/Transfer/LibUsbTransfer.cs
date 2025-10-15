@@ -2,7 +2,9 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using LibUsbSharp.Native.Enums;
 using LibUsbSharp.Native.Extensions;
+using LibUsbSharp.Native.Functions;
 using LibUsbSharp.Native.SafeHandles;
+using LibUsbSharp.Native.Structs;
 using Microsoft.Extensions.Logging;
 
 namespace LibUsbSharp.Internal.Transfer;
@@ -40,11 +42,11 @@ internal static class LibUsbTransfer
         try
         {
             // Create native callback and pin it so the delegate isn't GC'd in flight
-            LibUsbTransferCallback nativeCallback = (ptr) =>
+            libusb_transfer_cb_fn nativeCallback = (ptr) =>
             {
-                var transfer = Marshal.PtrToStructure<LibUsbTransferTemplate>(ptr);
-                Volatile.Write(ref transferStatus, (int)transfer.Status);
-                Volatile.Write(ref transferLength, (int)transfer.ActualLength);
+                var transfer = Marshal.PtrToStructure<libusb_transfer>(ptr);
+                Volatile.Write(ref transferStatus, (int)transfer.status);
+                Volatile.Write(ref transferLength, (int)transfer.actual_length);
                 _ = transferCompleteEvent.Set();
             };
             callbackHandle = GCHandle.Alloc(nativeCallback);
@@ -58,7 +60,7 @@ internal static class LibUsbTransfer
             {
                 return libusb_error.LIBUSB_ERROR_OTHER;
             }
-            var transferTemplate = LibUsbTransferTemplate.Create(
+            var transferTemplate = libusb_transfer.Create(
                 deviceHandle,
                 endpointAddress,
                 bufferHandle,
