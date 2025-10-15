@@ -1,5 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 using LibUsbSharp.Native.Enums;
+using LibUsbSharp.Native.Functions;
 
 namespace LibUsbSharp.Native.SafeHandles;
 
@@ -76,7 +77,7 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
         if (Interlocked.CompareExchange(ref _logCallbackRegistered, 1, 0) != 0)
             throw new InvalidOperationException("Log callback is already registered.");
 
-        var callback = new libusb_log_callback((_, level, message) => logHandler(level, message));
+        var callback = new libusb_log_cb((_, level, message) => logHandler(level, message));
         _logCallbackHandle = GCHandle.Alloc(callback);
         SetOption(libusb_option.LIBUSB_OPTION_LOG_CB, Marshal.GetFunctionPointerForDelegate(callback));
     }
@@ -117,7 +118,7 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
         ArgumentNullException.ThrowIfNull(callback);
 
         // Create hotplug hotplugCallback with a pinned handle
-        var hotplugCallback = new libusb_hotplug_callback(
+        var hotplugCallback = new libusb_hotplug_callback_fn(
             (_, dev, eventType, userData) => TriggerExternalCallback(dev, eventType, userData, callback)
         );
         var gcHandle = GCHandle.Alloc(hotplugCallback, GCHandleType.Normal);

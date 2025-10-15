@@ -1,5 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 using LibUsbSharp.Native.Enums;
+using LibUsbSharp.Native.Functions;
 using LibUsbSharp.Native.Structs;
 
 namespace LibUsbSharp.Native;
@@ -145,7 +146,7 @@ public sealed class PInvokeLibUsbApi : ILibUsbApi
         int vendor,
         int product,
         int devClass,
-        libusb_hotplug_callback cb,
+        libusb_hotplug_callback_fn cb,
         IntPtr user_data,
         out IntPtr callbackHandle
     );
@@ -264,7 +265,7 @@ public sealed class PInvokeLibUsbApi : ILibUsbApi
         int vendorId,
         int productId,
         int devClass,
-        libusb_hotplug_callback cb,
+        libusb_hotplug_callback_fn cb,
         IntPtr user_data,
         out IntPtr handle
     ) => libusb_hotplug_register_callback(ctx, events, flags, vendorId, productId, devClass, cb, user_data, out handle);

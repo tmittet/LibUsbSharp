@@ -1,5 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 using LibUsbSharp.Native.Enums;
+using LibUsbSharp.Native.Functions;
 using LibUsbSharp.Native.Structs;
 
 namespace LibUsbSharp.Native;
@@ -278,7 +279,7 @@ public interface ILibUsbApi
         int vendorId,
         int productId,
         int devClass,
-        libusb_hotplug_callback cb,
+        libusb_hotplug_callback_fn cb,
         IntPtr user_data,
         out IntPtr callbackHandle
     );
@@ -289,14 +290,3 @@ public interface ILibUsbApi
     /// </summary>
     void libusb_hotplug_deregister_callback(IntPtr ctx, IntPtr callbackHandle);
 }
-
-[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-public delegate libusb_hotplug_return libusb_hotplug_callback(
-    IntPtr ctx,
-    IntPtr dev,
-    libusb_hotplug_event eventType,
-    IntPtr userData
-);
-
-[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-public delegate void libusb_log_callback(IntPtr context, libusb_log_level level, string message);

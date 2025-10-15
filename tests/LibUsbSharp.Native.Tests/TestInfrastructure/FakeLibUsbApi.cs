@@ -1,6 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using System.Text;
 using LibUsbSharp.Native.Enums;
+using LibUsbSharp.Native.Functions;
 using LibUsbSharp.Native.Structs;
 
 namespace LibUsbSharp.Native.Tests.TestInfrastructure;
@@ -66,7 +67,7 @@ internal sealed class FakeLibusbApi : ILibUsbApi, IDisposable
     );
 
     // Hotplug
-    public libusb_hotplug_callback? LastCb;
+    public libusb_hotplug_callback_fn? LastCb;
     public int LastCbHandle = 42;
 
     // State tracking
@@ -433,7 +434,7 @@ internal sealed class FakeLibusbApi : ILibUsbApi, IDisposable
         int vendorId,
         int productId,
         int devClass,
-        libusb_hotplug_callback cb,
+        libusb_hotplug_callback_fn cb,
         IntPtr user_data,
         out IntPtr callbackHandle
     )
