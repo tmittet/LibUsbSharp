@@ -228,25 +228,18 @@ public sealed class LibUsb : ILibUsb
 
     private UsbDevice OpenDeviceUnlocked(ISafeContext context, string deviceKey)
     {
-        var deviceList = context.GetDeviceList();
-        try
+        using var deviceList = context.GetDeviceList();
+        var device = OpenListDeviceUnlocked(context, deviceList, deviceKey);
+        if (!_openDevices.TryAdd(deviceKey, device))
         {
-            var device = OpenListDeviceUnlocked(context, deviceList, deviceKey);
-            if (!_openDevices.TryAdd(deviceKey, device))
-            {
-                device.Dispose();
-                throw LibUsbException.FromError(
-                    libusb_error.LIBUSB_ERROR_OTHER,
-                    $"Device with key '{deviceKey}' is already open."
-                );
-            }
-            _logger.LogInformation("LibUsbDevice '{DeviceKey}' open.", deviceKey);
-            return device;
+            device.Dispose();
+            throw LibUsbException.FromError(
+                libusb_error.LIBUSB_ERROR_OTHER,
+                $"Device with key '{deviceKey}' is already open."
+            );
         }
-        finally
-        {
-            deviceList.Dispose();
-        }
+        _logger.LogInformation("LibUsbDevice '{DeviceKey}' open.", deviceKey);
+        return device;
     }
 
     private UsbDevice OpenListDeviceUnlocked(ISafeContext context, ISafeDeviceList deviceList, string deviceKey)
