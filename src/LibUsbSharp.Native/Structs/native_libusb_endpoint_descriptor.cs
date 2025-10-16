@@ -13,6 +13,6 @@ internal struct native_libusb_endpoint_descriptor
     public byte bInterval;
     public byte bRefresh;
     public byte bSynchAddress;
-    public IntPtr extra;
+    public nint extra;
     public int extra_length;
 }

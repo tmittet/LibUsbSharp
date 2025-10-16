@@ -13,7 +13,17 @@ internal struct native_libusb_config_descriptor
     public byte iConfiguration;
     public byte bmAttributes;
     public byte MaxPower;
-    public IntPtr interfacePtr;
-    public IntPtr extra;
+    public nint interfacePtr;
+    public nint extra;
     public int extra_length;
+
+    public readonly IEnumerable<native_libusb_interface> ReadInterfaces()
+    {
+        var interfaceByteSize = Marshal.SizeOf<native_libusb_interface>();
+        for (var i = 0; i < bNumInterfaces; i++)
+        {
+            var interfaceHandle = IntPtr.Add(interfacePtr, i * interfaceByteSize);
+            yield return Marshal.PtrToStructure<native_libusb_interface>(interfaceHandle);
+        }
+    }
 }

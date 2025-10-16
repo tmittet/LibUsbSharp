@@ -1,5 +1,6 @@
 using System.Runtime.InteropServices;
 using LibUsbSharp.Native.Enums;
+using LibUsbSharp.Native.Extensions;
 using LibUsbSharp.Native.Structs;
 
 namespace LibUsbSharp.Native.SafeHandles;
@@ -157,115 +158,8 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
         return new SafeDeviceHandle(_context, deviceHandle, handle);
     }
 
-    private static libusb_config_descriptor FromPointer(nint pConfigDescriptor)
-    {
-        if (pConfigDescriptor == IntPtr.Zero)
-            throw new ArgumentNullException(nameof(pConfigDescriptor));
-
-        var cfg = Marshal.PtrToStructure<native_libusb_config_descriptor>(pConfigDescriptor);
-
-        var interfaces = ReadArray(
-            cfg.interfacePtr,
-            cfg.bNumInterfaces,
-            elemPtr =>
-            {
-                var nIf = Marshal.PtrToStructure<native_libusb_interface>(elemPtr);
-
-                var alt = ReadArray(
-                    nIf.altsetting,
-                    nIf.num_altsetting,
-                    ifDescPtr =>
-                    {
-                        var id = Marshal.PtrToStructure<native_libusb_interface_descriptor>(ifDescPtr);
-
-                        var endpoints = ReadArray(
-                            id.endpoint,
-                            id.bNumEndpoints,
-                            epPtr =>
-                            {
-                                var ep = Marshal.PtrToStructure<native_libusb_endpoint_descriptor>(epPtr);
-                                var extraEp = ReadExtra(ep.extra, ep.extra_length);
-
-                                return new libusb_endpoint_descriptor(
-                                    ep.bLength,
-                                    (libusb_descriptor_type)ep.bDescriptorType,
-                                    new libusb_endpoint_address(ep.bEndpointAddress),
-                                    new libusb_endpoint_attributes(ep.bmAttributes),
-                                    ep.wMaxPacketSize,
-                                    ep.bInterval,
-                                    ep.bRefresh,
-                                    ep.bSynchAddress,
-                                    extraEp
-                                );
-                            },
-                            Marshal.SizeOf<native_libusb_endpoint_descriptor>()
-                        );
-
-                        var extraIf = ReadExtra(id.extra, id.extra_length);
-
-                        return new libusb_interface_descriptor(
-                            id.bLength,
-                            (libusb_descriptor_type)id.bDescriptorType,
-                            id.bInterfaceNumber,
-                            id.bAlternateSetting,
-                            id.bNumEndpoints,
-                            (libusb_class_code)id.bInterfaceClass,
-                            id.bInterfaceSubClass,
-                            id.bInterfaceProtocol,
-                            id.iInterface,
-                            endpoints,
-                            extraIf
-                        );
-                    },
-                    Marshal.SizeOf<native_libusb_interface_descriptor>()
-                );
-
-                return new libusb_interface(alt);
-            },
-            Marshal.SizeOf<native_libusb_interface>()
-        );
-
-        var extraCfg = ReadExtra(cfg.extra, cfg.extra_length);
-
-        return new libusb_config_descriptor(
-            cfg.bLength,
-            (libusb_descriptor_type)cfg.bDescriptorType,
-            cfg.wTotalLength,
-            cfg.bNumInterfaces,
-            cfg.bConfigurationValue,
-            cfg.iConfiguration,
-            (libusb_config_desc_attributes)cfg.bmAttributes,
-            cfg.MaxPower,
-            interfaces,
-            extraCfg
-        );
-    }
-
-    private static TManaged[] ReadArray<TManaged>(
-        nint basePtr,
-        int count,
-        Func<nint, TManaged> projector,
-        int elementSize
-    )
-    {
-        if (count <= 0 || basePtr == IntPtr.Zero)
-            return Array.Empty<TManaged>();
-
-        var arr = new TManaged[count];
-        for (var i = 0; i < count; i++)
-        {
-            var elemPtr = IntPtr.Add(basePtr, i * elementSize);
-            arr[i] = projector(elemPtr);
-        }
-        return arr;
-    }
-
-    private static byte[] ReadExtra(nint p, int length)
-    {
-        if (p == IntPtr.Zero || length <= 0)
-            return Array.Empty<byte>();
-        var bytes = new byte[length];
-        Marshal.Copy(p, bytes, 0, length);
-        return bytes;
-    }
+    private static libusb_config_descriptor FromPointer(nint pConfigDescriptor) =>
+        pConfigDescriptor == IntPtr.Zero
+            ? throw new ArgumentNullException(nameof(pConfigDescriptor))
+            : Marshal.PtrToStructure<native_libusb_config_descriptor>(pConfigDescriptor).ToPublicConfigDescriptor();
 }

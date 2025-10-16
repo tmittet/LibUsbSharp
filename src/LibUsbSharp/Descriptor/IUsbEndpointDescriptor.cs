@@ -5,15 +5,12 @@ public interface IUsbEndpointDescriptor
     /// <summary>
     /// The address of the endpoint described by this descriptor.
     /// </summary>
-    byte EndpointAddress { get; }
-
-    UsbEndpointDirection EndpointDirection =>
-        EndpointAddress < 0x80 ? UsbEndpointDirection.Output : UsbEndpointDirection.Input;
+    UsbEndpointAddress EndpointAddress { get; }
 
     /// <summary>
     /// Attributes which apply to the endpoint when it is configured using the bConfigurationValue.
     /// </summary>
-    byte Attributes { get; }
+    UsbEndpointAttributes Attributes { get; }
 
     /// <summary>
     /// Maximum packet size this endpoint is capable of sending/receiving.

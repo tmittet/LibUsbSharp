@@ -247,13 +247,16 @@ public sealed class LibUsb : ILibUsb
         var (device, descriptor) = LibUsbDeviceEnum
             .GetDeviceDescriptors(_logger, deviceList)
             .FirstOrDefault(d => d.Descriptor.DeviceKey == deviceKey);
-        if (device is null)
-        {
-            throw LibUsbException.FromError(libusb_error.LIBUSB_ERROR_NOT_FOUND, "Failed to get device from list.");
-        }
-        LibUsbDeviceEnum.GetConfigDescriptor(device, out var configDescriptor);
-        var deviceHandle = device.Open();
-        return new UsbDevice(_loggerFactory, this, context, deviceHandle, descriptor, configDescriptor!);
+        return device is null
+            ? throw LibUsbException.FromError(libusb_error.LIBUSB_ERROR_NOT_FOUND, "Failed to get device from list.")
+            : new UsbDevice(
+                _loggerFactory,
+                this,
+                context,
+                device.Open(),
+                descriptor,
+                device.GetActiveConfigDescriptor().ToUsbInterfaceDescriptor()
+            );
     }
 
     /// <summary>

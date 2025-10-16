@@ -1,6 +1,4 @@
-﻿using System.Runtime.InteropServices;
-using LibUsbSharp.Descriptor;
-using LibUsbSharp.Internal.Descriptor;
+﻿using LibUsbSharp.Descriptor;
 using LibUsbSharp.Native;
 using LibUsbSharp.Native.Enums;
 using LibUsbSharp.Native.Extensions;
@@ -87,17 +85,5 @@ internal static class LibUsbDeviceEnum
             device.GetPortNumber()
         );
         return libusb_error.LIBUSB_SUCCESS;
-    }
-
-    /// <summary>
-    /// Get the USB configuration descriptor for the currently active device configuration. This
-    /// is a non-blocking function which does not involve any requests being sent to the device.
-    /// </summary>
-    internal static void GetConfigDescriptor(ISafeDevice device, out IUsbConfigDescriptor? descriptor)
-    {
-        using var safeConfigDescriptorPtr = device.GetActiveConfigDescriptorPtr();
-        descriptor = Marshal
-            .PtrToStructure<LibUsbConfigDescriptor>(safeConfigDescriptorPtr.GetUnmanagedPointer())
-            .ToUsbInterfaceDescriptor();
     }
 }
