@@ -17,6 +17,8 @@ internal static class LibUsbDeviceEnum
     /// <param name="libusbContext">Pointer to the initialized libusb_init context.</param>
     /// <param name="vendorId">Optional vendor ID filter; only return matching devices.</param>
     /// <param name="productIds">Optional product ID filter; only return matching devices.</param>
+    /// <exception cref="ObjectDisposedException">Thrown when context is disposed.</exception>
+    /// <exception cref="LibUsbException">Thrown when the get device list operation fails.</exception>
     internal static List<IUsbDeviceDescriptor> GetDeviceList(
         ILogger logger,
         ISafeContext libusbContext,
@@ -24,7 +26,6 @@ internal static class LibUsbDeviceEnum
         HashSet<ushort>? productIds
     )
     {
-        // TODO: Verify error handling, behavior has changed with LibUsbSharp.Native
         using var deviceList = libusbContext.GetDeviceList();
 
         return GetDeviceDescriptors(logger, deviceList)
@@ -41,16 +42,16 @@ internal static class LibUsbDeviceEnum
     /// </summary>
     /// <param name="logger">A logger.</param>
     /// <param name="devices">Pointer to device list returned by libusb_get_device_list.</param>
+    /// <exception cref="ObjectDisposedException">Thrown when device is disposed.</exception>
     internal static IEnumerable<(ISafeDevice device, UsbDeviceDescriptor Descriptor)> GetDeviceDescriptors(
         ILogger logger,
         IReadOnlyList<ISafeDevice> devices
     )
     {
-        // TODO: Verify error handling, behavior has changed with LibUsbSharp.Native
-
         foreach (var device in devices)
         {
             var result = TryGetDeviceDescriptor(device, out var descriptor);
+            // NOTE: Should always be LIBUSB_SUCCESS; since libusb-1.0.16 libusb_get_device_descriptor always succeeds.
             if (result != libusb_error.LIBUSB_SUCCESS)
             {
                 logger.LogWarning("Get device descriptor failed. {ErrorMessage}.", result.GetString());
@@ -66,6 +67,7 @@ internal static class LibUsbDeviceEnum
     /// Get the cached USB device descriptor for a given, alrady in memory, device descriptor.
     /// NOTE: since libusb-1.0.16, LIBUSBX_API_VERSION >= 0x01000102, this function always succeeds.
     /// </summary>
+    /// <exception cref="ObjectDisposedException">Thrown when device is disposed.</exception>
     internal static libusb_error TryGetDeviceDescriptor(ISafeDevice device, out UsbDeviceDescriptor? descriptor)
     {
         libusb_device_descriptor partialDescriptor;

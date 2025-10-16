@@ -40,6 +40,7 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
         SafeHelper.ThrowIfClosed(this);
 
         var result = _context.Api.libusb_get_device_descriptor(handle, out var descriptor);
+        // NOTE: No exception should be thown here; Since libusb-1.0.16, libusb_get_device_descriptor always succeeds.
         LibUsbException.ThrowIfApiError(result, nameof(_context.Api.libusb_get_device_descriptor));
         return descriptor;
     }
