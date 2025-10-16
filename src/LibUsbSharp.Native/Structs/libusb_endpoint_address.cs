@@ -21,12 +21,12 @@ public readonly record struct libusb_endpoint_address
     /// <summary>
     /// Raw value of bEndpointAddress.
     /// </summary>
-    public byte rawValue { get; }
+    public byte RawValue { get; }
 
     [JsonConstructor]
     public libusb_endpoint_address(byte rawValue)
     {
-        this.rawValue = rawValue;
+        RawValue = rawValue;
         Direction =
             (rawValue & 0x80) != 0
                 ? libusb_endpoint_direction.LIBUSB_ENDPOINT_IN
@@ -34,5 +34,5 @@ public readonly record struct libusb_endpoint_address
         Number = (libusb_endpoint_number)(rawValue & 0x0F);
     }
 
-    public override string ToString() => $"{Direction} {Number} (0x{rawValue:X2})";
+    public override string ToString() => $"{Direction} {Number} (0x{RawValue:X2})";
 }

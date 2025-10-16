@@ -106,11 +106,11 @@ public static class DescriptorToStringExtension
         sb.AppendLine(_culture, $"  bDescriptorType  : {Fmt(ep.bDescriptorType)}");
         sb.AppendLine(
             _culture,
-            $"  bEndpointAddress : 0x{ep.bEndpointAddress.rawValue:X2} ({ep.bEndpointAddress.Direction}, {ep.bEndpointAddress.Number})"
+            $"  bEndpointAddress : 0x{ep.bEndpointAddress.RawValue:X2} ({ep.bEndpointAddress.Direction}, {ep.bEndpointAddress.Number})"
         );
         sb.AppendLine(
             _culture,
-            $"  bmAttributes     : 0x{ep.bmAttributes.rawValue:X2} ({ep.bmAttributes.TransferType}/{ep.bmAttributes.SyncType}/{ep.bmAttributes.UsageType})"
+            $"  bmAttributes     : 0x{ep.bmAttributes.RawValue:X2} ({ep.bmAttributes.TransferType}/{ep.bmAttributes.SyncType}/{ep.bmAttributes.UsageType})"
         );
         sb.AppendLine(_culture, $"  wMaxPacketSize   : {ep.wMaxPacketSize}");
         sb.AppendLine(_culture, $"  bInterval        : {ep.bInterval}");
