@@ -71,8 +71,7 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
         LibUsbException.ThrowIfApiError(result, nameof(_context.Api.libusb_get_active_config_descriptor));
         try
         {
-            var config = FromPointer(descriptor);
-            return config;
+            return FromPointer(descriptor);
         }
         finally
         {
@@ -108,8 +107,7 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
         LibUsbException.ThrowIfApiError(result, nameof(_context.Api.libusb_get_config_descriptor));
         try
         {
-            var config = FromPointer(descriptor);
-            return config;
+            return FromPointer(descriptor);
         }
         finally
         {

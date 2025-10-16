@@ -23,27 +23,19 @@ internal sealed class SafeDeviceList : SafeHandle, ISafeDeviceList
         _context = context;
         _count = count;
         handle = listHandle;
-        _lazyDevices = new Lazy<IReadOnlyList<SafeDevice>>(() => GetDevices(context, handle, count));
+        _lazyDevices = new Lazy<IReadOnlyList<SafeDevice>>(() => GetDevices(context, handle, count).ToArray());
     }
 
-    private static SafeDevice[] GetDevices(SafeContext context, nint handle, int count)
+    private static IEnumerable<SafeDevice> GetDevices(SafeContext context, nint handle, int count)
     {
-        var devices = new SafeDevice[count];
-        var ptrSize = IntPtr.Size;
         for (var i = 0; i < count; i++)
         {
-            var devPtr = Marshal.ReadIntPtr(handle, i * ptrSize);
-
             var success = false;
             context.DangerousAddRef(ref success);
-            if (!success)
-            {
-                throw LibUsbException.FromError(libusb_error.LIBUSB_ERROR_OTHER, "Failed to ref SafeHandle.");
-            }
-
-            devices[i] = new SafeDevice(context, devPtr);
+            yield return success
+                ? new SafeDevice(context, Marshal.ReadIntPtr(handle, i * IntPtr.Size))
+                : throw LibUsbException.FromError(libusb_error.LIBUSB_ERROR_OTHER, "Failed to ref SafeHandle.");
         }
-        return devices;
     }
 
     public ISafeDevice this[int index] => _lazyDevices.Value[index];
