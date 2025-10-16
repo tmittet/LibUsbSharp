@@ -46,25 +46,6 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
     }
 
     /// <inheritdoc />
-    public ISafeConfigDescriptor GetActiveConfigDescriptorPtr()
-    {
-        SafeHelper.ThrowIfClosed(this);
-
-        var result = _context.Api.libusb_get_active_config_descriptor(handle, out var descriptor);
-        LibUsbException.ThrowIfApiError(result, nameof(_context.Api.libusb_get_active_config_descriptor));
-
-        var success = false;
-        DangerousAddRef(ref success);
-        if (!success)
-        {
-            _context.Api.libusb_free_config_descriptor(descriptor);
-            throw LibUsbException.FromError(libusb_error.LIBUSB_ERROR_OTHER, "Failed to ref SafeHandle.");
-        }
-
-        return new SafeConfigDescriptor(this, descriptor);
-    }
-
-    /// <inheritdoc />
     public libusb_config_descriptor GetActiveConfigDescriptor()
     {
         SafeHelper.ThrowIfClosed(this);
@@ -79,25 +60,6 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
         {
             _context.Api.libusb_free_config_descriptor(descriptor);
         }
-    }
-
-    /// <inheritdoc />
-    public ISafeConfigDescriptor GetConfigDescriptorPtr(byte config_index)
-    {
-        SafeHelper.ThrowIfClosed(this);
-
-        var result = _context.Api.libusb_get_config_descriptor(handle, config_index, out var descriptor);
-        LibUsbException.ThrowIfApiError(result, nameof(_context.Api.libusb_get_config_descriptor));
-
-        var success = false;
-        DangerousAddRef(ref success);
-        if (!success)
-        {
-            _context.Api.libusb_free_config_descriptor(descriptor);
-            throw LibUsbException.FromError(libusb_error.LIBUSB_ERROR_OTHER, "Failed to ref SafeHandle.");
-        }
-
-        return new SafeConfigDescriptor(this, descriptor);
     }
 
     /// <inheritdoc />

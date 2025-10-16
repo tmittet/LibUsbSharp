@@ -25,25 +25,11 @@ public interface ISafeDevice : IDisposable
     libusb_config_descriptor GetActiveConfigDescriptor();
 
     /// <summary>
-    /// Get a pointer to the USB configuration descriptor for the currently active configuration.
-    /// </summary>
-    /// <exception cref="ObjectDisposedException">Thrown when the ISafeDevice is disposed.</exception>
-    /// <exception cref="LibUsbException">Thrown when the get pointer operation fails.</exception>
-    ISafeConfigDescriptor GetActiveConfigDescriptorPtr();
-
-    /// <summary>
     /// Get a USB configuration descriptor based on its index.
     /// </summary>
     /// <exception cref="ObjectDisposedException">Thrown when the ISafeDevice is disposed.</exception>
     /// <exception cref="LibUsbException">Thrown when the get descriptor operation fails.</exception>
     libusb_config_descriptor GetConfigDescriptor(byte configIndex);
-
-    /// <summary>
-    /// Get a pointer to a USB configuration descriptor based on its index.
-    /// </summary>
-    /// <exception cref="ObjectDisposedException">Thrown when the ISafeDevice is disposed.</exception>
-    /// <exception cref="LibUsbException">Thrown when the get pointer operation fails.</exception>
-    ISafeConfigDescriptor GetConfigDescriptorPtr(byte configIndex);
 
     /// <summary>
     /// Get the number of the bus that the device is connected to.
