@@ -2,6 +2,9 @@
 
 namespace LibUsbSharp.Native.Structs;
 
+/// <summary>
+/// A collection of alternate settings for a particular USB interface.
+/// </summary>
 [StructLayout(LayoutKind.Sequential)]
 internal struct native_libusb_interface
 {

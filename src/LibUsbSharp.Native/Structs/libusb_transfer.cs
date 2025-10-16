@@ -6,6 +6,11 @@ using LibUsbSharp.Native.SafeHandles;
 
 namespace LibUsbSharp.Native.Structs;
 
+/// <summary>
+/// The generic USB transfer structure. The user populates this structure and then submits it in
+/// order to request a transfer. After the transfer has completed, the library populates the
+/// transfer with the results and passes it back to the user.
+/// </summary>
 [StructLayout(LayoutKind.Sequential)]
 public readonly record struct libusb_transfer
 {

@@ -50,6 +50,7 @@ public readonly record struct libusb_config_descriptor
 
     /// <summary>
     /// Array of interfaces supported by this configuration.
+    /// There will always be at least one interface in a valid libusb_config_descriptor.
     /// </summary>
     public IReadOnlyList<libusb_interface> interfaces { get; } = Array.Empty<libusb_interface>();
 

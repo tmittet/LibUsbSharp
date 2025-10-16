@@ -3,7 +3,7 @@ using LibUsbSharp.Native.Structs;
 
 namespace LibUsbSharp.Native.Extensions;
 
-public static class DescriptorToJsonExtension
+public static class libusb_descriptor_ToJsonExtension
 {
     public static string ToJson(this libusb_device_descriptor deviceDescriptor) =>
         JsonSerializer.Serialize(

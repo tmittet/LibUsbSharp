@@ -4,7 +4,7 @@ using LibUsbSharp.Native.Enums;
 namespace LibUsbSharp.Native.Structs;
 
 /// <summary>
-/// Strongly typed view of endpoint bmAttributes.
+/// Strongly typed view of endpoint libusb_endpoint_descriptor.bmAttributes.
 /// </summary>
 public readonly record struct libusb_endpoint_attributes
 {

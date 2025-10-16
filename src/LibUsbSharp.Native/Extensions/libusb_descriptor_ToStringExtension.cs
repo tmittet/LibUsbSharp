@@ -7,7 +7,7 @@ namespace LibUsbSharp.Native.Extensions;
 // -----------------------
 // Tree/structured printing (unchanged – still rich / human readable)
 // -----------------------
-public static class DescriptorToStringExtension
+public static class libusb_descriptor_ToStringExtension
 {
     private static readonly CultureInfo _culture = CultureInfo.InvariantCulture;
     private static readonly string[] _newLine = new[] { "\r\n", "\n" };

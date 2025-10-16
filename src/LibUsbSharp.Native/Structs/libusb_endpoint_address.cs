@@ -4,7 +4,7 @@ using LibUsbSharp.Native.Enums;
 namespace LibUsbSharp.Native.Structs;
 
 /// <summary>
-/// Combined representation of bEndpointAddress.
+/// Strongly typed view of endpoint libusb_endpoint_descriptor.bEndpointAddress.
 /// </summary>
 public readonly record struct libusb_endpoint_address
 {
@@ -31,7 +31,7 @@ public readonly record struct libusb_endpoint_address
             (rawValue & 0x80) != 0
                 ? libusb_endpoint_direction.LIBUSB_ENDPOINT_IN
                 : libusb_endpoint_direction.LIBUSB_ENDPOINT_OUT;
-        Number = (libusb_endpoint_number)(rawValue & 0x0F);
+        Number = (libusb_endpoint_number)(rawValue & 0b1111);
     }
 
     public override string ToString() => $"{Direction} {Number} (0x{RawValue:X2})";

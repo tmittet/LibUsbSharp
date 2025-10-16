@@ -49,7 +49,7 @@ public readonly record struct libusb_endpoint_descriptor
     public byte bSynchAddress { get; }
 
     /// <summary>
-    /// extra descriptors.
+    /// Extra descriptors.
     /// </summary>
     public byte[] extra { get; } = Array.Empty<byte>();
 

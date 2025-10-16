@@ -2,6 +2,9 @@
 
 namespace LibUsbSharp.Native.Structs;
 
+/// <summary>
+/// A structure representing the standard USB configuration descriptor.
+/// </summary>
 [StructLayout(LayoutKind.Sequential)]
 internal struct native_libusb_config_descriptor
 {

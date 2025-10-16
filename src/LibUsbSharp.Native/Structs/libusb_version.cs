@@ -11,7 +11,15 @@ public readonly record struct libusb_version
     public ushort minor { get; }
     public ushort micro { get; }
     public ushort nano { get; }
+
+    /// <summary>
+    /// Library release candidate suffix string.
+    /// </summary>
     public string rc { get; }
+
+    /// <summary>
+    /// For ABI compatibility only.
+    /// </summary>
     public string describe { get; }
 
     [JsonConstructor]

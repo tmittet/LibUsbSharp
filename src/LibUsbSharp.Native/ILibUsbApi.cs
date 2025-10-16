@@ -1,5 +1,4 @@
-﻿using System.Runtime.InteropServices;
-using LibUsbSharp.Native.Enums;
+﻿using LibUsbSharp.Native.Enums;
 using LibUsbSharp.Native.Functions;
 using LibUsbSharp.Native.Structs;
 

@@ -2,6 +2,9 @@
 
 namespace LibUsbSharp.Native.Structs;
 
+/// <summary>
+/// A structure representing the standard USB endpoint descriptor.
+/// </summary>
 [StructLayout(LayoutKind.Sequential)]
 internal struct native_libusb_endpoint_descriptor
 {
