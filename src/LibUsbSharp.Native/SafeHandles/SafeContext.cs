@@ -118,12 +118,14 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
         ArgumentNullException.ThrowIfNull(callback);
 
         var safeHandle = new SafeHotplugCallbackHandle(this);
-        // Create hotplug hotplugCallback with a pinned handle
+        // Create a hotplug callback
         var hotplugCallback = new libusb_hotplug_callback_fn(
             (_, dev, eventType, userData) => TriggerExternalCallback(safeHandle, dev, eventType, userData, callback)
         );
-        var gcHandle = GCHandle.Alloc(hotplugCallback, GCHandleType.Pinned);
-
+        // Allocate GCHandle to keep hotplugCallback from being collected
+        // We don't need to use GCHandleType.Pinned because it's a delegate,
+        // attempting to pin a delegate will throw an exception.
+        var gcHandle = GCHandle.Alloc(hotplugCallback, GCHandleType.Normal);
         // Register hotplug hotplugCallback
         var result = Api.libusb_hotplug_register_callback(
             handle,
