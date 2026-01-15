@@ -121,7 +121,7 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
         var hotplugCallback = new libusb_hotplug_callback_fn(
             (_, dev, eventType, userData) => TriggerExternalCallback(dev, eventType, userData, callback)
         );
-        var gcHandle = GCHandle.Alloc(hotplugCallback, GCHandleType.Normal);
+        var gcHandle = GCHandle.Alloc(hotplugCallback, GCHandleType.Pinned);
 
         // Register hotplug hotplugCallback
         var result = Api.libusb_hotplug_register_callback(
