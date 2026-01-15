@@ -1,5 +1,3 @@
-using LibUsbSharp.Internal.Descriptor;
-
 namespace LibUsbSharp.Descriptor;
 
 /// <inheritdoc/>
@@ -62,24 +60,24 @@ public readonly struct UsbDeviceDescriptor : IUsbDeviceDescriptor
     }
 
     internal UsbDeviceDescriptor(
-        LibUsbDeviceDescriptor partialDescriptor,
+        LibUsbSharp.Native.Structs.libusb_device_descriptor partialDescriptor,
         byte busNumber,
         byte address,
         byte portNumber
     )
     {
-        BcdUsb = partialDescriptor.BcdUsb;
-        DeviceClass = partialDescriptor.DeviceClass;
-        DeviceSubClass = partialDescriptor.DeviceSubClass;
-        DeviceProtocol = partialDescriptor.DeviceProtocol;
-        MaxPacketSize0 = partialDescriptor.MaxPacketSize0;
-        VendorId = partialDescriptor.VendorId;
-        ProductId = partialDescriptor.ProductId;
-        BcdDevice = partialDescriptor.BcdDevice;
-        ManufacturerIndex = partialDescriptor.Manufacturer;
-        ProductIndex = partialDescriptor.Product;
-        SerialNumberIndex = partialDescriptor.SerialNumber;
-        NumConfigurations = partialDescriptor.NumConfigurations;
+        BcdUsb = partialDescriptor.bcdUSB;
+        DeviceClass = (UsbClass)partialDescriptor.bDeviceClass;
+        DeviceSubClass = partialDescriptor.bDeviceSubClass;
+        DeviceProtocol = partialDescriptor.bDeviceProtocol;
+        MaxPacketSize0 = partialDescriptor.bMaxPacketSize0;
+        VendorId = partialDescriptor.idVendor;
+        ProductId = partialDescriptor.idProduct;
+        BcdDevice = partialDescriptor.bcdDevice;
+        ManufacturerIndex = partialDescriptor.iManufacturer;
+        ProductIndex = partialDescriptor.iProduct;
+        SerialNumberIndex = partialDescriptor.iSerialNumber;
+        NumConfigurations = partialDescriptor.bNumConfigurations;
         BusNumber = busNumber;
         BusAddress = address;
         PortNumber = portNumber;

@@ -1,7 +1,10 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using LibUsbSharp.Descriptor;
+using LibUsbSharp.Internal;
 using LibUsbSharp.Internal.Transfer;
+using LibUsbSharp.Native.Enums;
+using LibUsbSharp.Native.SafeHandles;
 using Microsoft.Extensions.Logging;
 
 namespace LibUsbSharp;
@@ -17,6 +20,7 @@ public sealed class UsbInterface : IUsbInterface
     private readonly ILogger<UsbInterface> _logger;
     private readonly UsbDevice _device;
     private readonly IUsbInterfaceDescriptor _descriptor;
+    private readonly ISafeDeviceInterface _claimedInterface;
     private readonly byte[] _bulkReadBuffer;
     private readonly GCHandle _bulkReadBufferHandle;
     private readonly Lazy<IUsbEndpointDescriptor> _readEndpoint;
@@ -38,6 +42,7 @@ public sealed class UsbInterface : IUsbInterface
     /// <param name="loggerFactory">An optional logger factory.</param>
     /// <param name="device">The parent USB device.</param>
     /// <param name="descriptor">The USB interface descriptor.</param>
+    /// <param name="claimedInterface"></param>
     /// <param name="readEndpoint">
     /// Optional read endpoint. When nothing is specified and a read operation is attempted,
     /// an attempt is made to pick the first available "input" endpoint for this interface.
@@ -50,6 +55,7 @@ public sealed class UsbInterface : IUsbInterface
         ILoggerFactory loggerFactory,
         UsbDevice device,
         IUsbInterfaceDescriptor descriptor,
+        ISafeDeviceInterface claimedInterface,
         IUsbEndpointDescriptor? readEndpoint = default,
         IUsbEndpointDescriptor? writeEndpoint = default
     )
@@ -58,6 +64,7 @@ public sealed class UsbInterface : IUsbInterface
         _logger = _loggerFactory.CreateLogger<UsbInterface>();
         _device = device;
         _descriptor = descriptor;
+        _claimedInterface = claimedInterface;
         _bulkReadBuffer = new byte[ReadBufferSize];
         _bulkReadBufferHandle = GCHandle.Alloc(_bulkReadBuffer, GCHandleType.Pinned);
         _readEndpoint = readEndpoint is null
@@ -118,8 +125,8 @@ public sealed class UsbInterface : IUsbInterface
                 var result = LibUsbTransfer.ExecuteSync(
                     _logger,
                     _device.Handle,
-                    LibUsbTransferType.Bulk,
-                    _readEndpoint.Value.EndpointAddress,
+                    libusb_endpoint_transfer_type.LIBUSB_ENDPOINT_TRANSFER_TYPE_BULK,
+                    _readEndpoint.Value.EndpointAddress.RawValue,
                     _bulkReadBufferHandle,
                     bufferLength,
                     timeout > 0 ? (uint)timeout : 0,
@@ -130,7 +137,7 @@ public sealed class UsbInterface : IUsbInterface
                 {
                     _bulkReadBuffer.AsSpan(0, bytesRead).CopyTo(destination);
                 }
-                return result;
+                return result.ToLibUsbResult();
             }
         }
         catch (ObjectDisposedException ex)
@@ -160,17 +167,19 @@ public sealed class UsbInterface : IUsbInterface
             lock (_bulkWriteLock)
             {
                 source[..bufferLength].CopyTo(_bulkWriteBuffer.AsSpan(0, bufferLength));
-                return LibUsbTransfer.ExecuteSync(
-                    _logger,
-                    _device.Handle,
-                    LibUsbTransferType.Bulk,
-                    _writeEndpoint.Value.EndpointAddress,
-                    _bulkWriteBufferHandle,
-                    bufferLength,
-                    timeout > 0 ? (uint)timeout : 0,
-                    out bytesWritten,
-                    _disposeCts.Token
-                );
+                return LibUsbTransfer
+                    .ExecuteSync(
+                        _logger,
+                        _device.Handle,
+                        libusb_endpoint_transfer_type.LIBUSB_ENDPOINT_TRANSFER_TYPE_BULK,
+                        _writeEndpoint.Value.EndpointAddress.RawValue,
+                        _bulkWriteBufferHandle,
+                        bufferLength,
+                        timeout > 0 ? (uint)timeout : 0,
+                        out bytesWritten,
+                        _disposeCts.Token
+                    )
+                    .ToLibUsbResult();
             }
         }
         catch (ObjectDisposedException ex)
@@ -238,6 +247,7 @@ public sealed class UsbInterface : IUsbInterface
             {
                 // Ask UsbDevice to close interface and remove it from list of open interfaces
                 _device.ReleaseInterface(_descriptor.InterfaceNumber);
+                _claimedInterface.Dispose();
                 // Free read and write buffers
                 _bulkReadBufferHandle.Free();
                 _bulkWriteBufferHandle.Free();

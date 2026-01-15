@@ -17,7 +17,7 @@ public static class UsbInterfaceDescriptorExtension
         out int count
     )
     {
-        var endpoints = descriptor.Endpoints.Where(e => e.EndpointDirection == direction).ToList();
+        var endpoints = descriptor.Endpoints.Where(e => e.EndpointAddress.Direction == direction).ToList();
         count = endpoints.Count;
         return endpoints.FirstOrDefault()
             ?? throw new InvalidOperationException(

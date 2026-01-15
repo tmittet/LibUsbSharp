@@ -1,4 +1,5 @@
 using LibUsbSharp.Descriptor;
+using LibUsbSharp.Native;
 using LibUsbSharp.Transfer;
 
 namespace LibUsbSharp;
@@ -40,6 +41,7 @@ public interface IUsbDevice : IDisposable
 
     /// <summary>
     /// Reads a string descriptor from the device, using the first language supported by the device.
+    /// NOTE: On some devices it may fail even for basic fields like serial number (at index 0).
     /// </summary>
     /// <exception cref="ObjectDisposedException">Thrown when the UsbDevice is disposed.</exception>
     string ReadStringDescriptor(byte descriptorIndex);

@@ -4,7 +4,6 @@
         <Platforms>AnyCPU;x64;arm64</Platforms>
         <RuntimeIdentifiers>linux-arm64;linux-x64;maccatalyst-arm64;maccatalyst-x64;osx-arm64;osx-x64;win-arm64;win-x64</RuntimeIdentifiers>
         <RootNamespace>LibUsbSharp</RootNamespace>
-        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <Authors>Thomas Mittet</Authors>
@@ -28,139 +27,10 @@
     <ItemGroup>
         <InternalsVisibleTo Include="LibUsbSharp.Tests" />
     </ItemGroup>
-    <ItemGroup Label="Include Native Libraries">
-        <!-- linux-arm64 - NOTE: Rely on included libusb (apt-get) on Linux -->
-        <!-- linux-x64 - NOTE: Rely on included libusb (apt-get) on Linux -->
-        <!-- maccatalyst-arm64 - NOTE: Not tested -->
-        <Content Include="runtimes\maccatalyst-arm64\native\libusb-1.0.dylib">
-            <PackagePath>runtimes/maccatalyst-arm64/native/</PackagePath>
-            <Pack>true</Pack>
-        </Content>
-        <!-- maccatalyst-x64 - NOTE: Not tested -->
-        <Content Include="runtimes\maccatalyst-x64\native\libusb-1.0.dylib">
-            <PackagePath>runtimes/maccatalyst-x64/native/</PackagePath>
-            <Pack>true</Pack>
-        </Content>
-        <!-- osx-arm64 -->
-        <Content Include="runtimes\osx-arm64\native\libusb-1.0.dylib">
-            <PackagePath>runtimes/osx-arm64/native/</PackagePath>
-            <Pack>true</Pack>
-        </Content>
-        <!-- osx-x64 -->
-        <Content Include="runtimes\osx-x64\native\libusb-1.0.dylib">
-            <PackagePath>runtimes/osx-x64/native/</PackagePath>
-            <Pack>true</Pack>
-        </Content>
-        <!-- win-arm64 -->
-        <Content Include="runtimes\win-arm64\native\libusb-1.0.dll">
-            <PackagePath>runtimes/win-arm64/native/</PackagePath>
-            <Pack>true</Pack>
-        </Content>
-        <!-- win-x64 -->
-        <Content Include="runtimes\win-x64\native\libusb-1.0.dll">
-            <PackagePath>runtimes/win-x64/native/</PackagePath>
-            <Pack>true</Pack>
-        </Content>
-        <!-- win-x86 -->
-        <Content Include="runtimes\win-x86\native\libusb-1.0.dll">
-            <PackagePath>runtimes/win-x86/native/</PackagePath>
-            <Pack>true</Pack>
-        </Content>
-    </ItemGroup>
-    <PropertyGroup>
-        <!-- Linux -->
-        <IsLinuxA64 Condition="'$(RuntimeIdentifier)' == 'linux-arm64'">true</IsLinuxA64>
-        <IsLinuxX64 Condition="'$(RuntimeIdentifier)' == 'linux-x64'">true</IsLinuxX64>
-        <!-- Mac Catalyst - NOTE: Not tested -->
-        <IsMacCatA64 Condition="'$(RuntimeIdentifier)' == 'maccatalyst-arm64'">true</IsMacCatA64>
-        <IsMacCatX64 Condition="'$(RuntimeIdentifier)' == 'maccatalyst-x64'">true</IsMacCatX64>
-        <!-- macOS - NOTE: Using fallback for arm64 and x64 when when RID isn't specified -->
-        <IsOsxA64
-            Condition="'$(RuntimeIdentifier)' == 'osx-arm64' OR ('$(RuntimeIdentifier)' == '' AND '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))' AND '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'Arm64')"
-            >true</IsOsxA64
-        >
-        <IsOsxX64
-            Condition="'$(RuntimeIdentifier)' == 'osx-x64' OR ('$(RuntimeIdentifier)' == '' AND '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))' AND '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X64')"
-            >true</IsOsxX64
-        >
-        <!-- Windows - NOTE: Using fallback for arm64 and x64 when RID isn't specified -->
-        <IsWinA64
-            Condition="'$(RuntimeIdentifier)' == 'win-arm64' OR ('$(RuntimeIdentifier)' == '' AND '$(OS)'=='Windows_NT' AND '$(Platform)' == 'arm64')"
-            >true</IsWinA64
-        >
-        <IsWinX64
-            Condition="'$(RuntimeIdentifier)' == 'win-x64' OR ('$(RuntimeIdentifier)' == '' AND '$(OS)'=='Windows_NT' AND ('$(Platform)' == 'AnyCPU' OR '$(Platform)' == 'x64'))"
-            >true</IsWinX64
-        >
-        <IsWinX86 Condition="'$(RuntimeIdentifier)' == 'win-x86'">true</IsWinX86>
-    </PropertyGroup>
-    <ItemGroup>
-        <!-- linux-arm64 - NOTE: Rely on OS specific libusb (apt-get) on Linux -->
-        <!-- linux-x64 - NOTE: Rely on OS specific libusb (apt-get) on Linux -->
-        <!-- maccatalyst-arm64 - NOTE: Not tested -->
-        <!-- maccatalyst-x64 - NOTE: Not tested -->
-        <!-- osx-arm64 -->
-        <None
-            Condition="'$(IsOsxA64)'=='true'"
-            Include="runtimes\osx-arm64\native\libusb-1.0.dylib"
-        >
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-            <Link>%(Filename)%(Extension)</Link>
-            <Visible>False</Visible>
-        </None>
-        <!-- osx-x64 -->
-        <None Condition="'$(IsOsxX64)'=='true'" Include="runtimes\osx-x64\native\libusb-1.0.dylib">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-            <Link>%(Filename)%(Extension)</Link>
-            <Visible>False</Visible>
-        </None>
-        <!-- win-arm64 -->
-        <None Condition="'$(IsWinA64)'=='true'" Include="runtimes\win-arm64\native\libusb-1.0.dll">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-            <Link>%(Filename)%(Extension)</Link>
-            <Visible>False</Visible>
-        </None>
-        <!-- win-x64 -->
-        <None Condition="'$(IsWinX64)'=='true'" Include="runtimes\win-x64\native\libusb-1.0.dll">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-            <Link>%(Filename)%(Extension)</Link>
-            <Visible>False</Visible>
-        </None>
-        <!-- win-x86 -->
-        <None Condition="'$(IsWinX86)'=='true'" Include="runtimes\win-x86\native\libusb-1.0.dll">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-            <Link>%(Filename)%(Extension)</Link>
-            <Visible>False</Visible>
-        </None>
-    </ItemGroup>
     <ItemGroup>
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     </ItemGroup>
-    <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-        <Message
-            Condition="'$(IsOsxA64)'=='true'"
-            Importance="high"
-            Text="** Targeting osx-arm64 for libusb-1.0 **"
-        />
-        <Message
-            Condition="'$(IsOsxX64)'=='true'"
-            Importance="high"
-            Text="** Targeting osx-x64 for libusb-1.0 **"
-        />
-        <Message
-            Condition="'$(IsWinA64)'=='true'"
-            Importance="high"
-            Text="** Targeting win-arm64 for libusb-1.0 **"
-        />
-        <Message
-            Condition="'$(IsWinX64)'=='true'"
-            Importance="high"
-            Text="** Targeting win-x64 for libusb-1.0 **"
-        />
-        <Message
-            Condition="'$(IsWinX86)'=='true'"
-            Importance="high"
-            Text="** Targeting win-x86 for libusb-1.0 **"
-        />
-    </Target>
+    <ItemGroup>
+        <ProjectReference Include="..\LibUsbSharp.Native\LibUsbSharp.Native.csproj" />
+    </ItemGroup>
 </Project>

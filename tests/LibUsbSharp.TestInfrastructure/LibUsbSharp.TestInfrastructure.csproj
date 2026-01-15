@@ -13,12 +13,14 @@
         <EnableNETAnalyzers>true</EnableNETAnalyzers>
         <AnalysisLevel>latest-recommended</AnalysisLevel>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <UseXunitV3>false</UseXunitV3>
+        <IsTestProject>false</IsTestProject>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="JunitXml.TestLogger" />
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" />
-        <PackageReference Include="xunit" />
+        <PackageReference Include="xunit.core" />
         <PackageReference Include="Xunit.SkippableFact" />
     </ItemGroup>
     <ItemGroup>

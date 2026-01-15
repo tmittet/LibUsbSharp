@@ -1,5 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using LibUsbSharp.Descriptor;
+using LibUsbSharp.Native;
+using LibUsbSharp.Native.Enums;
 
 namespace LibUsbSharp.TestInfrastructure;
 
@@ -80,7 +82,11 @@ public sealed class TestDeviceSource(ILogger _logger, ILibUsb _libUsb)
                 device = _libUsb.OpenDevice(deviceDescriptor);
             }
             catch (LibUsbException ex)
-                when (ex.ResultCode is LibUsbResult.AccessDenied or LibUsbResult.IoError or LibUsbResult.NotSupported)
+                when (ex.Error
+                        is libusb_error.LIBUSB_ERROR_ACCESS
+                            or libusb_error.LIBUSB_ERROR_IO
+                            or libusb_error.LIBUSB_ERROR_NOT_SUPPORTED
+                )
             {
                 if (i > 0)
                     Thread.Sleep(10);
@@ -88,7 +94,7 @@ public sealed class TestDeviceSource(ILogger _logger, ILibUsb _libUsb)
                     "Device '{DeviceKey}' not accessible on attempt #{Attempt}. {ErrorCode}: {ErrorMessage}",
                     deviceDescriptor.DeviceKey,
                     i + 1,
-                    ex.ResultCode,
+                    ex.Error,
                     ex.Message
                 );
             }

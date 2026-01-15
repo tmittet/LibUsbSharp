@@ -1,4 +1,5 @@
 using LibUsbSharp.Descriptor;
+using LibUsbSharp.Native;
 
 namespace LibUsbSharp;
 
@@ -11,6 +12,7 @@ public static class LibUsbExtension
     /// <param name="libUsb" />
     /// <param name="vendorId">Optional vendor ID filter.</param>
     /// <param name="productId">Optional product ID filter.</param>
+    /// <exception cref="LibUsbException">Thrown when the get device list operation fails.</exception>
     /// <exception cref="ObjectDisposedException">Thrown when LibUsb is disposed.</exception>
     /// <exception cref="InvalidOperationException">Thrown when LibUsb is not initialized.</exception>
     public static List<IUsbDeviceDescriptor> GetDeviceList(

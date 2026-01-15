@@ -48,7 +48,7 @@ jobs:
             runtime: linux-x64
           - os: macos-latest
             runtime: osx-arm64
-          - os: macos-13
+          - os: macos-15-intel
             runtime: osx-x64
           - os: windows-11-arm
             runtime: win-arm64
@@ -78,6 +78,13 @@ jobs:
       run: |
         dotnet restore --runtime ${{ matrix.config.runtime }}
 
+    - name: Build LibUsbSharp.Native
+      shell: bash
+      run: |
+        dotnet build src/LibUsbSharp.Native/LibUsbSharp.Native.csproj \
+          --no-restore \
+          --runtime ${{ matrix.config.runtime }}
+
     - name: Build LibUsbSharp
       shell: bash
       run: |
@@ -85,11 +92,12 @@ jobs:
           --no-restore \
           --runtime ${{ matrix.config.runtime }}
 
-    - name: Install libusb 1.0 dev (for linux)
-      if: startsWith(matrix.config.runtime, 'linux-')
+    - name: Build LibUsbSharp.Native.Tests
+      shell: bash
       run: |
-        sudo apt-get update
-        sudo apt-get install -y libusb-1.0-0-dev
+        dotnet build tests/LibUsbSharp.Native.Tests/LibUsbSharp.Native.Tests.csproj \
+          --no-restore \
+          --runtime ${{ matrix.config.runtime }}
 
     - name: Build LibUsbSharp.Tests
       shell: bash
@@ -105,13 +113,29 @@ jobs:
           --no-restore \
           --runtime ${{ matrix.config.runtime }}
 
+    - name: Install libusb 1.0 dev (for linux)
+      # libusb is not packaged for linux and must be present before running tests
+      if: startsWith(matrix.config.runtime, 'linux-')
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libusb-1.0-0-dev
+
+    - name: Run LibUsbSharp.Native.Tests
+      shell: bash
+      run: |
+        dotnet test tests/LibUsbSharp.Native.Tests/LibUsbSharp.Native.Tests.csproj \
+          --no-build \
+          --runtime ${{ matrix.config.runtime }} \
+          --logger "junit;LogFilePath=TestResults/results.xml" \
+          --verbosity normal
+
     - name: Run LibUsbSharp.Tests
       shell: bash
       run: |
         dotnet test tests/LibUsbSharp.Tests/LibUsbSharp.Tests.csproj \
           --no-build \
           --runtime ${{ matrix.config.runtime }} \
-          --logger junit \
+          --logger "junit;LogFilePath=TestResults/results.xml" \
           --verbosity normal
 
     - name: Run LibUsbSharp.Extensions.Tests
@@ -120,14 +144,16 @@ jobs:
         dotnet test tests/LibUsbSharp.Extensions.Tests/LibUsbSharp.Extensions.Tests.csproj \
           --no-build \
           --runtime ${{ matrix.config.runtime }} \
-          --logger junit \
+          --logger "junit;LogFilePath=TestResults/results.xml" \
           --verbosity normal
 
-    - name: Publish Test Results
-      uses: EnricoMi/publish-unit-test-result-action@v2
-      id: test-results
-      if: always() && startsWith(matrix.config.runtime, 'linux-x64')
+    - name: Publish Test Report
+      uses: mikepenz/action-junit-report@v5
+      if: success() || failure()
       with:
-        comment_mode: off
-        files: |
-          tests/**/TestResults/*.xml
+        report_paths: tests/**/TestResults/*.xml
+        check_name: XUnit Test Report - ${{ matrix.config.runtime }}
+        detailed_summary: true
+        annotate_notice: true
+        fail_on_parse_error: true
+        include_time_in_summary: true

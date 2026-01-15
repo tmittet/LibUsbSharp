@@ -1,4 +1,5 @@
 using LibUsbSharp.Descriptor;
+using LibUsbSharp.Native;
 using Microsoft.Extensions.Logging;
 
 namespace LibUsbSharp;
@@ -10,12 +11,14 @@ public interface ILibUsb : IDisposable
     /// background thread that handles LibUsb events and drives async transfers.
     /// </summary>
     /// <param name="logLevel">The desired LibUsb library log level.</param>
+    /// <exception cref="ObjectDisposedException">Thrown when LibUsb is disposed.</exception>
     void Initialize(LogLevel logLevel = LogLevel.Warning);
 
     /// <summary>
     /// Hotplug events are supported on macOS, Linux and Windows.
     /// https://libusb.sourceforge.io/api-1.0/libusb_hotplug.html
     /// </summary>
+    /// <exception cref="ObjectDisposedException">Thrown when LibUsb is disposed.</exception>
     bool RegisterHotplug(UsbClass? deviceClass = null, ushort? vendorId = null, ushort? productId = null);
 
     /// <summary>
@@ -24,6 +27,7 @@ public interface ILibUsb : IDisposable
     /// </summary>
     /// <param name="vendorId">Optional vendor ID filter.</param>
     /// <param name="productIds">Optional product ID filter.</param>
+    /// <exception cref="LibUsbException">Thrown when the get device list operation fails.</exception>
     /// <exception cref="ObjectDisposedException">Thrown when LibUsb is disposed.</exception>
     /// <exception cref="InvalidOperationException">Thrown when LibUsb is not initialized.</exception>
     List<IUsbDeviceDescriptor> GetDeviceList(ushort? vendorId = default, HashSet<ushort>? productIds = default);

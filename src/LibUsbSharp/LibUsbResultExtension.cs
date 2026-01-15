@@ -1,24 +1,9 @@
-using System.Runtime.InteropServices;
+using LibUsbSharp.Native.Enums;
+using LibUsbSharp.Native.Extensions;
 
 namespace LibUsbSharp;
 
 public static class LibUsbResultExtension
 {
-    public static string GetMessage(this LibUsbResult result)
-    {
-        var errorCode = (int)result;
-        var ptr = libusb_strerror(errorCode);
-        var detail = Marshal.PtrToStringAnsi(ptr);
-        return detail is null
-            ? $"LibUsb error code {errorCode}: {result}."
-            : $"LibUsb error code {errorCode}: {detail}.";
-    }
-
-    // LibraryImportAttribute not available in .NET6, silence warning
-#pragma warning disable SYSLIB1054 // Use 'LibraryImportAttribute' instead of 'DllImportAttribute'
-
-    [DllImport(LibUsb.LibraryName, CallingConvention = CallingConvention.Cdecl)]
-    private static extern nint libusb_strerror(int errorCode);
-
-#pragma warning restore SYSLIB1054 // Use 'LibraryImportAttribute' instead of 'DllImportAttribute'
+    public static string GetMessage(this LibUsbResult result) => ((libusb_error)result).GetString() + '.';
 }

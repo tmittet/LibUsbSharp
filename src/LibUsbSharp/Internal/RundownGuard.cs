@@ -66,7 +66,7 @@ namespace LibUsbSharp.Internal;
 /// guard.Dispose();
 /// ]]></code>
 /// </example>
-public class RundownGuard : IDisposable
+internal class RundownGuard : IDisposable
 {
     /// <summary>
     /// Maximum number of concurrent shared holders allowed.
