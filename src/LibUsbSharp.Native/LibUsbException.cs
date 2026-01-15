@@ -24,8 +24,7 @@ public sealed class LibUsbException : Exception
         Error = error;
     }
 
-    public static LibUsbException FromError(libusb_error result, string? message = null) =>
-        throw new LibUsbException(result, message);
+    public static LibUsbException FromError(libusb_error result, string? message = null) => new(result, message);
 
     public static LibUsbException FromApiError(libusb_error result, string methodName, string? message = null) =>
         new(result, $"LibUsbApi '{methodName}' failed. {message}".TrimEnd());
