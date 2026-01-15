@@ -7,7 +7,7 @@ public class RundownGuardTest
     [Fact]
     public void AcquireShared_returns_immediately_when_no_other_guards_are_held()
     {
-        var guard = new RundownGuard();
+        using var guard = new RundownGuard();
         var act = () => guard.AcquireSharedToken(TimeSpan.FromMilliseconds(1));
         act.Should().NotThrow();
         guard.ReleaseShared();
@@ -16,7 +16,7 @@ public class RundownGuardTest
     [Fact]
     public void AcquireShared_waits_for_release_when_ExclusiveGuard_is_held()
     {
-        var guard = new RundownGuard();
+        using var guard = new RundownGuard();
         var exclusive = guard.AcquireExclusiveToken()!;
         var act = () => guard.AcquireSharedToken(TimeSpan.FromMilliseconds(1));
         act.Should().Throw<TimeoutException>().WithMessage("The operation has timed out.");
@@ -28,7 +28,7 @@ public class RundownGuardTest
     [Fact]
     public void AcquireShared_throws_TimeoutException_when_wait_timeout_is_reached()
     {
-        var guard = new RundownGuard();
+        using var guard = new RundownGuard();
         var exclusive = guard.AcquireExclusiveToken()!;
         var act = () => guard.AcquireSharedToken(TimeSpan.FromMilliseconds(1));
         act.Should().Throw<TimeoutException>().WithMessage("The operation has timed out.");
@@ -38,7 +38,7 @@ public class RundownGuardTest
     [Fact]
     public void AcquireShared_returns_immediately_when_maxSharedCount_is_not_reached()
     {
-        var guard = new RundownGuard(2);
+        using var guard = new RundownGuard(2);
         guard.AcquireSharedToken();
         var act = () => guard.AcquireSharedToken(TimeSpan.FromMilliseconds(1));
         act.Should().NotThrow();
@@ -49,7 +49,7 @@ public class RundownGuardTest
     [Fact]
     public void AcquireShared_waits_for_release_when_maxSharedCount_is_reached()
     {
-        var guard = new RundownGuard(2);
+        using var guard = new RundownGuard(2);
         var shared = guard.AcquireSharedToken()!;
         _ = guard.AcquireSharedToken();
         var act = () => guard.AcquireSharedToken(TimeSpan.FromMilliseconds(1));
@@ -57,12 +57,13 @@ public class RundownGuardTest
         shared.Dispose();
         act.Should().NotThrow();
         guard.ReleaseShared();
+        guard.ReleaseShared();
     }
 
     [Fact]
     public void AcquireShared_throws_ObjectDisposedException_when_rundown_is_triggered()
     {
-        var guard = new RundownGuard();
+        using var guard = new RundownGuard();
         guard.TriggerRundown();
         var act = () => guard.AcquireSharedToken(TimeSpan.FromMilliseconds(1));
         act.Should().Throw<ObjectDisposedException>();
@@ -71,7 +72,7 @@ public class RundownGuardTest
     [Fact]
     public void Calling_ReleaseShared_when_no_guard_is_aquired_should_throw()
     {
-        var guard = new RundownGuard();
+        using var guard = new RundownGuard();
         var act = () => guard.ReleaseShared();
         act.Should().Throw<InvalidOperationException>().WithMessage("No shared guards held.");
     }
@@ -79,7 +80,7 @@ public class RundownGuardTest
     [Fact]
     public void AcquireExclusive_returns_immediately_when_no_other_guards_are_held()
     {
-        var guard = new RundownGuard();
+        using var guard = new RundownGuard();
         var act = () => guard.AcquireExclusiveToken(TimeSpan.FromMilliseconds(1));
         act.Should().NotThrow();
         guard.ReleaseExclusive();
@@ -88,7 +89,7 @@ public class RundownGuardTest
     [Fact]
     public void AcquireExclusive_waits_for_all_other_guards_to_release()
     {
-        var guard = new RundownGuard();
+        using var guard = new RundownGuard();
         var exclusive = guard.AcquireExclusiveToken()!;
         var act = () => guard.AcquireExclusiveToken(TimeSpan.FromMilliseconds(1));
         act.Should().Throw<TimeoutException>().WithMessage("The operation has timed out.");
@@ -100,7 +101,7 @@ public class RundownGuardTest
     [Fact]
     public void AcquireExclusive_throws_TimeoutException_when_wait_timeout_is_reached()
     {
-        var guard = new RundownGuard();
+        using var guard = new RundownGuard();
         var exclusive = guard.AcquireExclusiveToken()!;
         var act = () => guard.AcquireExclusiveToken(TimeSpan.FromMilliseconds(1));
         act.Should().Throw<TimeoutException>().WithMessage("The operation has timed out.");
@@ -110,7 +111,7 @@ public class RundownGuardTest
     [Fact]
     public void AcquireExclusive_throws_ObjectDisposedException_when_rundown_is_triggered()
     {
-        var guard = new RundownGuard();
+        using var guard = new RundownGuard();
         guard.TriggerRundown();
         var act = () => guard.AcquireExclusiveToken(TimeSpan.FromMilliseconds(1));
         act.Should().Throw<ObjectDisposedException>();
@@ -119,7 +120,7 @@ public class RundownGuardTest
     [Fact]
     public void Calling_ReleaseExclusive_when_no_guard_is_aquired_should_throw()
     {
-        var guard = new RundownGuard();
+        using var guard = new RundownGuard();
         var act = () => guard.ReleaseExclusive();
         act.Should().Throw<InvalidOperationException>().WithMessage("No exclusive guard held.");
     }
@@ -127,7 +128,10 @@ public class RundownGuardTest
     [Fact]
     public void Dispose_triggers_rundown()
     {
+#pragma warning disable CA2000 // Dispose objects before losing scope
+        // Can't use using pattern here, dispose throws when already disposed.
         var guard = new RundownGuard();
+#pragma warning restore CA2000 // Dispose objects before losing scope
         var exclusive = guard.AcquireExclusiveToken()!;
         var worker = new Thread(() => guard.Dispose());
         worker.Start();

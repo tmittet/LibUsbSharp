@@ -229,6 +229,7 @@ dotnet_diagnostic.CS8509.severity = error # switch case handling not exhaustive
 dotnet_diagnostic.CA1051.severity = warning # Do not declare visible instance fields
 dotnet_diagnostic.CA1720.severity = warning # Identifiers should not contain type names
 dotnet_diagnostic.CA1859.severity = warning # Use concrete types when possible for improved performance
+dotnet_diagnostic.CA2000.severity = warning # Dispose objects before losing scope
 dotnet_diagnostic.CA2201.severity = warning # Do not raise reserved exception types
 dotnet_diagnostic.CS0168.severity = warning # Unused variable
 dotnet_diagnostic.CS0618.severity = warning # 'member' is obsolete

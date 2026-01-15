@@ -188,7 +188,10 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
         }
         try
         {
+#pragma warning disable CA2000 // Dispose objects before losing scope
+            // SafeDevice should be disposed by callback receiver
             return callback(this, new SafeDevice(this, devicePtr), eventType, userData);
+#pragma warning restore CA2000 // Dispose objects before losing scope
         }
         finally
         {
