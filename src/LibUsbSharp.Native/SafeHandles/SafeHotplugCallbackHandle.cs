@@ -5,12 +5,17 @@ namespace LibUsbSharp.Native.SafeHandles;
 internal sealed class SafeHotplugCallbackHandle : SafeHandle, ISafeCallbackHandle
 {
     private readonly SafeContext _context;
-    private readonly GCHandle _gcHandle;
+    private GCHandle? _gcHandle;
 
     public override bool IsInvalid => handle == IntPtr.Zero;
 
-    public SafeHotplugCallbackHandle(SafeContext context, GCHandle gcHandle, nint callbackHandle)
+    public SafeHotplugCallbackHandle(SafeContext context)
         : base(IntPtr.Zero, ownsHandle: true)
+    {
+        _context = context;
+    }
+
+    public void Initialize(GCHandle gcHandle, nint callbackHandle)
     {
         if (!gcHandle.IsAllocated)
         {
@@ -20,8 +25,6 @@ internal sealed class SafeHotplugCallbackHandle : SafeHandle, ISafeCallbackHandl
         {
             throw new ArgumentNullException(nameof(callbackHandle));
         }
-
-        _context = context;
         _gcHandle = gcHandle;
         handle = callbackHandle;
     }
@@ -29,7 +32,7 @@ internal sealed class SafeHotplugCallbackHandle : SafeHandle, ISafeCallbackHandl
     protected override bool ReleaseHandle()
     {
         _context.Api.libusb_hotplug_deregister_callback(_context.DangerousGetHandle(), handle);
-        _gcHandle.Free();
+        _gcHandle?.Free();
         _context.DangerousRelease();
         handle = IntPtr.Zero;
         return true;

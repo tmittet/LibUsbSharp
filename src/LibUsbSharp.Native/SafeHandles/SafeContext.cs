@@ -117,9 +117,10 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
         SafeHelper.ThrowIfClosed(this);
         ArgumentNullException.ThrowIfNull(callback);
 
+        var safeHandle = new SafeHotplugCallbackHandle(this);
         // Create hotplug hotplugCallback with a pinned handle
         var hotplugCallback = new libusb_hotplug_callback_fn(
-            (_, dev, eventType, userData) => TriggerExternalCallback(dev, eventType, userData, callback)
+            (_, dev, eventType, userData) => TriggerExternalCallback(safeHandle, dev, eventType, userData, callback)
         );
         var gcHandle = GCHandle.Alloc(hotplugCallback, GCHandleType.Pinned);
 
@@ -138,6 +139,7 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
         if (result is not libusb_error.LIBUSB_SUCCESS)
         {
             gcHandle.Free();
+            safeHandle.Dispose();
         }
         LibUsbException.ThrowIfApiError(result, nameof(Api.libusb_hotplug_register_callback));
 
@@ -148,14 +150,17 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
         {
             Api.libusb_hotplug_deregister_callback(handle, callbackHandle);
             gcHandle.Free();
+            safeHandle.Dispose();
             throw LibUsbException.FromError(libusb_error.LIBUSB_ERROR_OTHER, "Failed to ref SafeHandle.");
         }
 
-        // Create and return SafeHotplugCallbackHandle that deregister hotplugCallback and decrements ref counter on release
-        return new SafeHotplugCallbackHandle(this, gcHandle, callbackHandle);
+        // Init and return SafeHotplugCallbackHandle that deregister hotplugCallback and decrements ref counter on release
+        safeHandle.Initialize(gcHandle, callbackHandle);
+        return safeHandle;
     }
 
     private libusb_hotplug_return TriggerExternalCallback(
+        SafeHotplugCallbackHandle callbackHandle,
         nint devicePtr,
         libusb_hotplug_event eventType,
         nint userData,
@@ -163,11 +168,30 @@ internal sealed class SafeContext : SafeHandle, ISafeContext
     )
     {
         var success = false;
-        // Increment context ref counter, SafeDevice will decrement it on dispose.
+        // Increment callback ref counter, client that registers callback will dispose and decrement
+        callbackHandle.DangerousAddRef(ref success);
+        if (!success)
+        {
+            throw LibUsbException.FromError(
+                libusb_error.LIBUSB_ERROR_OTHER,
+                "Failed to ref SafeHotplugCallbackHandle."
+            );
+        }
+        // Increment context ref counter, SafeDevice will decrement it on dispose
         DangerousAddRef(ref success);
-        return success
-            ? callback(this, new SafeDevice(this, devicePtr), eventType, userData)
-            : throw LibUsbException.FromError(libusb_error.LIBUSB_ERROR_OTHER, "Failed to ref SafeContext handle.");
+        if (!success)
+        {
+            callbackHandle.DangerousRelease();
+            throw LibUsbException.FromError(libusb_error.LIBUSB_ERROR_OTHER, "Failed to ref SafeContext handle.");
+        }
+        try
+        {
+            return callback(this, new SafeDevice(this, devicePtr), eventType, userData);
+        }
+        finally
+        {
+            callbackHandle.DangerousRelease();
+        }
     }
 
     /// <inheritdoc />
