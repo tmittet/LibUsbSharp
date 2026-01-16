@@ -14,7 +14,7 @@ namespace LibUsbSharp.Native.Tests.TestInfrastructure;
 /// - Error injection per API (first-in-first-consumed)
 /// - Proper unmanaged resource cleanup (IDisposable + finalizer)
 /// </summary>
-internal sealed class FakeLibusbApi : ILibUsbApi, IDisposable
+internal sealed class FakeLibusbApi : ILibUsbApi
 {
     // ---------------------------
     // Simple in-memory device model
@@ -458,9 +458,8 @@ internal sealed class FakeLibusbApi : ILibUsbApi, IDisposable
 
 #pragma warning restore IDE0060 // Remove unused parameter
 
-    // ---------------------------
-    // Disposal
-    // ---------------------------
+    ~FakeLibusbApi() => FreeAllResources();
+
     private void FreeAllResources()
     {
         if (_disposed)
@@ -500,13 +499,5 @@ internal sealed class FakeLibusbApi : ILibUsbApi, IDisposable
             Marshal.FreeHGlobal(_versionRcPtr);
         if (_versionDescPtr != IntPtr.Zero)
             Marshal.FreeHGlobal(_versionDescPtr);
-    }
-
-    ~FakeLibusbApi() => FreeAllResources();
-
-    public void Dispose()
-    {
-        FreeAllResources();
-        GC.SuppressFinalize(this);
     }
 }
