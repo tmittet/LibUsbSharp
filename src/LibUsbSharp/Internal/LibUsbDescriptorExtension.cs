@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using LibUsbSharp.Descriptor;
 using LibUsbSharp.Native.Structs;
 
@@ -12,14 +13,22 @@ internal static class LibUsbDescriptorExtension
             Attributes: (UsbConfigAttributes)descriptor.bmAttributes,
             MaxPowerRawValue: descriptor.bMaxPower,
             ExtraBytes: descriptor.extra,
-            // TODO: Interfaces should be Dictionary<int, List<IUsbInterfaceDescriptor>>, something like
-            // descriptor.interfaces
-            //   .Select((i, index) => (index, value: i.altsetting.Select(a => a.ToUsbInterfaceDescriptor()).ToList()))
-            //   .ToDictionary(t => t.index, t => t.value)
             Interfaces: descriptor
+                // Flatten the altsettings, since the index is not useful here
                 .interfaces.SelectMany(i => i.altsetting)
-                .Select(a => a.ToUsbInterfaceDescriptor())
-                .ToList()
+                // Group by bInterfaceNumber (not index, which is just the order in the array)
+                .GroupBy(a => a.bInterfaceNumber)
+                // Create a dictionary keyed on bInterfaceNumber
+                .ToDictionary(
+                    g => g.Key,
+                    // Create a dictionary of alternate settings for each interface
+                    g =>
+                        (IDictionary<byte, IUsbInterfaceDescriptor>)
+                            g.Select(a => a.ToUsbInterfaceDescriptor())
+                                .ToDictionary(t => t.AlternateSetting, t => t)
+                                .ToImmutableDictionary()
+                )
+                .ToImmutableDictionary()
         );
 
     internal static IUsbInterfaceDescriptor ToUsbInterfaceDescriptor(this libusb_interface_descriptor descriptor) =>

@@ -7,7 +7,7 @@ public record struct UsbConfigDescriptor(
     UsbConfigAttributes Attributes,
     byte MaxPowerRawValue,
     byte[] ExtraBytes,
-    List<IUsbInterfaceDescriptor> Interfaces
+    IDictionary<byte, IDictionary<byte, IUsbInterfaceDescriptor>> Interfaces
 ) : IUsbConfigDescriptor
 {
     public readonly int MaxPower => MaxPowerRawValue * 2;

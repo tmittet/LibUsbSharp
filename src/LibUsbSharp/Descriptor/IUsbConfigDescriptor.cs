@@ -29,7 +29,10 @@ public interface IUsbConfigDescriptor
     byte[] ExtraBytes { get; }
 
     /// <summary>
-    /// A list of interfaces (libusb_interface) supported by this configuration.
+    /// A dictionary of USB interface descriptors grouped by interface number. For each interface
+    /// number, the value is a dictionary of alternate interface descriptors keyed by the alternate
+    /// setting number. Per the USB spec, alternate setting 0 always exists and is the default
+    /// alternate setting for each device configuration.
     /// </summary>
-    List<IUsbInterfaceDescriptor> Interfaces { get; }
+    IDictionary<byte, IDictionary<byte, IUsbInterfaceDescriptor>> Interfaces { get; }
 }
