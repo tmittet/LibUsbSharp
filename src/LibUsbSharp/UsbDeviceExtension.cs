@@ -89,7 +89,7 @@ public static class UsbDeviceExtension
         UsbClass withClass,
         byte? withSubClass = null,
         byte? withProtocol = null
-    ) => device.GetInterfaceDescriptorList(withClass, withSubClass, withProtocol).ReGroup();
+    ) => device.GetInterfaceDescriptorList(withClass, withSubClass, withProtocol).Regroup();
 
     /// <summary>
     /// Check if device has an interface matching given parameters.
@@ -110,7 +110,7 @@ public static class UsbDeviceExtension
     /// Regroup interface descriptors into a nested dictionary of USB interface
     /// descriptors grouped by interface number and alternate setting number.
     /// </summary>
-    private static ImmutableDictionary<byte, IDictionary<byte, IUsbInterfaceDescriptor>> ReGroup(
+    private static ImmutableDictionary<byte, IDictionary<byte, IUsbInterfaceDescriptor>> Regroup(
         this IEnumerable<IUsbInterfaceDescriptor> descriptors
     )
     {
