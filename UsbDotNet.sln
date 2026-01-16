@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.14.36327.8
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibUsbSharp", "src\LibUsbSharp\LibUsbSharp.csproj", "{2BFCEF75-FC95-20A3-297C-89F6360C570C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UsbDotNet", "src\UsbDotNet\UsbDotNet.csproj", "{2BFCEF75-FC95-20A3-297C-89F6360C570C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibUsbSharp.Tests", "tests\LibUsbSharp.Tests\LibUsbSharp.Tests.csproj", "{561B847C-1A7E-43CF-CCB5-2867863219F9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UsbDotNet.Tests", "tests\UsbDotNet.Tests\UsbDotNet.Tests.csproj", "{561B847C-1A7E-43CF-CCB5-2867863219F9}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 	ProjectSection(SolutionItems) = preProject
@@ -42,21 +42,21 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{D5E2E026-05AB-49B8-A8DB-5DFEF339FDE4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibUsbSharp.TestInfrastructure", "tests\LibUsbSharp.TestInfrastructure\LibUsbSharp.TestInfrastructure.csproj", "{64E48420-0663-5A0B-B8B8-AE0BD7A86331}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UsbDotNet.TestInfrastructure", "tests\UsbDotNet.TestInfrastructure\UsbDotNet.TestInfrastructure.csproj", "{64E48420-0663-5A0B-B8B8-AE0BD7A86331}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibUsbSharp.Extensions", "src\LibUsbSharp.Extensions\LibUsbSharp.Extensions.csproj", "{4649657E-6654-98C9-F3A4-8B56F150DCFA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UsbDotNet.Extensions", "src\UsbDotNet.Extensions\UsbDotNet.Extensions.csproj", "{4649657E-6654-98C9-F3A4-8B56F150DCFA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibUsbSharp.Extensions.Tests", "tests\LibUsbSharp.Extensions.Tests\LibUsbSharp.Extensions.Tests.csproj", "{F19006AF-68CB-11F3-E952-66050C8BD125}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UsbDotNet.Extensions.Tests", "tests\UsbDotNet.Extensions.Tests\UsbDotNet.Extensions.Tests.csproj", "{F19006AF-68CB-11F3-E952-66050C8BD125}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{C4C3F697-DBEA-4E05-8593-C7C2972E1A37}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibUsbSharp.Native", "src\LibUsbSharp.Native\LibUsbSharp.Native.csproj", "{502429CD-6206-7674-EA55-4EC2793F91EA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UsbDotNet.LibUsbNative", "src\UsbDotNet.LibUsbNative\UsbDotNet.LibUsbNative.csproj", "{502429CD-6206-7674-EA55-4EC2793F91EA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibUsbSharp.Native.Tests", "tests\LibUsbSharp.Native.Tests\LibUsbSharp.Native.Tests.csproj", "{7708B660-3B89-DCCD-62D1-DB0DC210BA5F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UsbDotNet.LibUsbNative.Tests", "tests\UsbDotNet.LibUsbNative.Tests\UsbDotNet.LibUsbNative.Tests.csproj", "{7708B660-3B89-DCCD-62D1-DB0DC210BA5F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibUsbSharp.Native.DeviceListToStringSample", "examples\LibUsbSharp.Native.DeviceListToStringSample\LibUsbSharp.Native.DeviceListToStringSample.csproj", "{55A88F4D-C933-85BD-92D3-A8B6B0D1CBC7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UsbDotNet.LibUsbNative.DeviceListToStringSample", "examples\UsbDotNet.LibUsbNative.DeviceListToStringSample\UsbDotNet.LibUsbNative.DeviceListToStringSample.csproj", "{55A88F4D-C933-85BD-92D3-A8B6B0D1CBC7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibUsbSharp.Native.DeviceListToJsonSample", "examples\LibUsbSharp.Native.DeviceListToJsonSample\LibUsbSharp.Native.DeviceListToJsonSample.csproj", "{75A61D89-2A8F-D43C-DB4F-09858614C402}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UsbDotNet.LibUsbNative.DeviceListToJsonSample", "examples\UsbDotNet.LibUsbNative.DeviceListToJsonSample\UsbDotNet.LibUsbNative.DeviceListToJsonSample.csproj", "{75A61D89-2A8F-D43C-DB4F-09858614C402}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -11,6 +11,6 @@
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     </PropertyGroup>
     <ItemGroup>
-        <ProjectReference Include="..\..\src\LibUsbSharp.Native\LibUsbSharp.Native.csproj" />
+        <ProjectReference Include="..\..\src\UsbDotNet.LibUsbNative\UsbDotNet.LibUsbNative.csproj" />
     </ItemGroup>
 </Project>

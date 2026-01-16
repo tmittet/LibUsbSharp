@@ -7,7 +7,7 @@
         <IsPackable>false</IsPackable>
         <IsTestProject>true</IsTestProject>
         <Nullable>enable</Nullable>
-        <Authors>Stian Myhre, Thomas Mittet</Authors>
+        <Authors>Thomas Mittet</Authors>
         <CurrentYear>2025</CurrentYear>
         <Copyright>Copyright (c) $(CurrentYear) $(Authors)</Copyright>
         <EnableNETAnalyzers>true</EnableNETAnalyzers>
@@ -37,7 +37,8 @@
         <PackageReference Include="Xunit.SkippableFact" />
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="..\..\src\LibUsbSharp\LibUsbSharp.csproj" />
-        <ProjectReference Include="..\LibUsbSharp.TestInfrastructure\LibUsbSharp.TestInfrastructure.csproj" />
+        <ProjectReference Include="..\..\src\UsbDotNet.Extensions\UsbDotNet.Extensions.csproj" />
+        <ProjectReference Include="..\..\src\UsbDotNet\UsbDotNet.csproj" />
+        <ProjectReference Include="..\UsbDotNet.TestInfrastructure\UsbDotNet.TestInfrastructure.csproj" />
     </ItemGroup>
 </Project>

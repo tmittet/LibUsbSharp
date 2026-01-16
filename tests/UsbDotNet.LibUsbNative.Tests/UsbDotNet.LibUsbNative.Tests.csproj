@@ -32,7 +32,7 @@
         <PackageReference Include="Xunit.SkippableFact" />
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="..\..\src\LibUsbSharp.Native\LibUsbSharp.Native.csproj" />
+        <ProjectReference Include="..\..\src\UsbDotNet.LibUsbNative\UsbDotNet.LibUsbNative.csproj" />
     </ItemGroup>
     <ItemGroup>
         <Using Include="Xunit" />

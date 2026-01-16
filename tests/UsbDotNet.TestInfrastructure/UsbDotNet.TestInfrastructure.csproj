@@ -24,6 +24,6 @@
         <PackageReference Include="Xunit.SkippableFact" />
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="..\..\src\LibUsbSharp\LibUsbSharp.csproj" />
+        <ProjectReference Include="..\..\src\UsbDotNet\UsbDotNet.csproj" />
     </ItemGroup>
 </Project>

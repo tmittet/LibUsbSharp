@@ -3,19 +3,19 @@
         <TargetFrameworks>net8.0;net6.0</TargetFrameworks>
         <Platforms>AnyCPU;x64;arm64</Platforms>
         <RuntimeIdentifiers>linux-arm64;linux-x64;maccatalyst-arm64;maccatalyst-x64;osx-arm64;osx-x64;win-arm64;win-x64</RuntimeIdentifiers>
-        <RootNamespace>LibUsbSharp.Extensions</RootNamespace>
+        <RootNamespace>UsbDotNet.Extensions</RootNamespace>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <Authors>Thomas Mittet</Authors>
         <CurrentYear>2025</CurrentYear>
         <Copyright>Copyright (c) $(CurrentYear) $(Authors)</Copyright>
-        <PackageId>LibUsbSharp.Extensions</PackageId>
+        <PackageId>UsbDotNet.Extensions</PackageId>
         <Version>0.0.1</Version>
-        <Description>LibUsbSharp device class specific extensions</Description>
+        <Description>UsbDotNet device class specific extensions</Description>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
-        <PackageTags>libusb;dotnet</PackageTags>
-        <PackageProjectUrl>https://github.com/tmittet/LibUsbSharp</PackageProjectUrl>
-        <RepositoryUrl>https://github.com/tmittet/LibUsbSharp</RepositoryUrl>
+        <PackageTags>USB;libusb;dotnet</PackageTags>
+        <PackageProjectUrl>https://github.com/tmittet/UsbDotNet</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/tmittet/UsbDotNet</RepositoryUrl>
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
         <EmbedUntrackedSources>true</EmbedUntrackedSources>
         <DebugType>portable</DebugType>
@@ -25,9 +25,9 @@
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     </PropertyGroup>
     <ItemGroup>
-        <InternalsVisibleTo Include="LibUsbSharp.Tests" />
+        <InternalsVisibleTo Include="UsbDotNet.Tests" />
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="..\LibUsbSharp\LibUsbSharp.csproj" />
+        <ProjectReference Include="..\UsbDotNet\UsbDotNet.csproj" />
     </ItemGroup>
 </Project>
