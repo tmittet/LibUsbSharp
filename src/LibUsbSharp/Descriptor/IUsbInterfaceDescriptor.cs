@@ -9,6 +9,7 @@ public interface IUsbInterfaceDescriptor
 
     /// <summary>
     /// Value used to select this alternate setting for this interface.
+    /// AlternateSetting == 0 is the default setting for the active configuration.
     /// </summary>
     byte AlternateSetting { get; }
 

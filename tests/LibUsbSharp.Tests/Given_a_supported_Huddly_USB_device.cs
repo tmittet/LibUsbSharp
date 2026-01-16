@@ -102,14 +102,12 @@ public sealed class Given_a_supported_Huddly_USB_device : IDisposable
     public void Huddly_device_has_vendor_interface_with_exactly_one_input_and_one_output_endpoint()
     {
         using var device = _deviceSource.OpenUsbDeviceOrSkip();
-        device.ConfigDescriptor.Interfaces.Should().ContainSingle(i => i.InterfaceClass == UsbClass.VendorSpecific);
-        var vendorInterface = device.ConfigDescriptor.Interfaces.First(i =>
-            i.InterfaceClass == UsbClass.VendorSpecific
-        );
-        vendorInterface.GetEndpoint(UsbEndpointDirection.Input, out var inputCount);
-        inputCount.Should().Be(1);
-        vendorInterface.GetEndpoint(UsbEndpointDirection.Output, out var outputCount);
-        outputCount.Should().Be(1);
+        var vendorInterfaces = device.GetInterfaceDescriptorList(UsbClass.VendorSpecific);
+        vendorInterfaces.Should().ContainSingle("Huddly device has one vendor interface");
+        vendorInterfaces.Single().GetEndpoint(UsbEndpointDirection.Input, out var inputCount);
+        inputCount.Should().Be(1, "Huddly vendor interface has one read (host input) endpoint");
+        vendorInterfaces.Single().GetEndpoint(UsbEndpointDirection.Output, out var outputCount);
+        outputCount.Should().Be(1, "Huddly vendor interface has one write (host output) endpoint");
     }
 
     [SkippableFact]

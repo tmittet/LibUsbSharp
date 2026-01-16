@@ -36,14 +36,22 @@ public sealed class Given_a_vendor_class_USB_device : IDisposable
     public void Device_has_vendor_interface_with_input_and_output_endpoints()
     {
         using var device = _deviceSource.OpenUsbDeviceOrSkip();
-        device.ConfigDescriptor.Interfaces.Should().ContainSingle(i => i.InterfaceClass == UsbClass.VendorSpecific);
-        var vendorInterface = device.ConfigDescriptor.Interfaces.First(i =>
-            i.InterfaceClass == UsbClass.VendorSpecific
-        );
-        vendorInterface.GetEndpoint(UsbEndpointDirection.Input, out var inputCount);
-        inputCount.Should().BeGreaterThanOrEqualTo(1);
-        vendorInterface.GetEndpoint(UsbEndpointDirection.Output, out var outputCount);
-        outputCount.Should().BeGreaterThanOrEqualTo(1);
+        var vendorInterfaces = device.GetInterfaceDescriptorList(UsbClass.VendorSpecific);
+        vendorInterfaces.Should().ContainSingle("Test device must have one vendor interface");
+        vendorInterfaces.Single().GetEndpoint(UsbEndpointDirection.Input, out var inputCount);
+        inputCount
+            .Should()
+            .BeGreaterThanOrEqualTo(
+                1,
+                "Test device vendor interface must have one or more read (host input) endpoints"
+            );
+        vendorInterfaces.Single().GetEndpoint(UsbEndpointDirection.Output, out var outputCount);
+        outputCount
+            .Should()
+            .BeGreaterThanOrEqualTo(
+                1,
+                "Test device vendor interface must have one or more write (host output) endpoints"
+            );
     }
 
     [SkippableFact]
@@ -99,11 +107,11 @@ public sealed class Given_a_vendor_class_USB_device : IDisposable
     {
         using var device = _deviceSource.OpenUsbDeviceOrSkip();
         var interfaceSubClass = device
-            .GetInterfaceDescriptors(UsbClass.VendorSpecific)
+            .GetInterfaceDescriptorList(UsbClass.VendorSpecific)
             .Select(i => i.InterfaceSubClass)
             .FirstOrDefault();
         // Get interfaces with specific class and sub-class
-        var vendorInterfaces = device.GetInterfaceDescriptors(UsbClass.VendorSpecific, interfaceSubClass);
+        var vendorInterfaces = device.GetInterfaceDescriptors(UsbClass.VendorSpecific, withSubClass: interfaceSubClass);
         vendorInterfaces.Should().NotBeEmpty();
     }
 

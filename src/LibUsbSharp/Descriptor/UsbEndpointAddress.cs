@@ -8,7 +8,7 @@ public class UsbEndpointAddress
     public UsbEndpointNumber Number { get; }
 
     /// <summary>
-    /// Bit 7 of the RawValue indicates direction.
+    /// Bit 7 of the RawValue indicates direction; output: 0x00-0x7F, input: 0x80-0xFF.
     /// </summary>
     public UsbEndpointDirection Direction { get; }
 
