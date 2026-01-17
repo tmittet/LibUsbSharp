@@ -1,62 +1,66 @@
-namespace LibUsbSharp.Tests;
+using UsbDotNet.LibUsbNative;
+
+namespace UsbDotNet.Tests;
 
 public sealed class Given_no_USB_device : IDisposable
 {
+    private readonly ILibUsb _libusb;
     private readonly ILoggerFactory _loggerFactory;
 
     public Given_no_USB_device(ITestOutputHelper output)
     {
+        _libusb = new LibUsb();
         _loggerFactory = new TestLoggerFactory(output);
     }
 
     [Fact]
     public void GetVersion_returns_a_valid_version_of_at_least_1_0_27()
     {
-        var version = LibUsb.GetVersion();
+        var version = Usb.GetVersion();
         // Log callback requires v1.0.27 or above
         version.Should().BeGreaterThanOrEqualTo(new Version(1, 0, 27));
     }
 
     [Fact]
-    public void Creating_two_active_instances_of_LibUsb_is_not_allowed()
+    public void Creating_two_active_instances_of_the_Usb_type_is_not_allowed()
     {
-        using var libUsb1 = new LibUsb(_loggerFactory);
-        var act = () => new LibUsb(_loggerFactory);
+        using var usb1 = new Usb(_libusb, _loggerFactory);
+        var act = () => new Usb(_libusb, _loggerFactory);
         act.Should().Throw<InvalidOperationException>().WithMessage("Only one LibUsb instance allowed.");
     }
 
     [Fact]
-    public void Creating_a_second_instance_of_LibUsb_is_allowed_after_disposal_of_first()
+    public void Creating_a_second_instance_of_the_Usb_type_is_allowed_after_disposal_of_first()
     {
-        var libUsb1 = new LibUsb(_loggerFactory);
-        libUsb1.Dispose();
-        using var libUsb2 = new LibUsb(_loggerFactory);
+        var usb1 = new Usb(_libusb, _loggerFactory);
+        usb1.Dispose();
+        using var usb2 = new Usb(_libusb, _loggerFactory);
     }
 
     [Fact]
     public void Initialize_throws_when_called_a_second_time()
     {
-        using var libUsb = new LibUsb(_loggerFactory);
-        libUsb.Initialize();
-        var act = () => libUsb.Initialize();
-        act.Should().Throw<InvalidOperationException>().WithMessage("LibUsb already initialized.");
+        using var usb = new Usb(_libusb, _loggerFactory);
+        usb.Initialize();
+        var act = () => usb.Initialize();
+        act.Should().Throw<InvalidOperationException>().WithMessage("Usb type already initialized.");
     }
 
     [Fact]
     public void GetDeviceList_throws_when_called_without_Initialize()
     {
-        using var libUsb = new LibUsb(_loggerFactory);
-        var act = () => libUsb.GetDeviceList();
+        using var usb = new Usb(_libusb, _loggerFactory);
+        var act = () => usb.GetDeviceList();
         act.Should().Throw<InvalidOperationException>();
     }
 
     [Fact]
     public void GetDeviceList_throws_when_called_after_Dispose()
     {
-        using var libUsb = new LibUsb(_loggerFactory);
-        libUsb.Initialize(LogLevel.Information);
-        libUsb.Dispose();
-        var act = () => libUsb.GetDeviceList();
+        using var usb = new Usb(_libusb, _loggerFactory);
+        usb.Initialize(LogLevel.Information);
+        usb.Dispose();
+        var act = () => usb.GetDeviceList();
         act.Should().Throw<ObjectDisposedException>();
     }
 
@@ -65,8 +69,8 @@ public sealed class Given_no_USB_device : IDisposable
     {
         Skip.If(!OperatingSystem.IsLinux() && !OperatingSystem.IsMacOS(), "Hotplug only supported on linux and macOS.");
 
-        using var libUsb = new LibUsb(_loggerFactory);
-        var act = () => libUsb.RegisterHotplug(vendorId: 0x2BD9);
+        using var usb = new Usb(_libusb, _loggerFactory);
+        var act = () => usb.RegisterHotplug(vendorId: 0x2BD9);
         act.Should().Throw<InvalidOperationException>();
     }
 
@@ -75,9 +79,9 @@ public sealed class Given_no_USB_device : IDisposable
     {
         Skip.If(!OperatingSystem.IsLinux() && !OperatingSystem.IsMacOS(), "Hotplug only supported on linux and macOS.");
 
-        using var libUsb = new LibUsb(_loggerFactory);
-        libUsb.Initialize(LogLevel.Information);
-        var success = libUsb.RegisterHotplug(vendorId: 0x2BD9);
+        using var usb = new Usb(_libusb, _loggerFactory);
+        usb.Initialize(LogLevel.Information);
+        var success = usb.RegisterHotplug(vendorId: 0x2BD9);
         success.Should().BeTrue();
     }
 
@@ -88,9 +92,9 @@ public sealed class Given_no_USB_device : IDisposable
         {
             return;
         }
-        using var libUsb = new LibUsb(_loggerFactory);
-        libUsb.Initialize(LogLevel.Information);
-        var success = libUsb.RegisterHotplug(vendorId: 0x2BD9);
+        using var usb = new Usb(_libusb, _loggerFactory);
+        usb.Initialize(LogLevel.Information);
+        var success = usb.RegisterHotplug(vendorId: 0x2BD9);
         success.Should().BeFalse();
     }
 

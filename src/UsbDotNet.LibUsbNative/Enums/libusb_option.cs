@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace LibUsbSharp.Native.Enums;
+namespace UsbDotNet.LibUsbNative.Enums;
 
 /// <summary>
 /// Available option values for libusb_set_option() and libusb_init_context().

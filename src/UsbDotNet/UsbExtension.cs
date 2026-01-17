@@ -1,9 +1,9 @@
-using LibUsbSharp.Descriptor;
-using LibUsbSharp.Native;
+using UsbDotNet.Descriptor;
+using UsbDotNet.LibUsbNative;
 
-namespace LibUsbSharp;
+namespace UsbDotNet;
 
-public static class LibUsbExtension
+public static class UsbExtension
 {
     /// <summary>
     /// Returns a list of device descriptors for connected USB devices.
@@ -13,10 +13,10 @@ public static class LibUsbExtension
     /// <param name="vendorId">Optional vendor ID filter.</param>
     /// <param name="productId">Optional product ID filter.</param>
     /// <exception cref="LibUsbException">Thrown when the get device list operation fails.</exception>
-    /// <exception cref="ObjectDisposedException">Thrown when LibUsb is disposed.</exception>
-    /// <exception cref="InvalidOperationException">Thrown when LibUsb is not initialized.</exception>
+    /// <exception cref="ObjectDisposedException">Thrown when the Usb type is disposed.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when the Usb type is not initialized.</exception>
     public static List<IUsbDeviceDescriptor> GetDeviceList(
-        this ILibUsb libUsb,
+        this IUsb libUsb,
         ushort? vendorId = default,
         params ushort[] productId
     ) => libUsb.GetDeviceList(vendorId, productId.ToHashSet());
@@ -30,10 +30,10 @@ public static class LibUsbExtension
     /// is inaccessible; because it's open in another process or because of lacking permissions.
     /// </exception>
     /// <exception cref="InvalidOperationException">
-    /// Thrown when LibUsb is not initialized.
+    /// Thrown when the Usb type is not initialized.
     /// </exception>
-    /// <exception cref="ObjectDisposedException">Thrown when LibUsb is disposed.</exception>
-    public static string GetDeviceSerial(this ILibUsb libUsb, IUsbDeviceDescriptor descriptor) =>
+    /// <exception cref="ObjectDisposedException">Thrown when the Usb type is disposed.</exception>
+    public static string GetDeviceSerial(this IUsb libUsb, IUsbDeviceDescriptor descriptor) =>
         libUsb.GetDeviceSerial(descriptor.DeviceKey);
 
     /// <summary>
@@ -45,9 +45,9 @@ public static class LibUsbExtension
     /// is inaccessible; because it's open in another process or because of lacking permissions.
     /// </exception>
     /// <exception cref="InvalidOperationException">
-    /// Thrown when LibUsb is not initialized.
+    /// Thrown when the Usb type is not initialized.
     /// </exception>
-    /// <exception cref="ObjectDisposedException">Thrown when LibUsb is disposed.</exception>
-    public static IUsbDevice OpenDevice(this ILibUsb libUsb, IUsbDeviceDescriptor descriptor) =>
+    /// <exception cref="ObjectDisposedException">Thrown when the Usb type is disposed.</exception>
+    public static IUsbDevice OpenDevice(this IUsb libUsb, IUsbDeviceDescriptor descriptor) =>
         libUsb.OpenDevice(descriptor.DeviceKey);
 }

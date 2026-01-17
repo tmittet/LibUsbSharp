@@ -1,8 +1,8 @@
 ﻿using System.Runtime.InteropServices;
-using LibUsbSharp.Native.Enums;
-using LibUsbSharp.Native.Structs;
+using UsbDotNet.LibUsbNative.Enums;
+using UsbDotNet.LibUsbNative.Structs;
 
-namespace LibUsbSharp.Native.Extensions;
+namespace UsbDotNet.LibUsbNative.Extensions;
 
 internal static class native_libusb_descriptor_Extension
 {

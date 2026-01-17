@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace LibUsbSharp.Native.Enums;
+namespace UsbDotNet.LibUsbNative.Enums;
 
 /// <summary>
 /// Bitwise or of hotplug events that will trigger the callback.

@@ -1,17 +1,17 @@
-﻿using LibUsbSharp.Descriptor;
-using LibUsbSharp.Native;
-using LibUsbSharp.Native.Enums;
-using LibUsbSharp.Native.Extensions;
-using LibUsbSharp.Native.SafeHandles;
-using LibUsbSharp.Native.Structs;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
+using UsbDotNet.Descriptor;
+using UsbDotNet.LibUsbNative;
+using UsbDotNet.LibUsbNative.Enums;
+using UsbDotNet.LibUsbNative.Extensions;
+using UsbDotNet.LibUsbNative.SafeHandles;
+using UsbDotNet.LibUsbNative.Structs;
 
-namespace LibUsbSharp.Internal;
+namespace UsbDotNet.Internal;
 
-internal static class LibUsbDeviceEnum
+internal static class UsbDeviceEnum
 {
     /// <summary>
-    /// Get a list of devices. This does not involve any requests being sent to the devices.
+    /// Get a list of USB devices. This does not involve any requests being sent to the devices.
     /// </summary>
     /// <param name="logger">A logger.</param>
     /// <param name="libusbContext">Pointer to the initialized libusb_init context.</param>

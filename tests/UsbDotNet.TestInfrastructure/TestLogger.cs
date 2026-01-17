@@ -1,4 +1,4 @@
-namespace LibUsbSharp.TestInfrastructure;
+namespace UsbDotNet.TestInfrastructure;
 
 public class TestLogger(string _categoryName, ITestOutputHelper _output) : ILogger
 {

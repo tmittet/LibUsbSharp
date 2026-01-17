@@ -1,4 +1,4 @@
-﻿namespace LibUsbSharp.Native.Tests.SafeHandles.SafeContext;
+﻿namespace UsbDotNet.LibUsbNative.Tests.SafeHandles.SafeContext;
 
 public class Given_an_accessible_USB_device_Fake(ITestOutputHelper output)
     : Given_an_accessible_USB_device(output, new FakeLibusbApi());

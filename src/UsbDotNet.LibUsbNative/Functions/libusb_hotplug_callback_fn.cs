@@ -1,7 +1,7 @@
 ﻿using System.Runtime.InteropServices;
-using LibUsbSharp.Native.Enums;
+using UsbDotNet.LibUsbNative.Enums;
 
-namespace LibUsbSharp.Native.Functions;
+namespace UsbDotNet.LibUsbNative.Functions;
 
 [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 public delegate libusb_hotplug_return libusb_hotplug_callback_fn(

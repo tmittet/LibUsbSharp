@@ -1,9 +1,9 @@
 using System.Runtime.InteropServices;
-using LibUsbSharp.Native.Enums;
-using LibUsbSharp.Native.Extensions;
-using LibUsbSharp.Native.Structs;
+using UsbDotNet.LibUsbNative.Enums;
+using UsbDotNet.LibUsbNative.Extensions;
+using UsbDotNet.LibUsbNative.Structs;
 
-namespace LibUsbSharp.Native.SafeHandles;
+namespace UsbDotNet.LibUsbNative.SafeHandles;
 
 internal sealed class SafeDevice : SafeHandle, ISafeDevice
 {

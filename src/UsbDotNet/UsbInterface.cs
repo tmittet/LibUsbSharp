@@ -1,13 +1,13 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
-using LibUsbSharp.Descriptor;
-using LibUsbSharp.Internal;
-using LibUsbSharp.Internal.Transfer;
-using LibUsbSharp.Native.Enums;
-using LibUsbSharp.Native.SafeHandles;
 using Microsoft.Extensions.Logging;
+using UsbDotNet.Descriptor;
+using UsbDotNet.Internal;
+using UsbDotNet.Internal.Transfer;
+using UsbDotNet.LibUsbNative.Enums;
+using UsbDotNet.LibUsbNative.SafeHandles;
 
-namespace LibUsbSharp;
+namespace UsbDotNet;
 
 public sealed class UsbInterface : IUsbInterface
 {

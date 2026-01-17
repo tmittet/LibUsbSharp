@@ -1,4 +1,4 @@
-﻿namespace LibUsbSharp;
+﻿namespace UsbDotNet;
 
 public static class UsbInterfaceExtension
 {

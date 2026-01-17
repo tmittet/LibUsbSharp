@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace LibUsbSharp.Native.Enums;
+namespace UsbDotNet.LibUsbNative.Enums;
 
 /// <summary>Endpoint direction. Values for bit 7 of the endpoint address scheme.</summary>
 #if NET8_0_OR_GREATER

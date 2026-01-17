@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace LibUsbSharp.Native.Structs;
+namespace UsbDotNet.LibUsbNative.Structs;
 
 /// <summary>
 /// A structure representing the standard USB interface descriptor.

@@ -1,8 +1,8 @@
-using LibUsbSharp.Descriptor;
-using LibUsbSharp.Native;
-using LibUsbSharp.Transfer;
+using UsbDotNet.Descriptor;
+using UsbDotNet.LibUsbNative;
+using UsbDotNet.Transfer;
 
-namespace LibUsbSharp;
+namespace UsbDotNet;
 
 public interface IUsbDevice : IDisposable
 {

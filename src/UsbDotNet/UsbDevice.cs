@@ -1,21 +1,21 @@
 using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
-using LibUsbSharp.Descriptor;
-using LibUsbSharp.Internal;
-using LibUsbSharp.Internal.Transfer;
-using LibUsbSharp.Native;
-using LibUsbSharp.Native.Enums;
-using LibUsbSharp.Native.SafeHandles;
-using LibUsbSharp.Transfer;
 using Microsoft.Extensions.Logging;
+using UsbDotNet.Descriptor;
+using UsbDotNet.Internal;
+using UsbDotNet.Internal.Transfer;
+using UsbDotNet.LibUsbNative;
+using UsbDotNet.LibUsbNative.Enums;
+using UsbDotNet.LibUsbNative.SafeHandles;
+using UsbDotNet.Transfer;
 
-namespace LibUsbSharp;
+namespace UsbDotNet;
 
 public sealed class UsbDevice : IUsbDevice
 {
     private const byte ControlRequestEndpoint = 0x00;
 
-    private readonly LibUsb _libUsb;
+    private readonly Usb _usb;
     private readonly ISafeContext _context;
     private readonly UsbDeviceDescriptor _descriptor;
     private readonly ILoggerFactory _loggerFactory;
@@ -37,7 +37,7 @@ public sealed class UsbDevice : IUsbDevice
 
     internal UsbDevice(
         ILoggerFactory loggerFactory,
-        LibUsb libUsb,
+        Usb usb,
         ISafeContext context,
         ISafeDeviceHandle handle,
         UsbDeviceDescriptor descriptor,
@@ -46,7 +46,7 @@ public sealed class UsbDevice : IUsbDevice
     {
         _loggerFactory = loggerFactory;
         _logger = _loggerFactory.CreateLogger<UsbDevice>();
-        _libUsb = libUsb;
+        _usb = usb;
         _context = context;
         Handle = handle;
         _descriptor = descriptor;
@@ -303,8 +303,8 @@ public sealed class UsbDevice : IUsbDevice
                 }
                 _claimedInterfaces.Clear();
             }
-            // Ask LibUsb to close device and remove it from list of open devices
-            _libUsb.CloseDevice(Descriptor.DeviceKey, Handle);
+            // Ask Usb to close device and remove it from list of open devices
+            _usb.CloseDevice(Descriptor.DeviceKey, Handle);
             _logger.LogInformation("UsbDevice '{DeviceKey}' disposed.", Descriptor.DeviceKey);
 
             _disposeCts.Dispose();

@@ -1,14 +1,14 @@
-﻿using LibUsbSharp.Native.Enums;
-using LibUsbSharp.Native.Extensions;
-using LibUsbSharp.Native.SafeHandles;
+﻿using UsbDotNet.LibUsbNative.Enums;
+using UsbDotNet.LibUsbNative.Extensions;
+using UsbDotNet.LibUsbNative.SafeHandles;
 
-namespace LibUsbSharp.Native.Tests;
+namespace UsbDotNet.LibUsbNative.Tests;
 
 public class LibUsbNativeTestBase(ITestOutputHelper _output, ILibUsbApi _api)
 {
     private static readonly ReaderWriterLockSlim rw_lock = new();
 
-    private readonly LibUsbNative _libUsb = new(_api);
+    private readonly LibUsb _libUsb = new(_api);
 
     protected ITestOutputHelper Output { get; } = _output;
     protected List<string> LibUsbOutput { get; } = [];

@@ -1,4 +1,4 @@
-namespace LibUsbSharp;
+namespace UsbDotNet;
 
 /// <summary>
 /// Device and/or interface class codes. See:

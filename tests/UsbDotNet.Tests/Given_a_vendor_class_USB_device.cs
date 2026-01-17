@@ -1,24 +1,27 @@
-using LibUsbSharp.Descriptor;
+using UsbDotNet.Descriptor;
+using UsbDotNet.LibUsbNative;
 
-namespace LibUsbSharp.Tests;
+namespace UsbDotNet.Tests;
 
 [Trait("Category", "UsbVendorClassDevice")]
 public sealed class Given_a_vendor_class_USB_device : IDisposable
 {
+    private readonly ILibUsb _libusb;
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger<Given_a_vendor_class_USB_device> _logger;
-    private readonly LibUsb _libUsb;
+    private readonly Usb _usb;
     private readonly TestDeviceSource _deviceSource;
 
     public Given_a_vendor_class_USB_device(ITestOutputHelper output)
     {
+        _libusb = new LibUsb();
         _loggerFactory = new TestLoggerFactory(output);
         _logger = _loggerFactory.CreateLogger<Given_a_vendor_class_USB_device>();
-        _libUsb = new LibUsb(_loggerFactory);
+        _usb = new Usb(_libusb, _loggerFactory);
         try
         {
-            _libUsb.Initialize(LogLevel.Information);
-            _deviceSource = new TestDeviceSource(_logger, _libUsb);
+            _usb.Initialize(LogLevel.Information);
+            _deviceSource = new TestDeviceSource(_logger, _usb);
             _deviceSource.SetPreferredVendorId(0x2BD9);
             _deviceSource.SetRequiredInterfaceClass(
                 UsbClass.VendorSpecific,
@@ -27,7 +30,7 @@ public sealed class Given_a_vendor_class_USB_device : IDisposable
         }
         catch
         {
-            _libUsb.Dispose();
+            _usb.Dispose();
             throw;
         }
     }
@@ -117,6 +120,6 @@ public sealed class Given_a_vendor_class_USB_device : IDisposable
 
     public void Dispose()
     {
-        _libUsb.Dispose();
+        _usb.Dispose();
     }
 }

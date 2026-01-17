@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace LibUsbSharp.Native.Enums;
+namespace UsbDotNet.LibUsbNative.Enums;
 
 /// <summary>Device and/or Interface Class codes.</summary>
 #if NET8_0_OR_GREATER

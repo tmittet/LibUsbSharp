@@ -1,8 +1,8 @@
 ﻿using System.Runtime.InteropServices;
 using System.Text.Json.Serialization;
-using LibUsbSharp.Native.Enums;
+using UsbDotNet.LibUsbNative.Enums;
 
-namespace LibUsbSharp.Native.Structs;
+namespace UsbDotNet.LibUsbNative.Structs;
 
 /// <summary>
 /// A structure representing the standard USB device descriptor.

@@ -1,4 +1,4 @@
-﻿namespace LibUsbSharp.TestInfrastructure;
+﻿namespace UsbDotNet.TestInfrastructure;
 
 [Flags]
 public enum TestDeviceAccess

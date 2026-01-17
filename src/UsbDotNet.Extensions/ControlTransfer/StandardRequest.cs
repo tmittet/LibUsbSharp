@@ -1,6 +1,6 @@
-﻿using LibUsbSharp.Transfer;
+﻿using UsbDotNet.Transfer;
 
-namespace LibUsbSharp.Extensions.ControlTransfer;
+namespace UsbDotNet.Extensions.ControlTransfer;
 
 /// <summary>
 /// Standard control requests (USB spec Chapter 9.4) and USB 3.x additions.

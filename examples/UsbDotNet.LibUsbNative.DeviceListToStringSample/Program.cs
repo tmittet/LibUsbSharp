@@ -1,12 +1,12 @@
 using System.Text;
-using LibUsbSharp.Native.Extensions;
-using LibUsbSharp.Native.SafeHandles;
-using LibUsbSharp.Native.Structs;
+using UsbDotNet.LibUsbNative.Extensions;
+using UsbDotNet.LibUsbNative.SafeHandles;
+using UsbDotNet.LibUsbNative.Structs;
 
 // ------------------------------------------------------------
 // Program
 // ------------------------------------------------------------
-var libusb = new LibUsbSharp.Native.LibUsbNative();
+var libusb = new UsbDotNet.LibUsbNative.LibUsb();
 var context = libusb.CreateContext();
 
 Console.WriteLine($"LibUsb version: {libusb.GetVersion()}");

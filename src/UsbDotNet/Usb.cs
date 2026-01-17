@@ -1,49 +1,52 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
-using LibUsbSharp.Descriptor;
-using LibUsbSharp.Internal;
-using LibUsbSharp.Native;
-using LibUsbSharp.Native.Enums;
-using LibUsbSharp.Native.Extensions;
-using LibUsbSharp.Native.SafeHandles;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using UsbDotNet.Descriptor;
+using UsbDotNet.Internal;
+using UsbDotNet.LibUsbNative;
+using UsbDotNet.LibUsbNative.Enums;
+using UsbDotNet.LibUsbNative.Extensions;
+using UsbDotNet.LibUsbNative.SafeHandles;
 
-namespace LibUsbSharp;
+namespace UsbDotNet;
 
-public sealed class LibUsb : ILibUsb
+public sealed class Usb : IUsb
 {
     private static int _instances;
-    private static ILogger<LibUsb>? _staticLogger;
+    private static ILogger<Usb>? _staticLogger;
 
     private readonly object _lock = new();
+    private readonly ILibUsb _libUsb;
     private readonly ILoggerFactory _loggerFactory;
-    private readonly ILogger<LibUsb> _logger;
+    private readonly ILogger<Usb> _logger;
     private readonly ConcurrentDictionary<string, UsbDevice> _openDevices = new();
-    private readonly LibUsbNative _libUsbNative;
     private ISafeContext? _context;
     private LibUsbEventLoop? _eventLoop;
     private ISafeCallbackHandle? _hotplugCallbackHandle;
     private bool _disposed;
 
     /// <summary>
-    /// Get the LibUsb library version.
+    /// Get the Usb library version.
     /// </summary>
     public static Version GetVersion()
     {
-        var libusbNative = new LibUsbNative();
-        var version = libusbNative.GetVersion();
+        var libusb = new LibUsb();
+        var version = libusb.GetVersion();
         return new Version(version.major, version.minor, version.micro, version.nano);
     }
 
     /// <summary>
-    /// Creates the LibUsb wrapper.
+    /// Creates the Usb wrapper.
     /// NOTE: Call Initialize() before enumerating or opening devices.
     /// </summary>
+    /// <param name="libUsb">
+    /// Optional libusb instance. If null, a new default instance will be created.
+    /// </param>
     /// <param name="loggerFactory">
     /// Logger factory for libusb logging. If null, logging is disabled.
     /// </param>
-    public LibUsb(ILoggerFactory? loggerFactory)
+    public Usb(ILibUsb? libUsb = default, ILoggerFactory? loggerFactory = null)
     {
         if (Interlocked.CompareExchange(ref _instances, 1, 0) != 0)
         {
@@ -51,10 +54,10 @@ public sealed class LibUsb : ILibUsb
         }
         try
         {
+            _libUsb = libUsb ?? new LibUsb();
             _loggerFactory = loggerFactory ?? new NullLoggerFactory();
-            _logger = _loggerFactory.CreateLogger<LibUsb>();
+            _logger = _loggerFactory.CreateLogger<Usb>();
             _staticLogger = _logger;
-            _libUsbNative = new LibUsbNative();
         }
         catch (Exception)
         {
@@ -71,10 +74,10 @@ public sealed class LibUsb : ILibUsb
             CheckDisposed();
             if (_context is not null)
             {
-                throw new InvalidOperationException($"{nameof(LibUsb)} already initialized.");
+                throw new InvalidOperationException($"{nameof(Usb)} type already initialized.");
             }
 
-            _context = _libUsbNative.CreateContext();
+            _context = _libUsb.CreateContext();
             _logger.LogInformation("LibUsb v{LibUsbVersion} initialized.", GetVersion());
 
             InitializeLogging(_context, logLevel);
@@ -118,7 +121,7 @@ public sealed class LibUsb : ILibUsb
         ushort? productId = default
     )
     {
-        var supported = _libUsbNative.HasCapability(libusb_capability.LIBUSB_CAP_HAS_HOTPLUG);
+        var supported = _libUsb.HasCapability(libusb_capability.LIBUSB_CAP_HAS_HOTPLUG);
         if (!supported)
         {
             _logger.LogDebug("Hotplug not supported or unimplemented on this platform.");
@@ -168,7 +171,7 @@ public sealed class LibUsb : ILibUsb
         ArgumentNullException.ThrowIfNull(device);
 
         // TODO: Test on macOS and linux; "most functions that take a device handle are not safe"
-        var result = LibUsbDeviceEnum.TryGetDeviceDescriptor(device, out var deviceDescriptor);
+        var result = UsbDeviceEnum.TryGetDeviceDescriptor(device, out var deviceDescriptor);
         if (result != libusb_error.LIBUSB_SUCCESS)
         {
             _logger.LogWarning("Failed to get device descriptor. {ErrorMessage}.", result.GetString());
@@ -191,7 +194,7 @@ public sealed class LibUsb : ILibUsb
         lock (_lock)
         {
             CheckDisposed();
-            return LibUsbDeviceEnum.GetDeviceList(_logger, GetInitializedContextOrThrow(), vendorId, productIds);
+            return UsbDeviceEnum.GetDeviceList(_logger, GetInitializedContextOrThrow(), vendorId, productIds);
         }
     }
 
@@ -244,7 +247,7 @@ public sealed class LibUsb : ILibUsb
 
     private UsbDevice OpenListDeviceUnlocked(ISafeContext context, ISafeDeviceList deviceList, string deviceKey)
     {
-        var (device, descriptor) = LibUsbDeviceEnum
+        var (device, descriptor) = UsbDeviceEnum
             .GetDeviceDescriptors(_logger, deviceList)
             .FirstOrDefault(d => d.Descriptor.DeviceKey == deviceKey);
         return device is null
@@ -277,18 +280,18 @@ public sealed class LibUsb : ILibUsb
     }
 
     /// <summary>
-    /// Throw ObjectDisposedException when LibUsb is disposed.
+    /// Throw ObjectDisposedException when the Usb type is disposed.
     /// </summary>
     private void CheckDisposed()
     {
         if (_disposed)
         {
-            throw new ObjectDisposedException(nameof(LibUsb));
+            throw new ObjectDisposedException(nameof(Usb));
         }
     }
 
     /// <summary>
-    /// Throw InvalidOperationException when LibUsb is not initialized.
+    /// Throw InvalidOperationException when the Usb type is not initialized.
     /// </summary>
     private ISafeContext GetInitializedContextOrThrow()
     {
@@ -296,7 +299,7 @@ public sealed class LibUsb : ILibUsb
     }
 
     /// <summary>
-    /// Disposes this LibUsb context and closes associated devices that remain open. Ongoing
+    /// Disposes this Usb context and closes associated devices that remain open. Ongoing
     /// transfers are canceled, any claimed interfaces are released and allocated memory is freed.
     /// </summary>
     public void Dispose()
@@ -319,7 +322,7 @@ public sealed class LibUsb : ILibUsb
                 foreach (var device in _openDevices)
                 {
                     _logger.LogDebug("Auto disposing device '{DeviceKey}' on LibUsb dispose.", device.Key);
-                    // Device dispose calls LibUsb.CloseDevice, which removes it from the
+                    // Device dispose calls Usb.CloseDevice, which removes it from the
                     // _openDevices dictionary. This works without deadlock or race conditions since
                     // the C# Monitor lock is re-entrant and the ConcurrentDictionary is designed to
                     // allow modification during iteration.

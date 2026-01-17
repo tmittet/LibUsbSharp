@@ -1,4 +1,4 @@
-﻿namespace LibUsbSharp.Internal.Transfer;
+﻿namespace UsbDotNet.Internal.Transfer;
 
 /// <summary>
 /// This enum represents the control request direction. The enum value should be bitwise combined

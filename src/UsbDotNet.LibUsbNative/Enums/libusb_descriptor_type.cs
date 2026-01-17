@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace LibUsbSharp.Native.Enums;
+namespace UsbDotNet.LibUsbNative.Enums;
 
 /// <summary>Descriptor types as defined by the USB specification.</summary>
 #if NET8_0_OR_GREATER

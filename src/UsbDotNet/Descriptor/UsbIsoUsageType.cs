@@ -1,4 +1,4 @@
-﻿namespace LibUsbSharp.Descriptor;
+﻿namespace UsbDotNet.Descriptor;
 
 /// <summary>
 /// Usage type for isochronous endpoints.

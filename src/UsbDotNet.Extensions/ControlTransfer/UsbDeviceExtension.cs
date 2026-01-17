@@ -1,6 +1,6 @@
-﻿using LibUsbSharp.Transfer;
+﻿using UsbDotNet.Transfer;
 
-namespace LibUsbSharp.Extensions.ControlTransfer;
+namespace UsbDotNet.Extensions.ControlTransfer;
 
 public static class UsbDeviceExtension
 {

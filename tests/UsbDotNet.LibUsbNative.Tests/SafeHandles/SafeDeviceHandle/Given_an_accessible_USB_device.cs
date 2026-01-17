@@ -1,4 +1,4 @@
-﻿namespace LibUsbSharp.Native.Tests.SafeHandles.SafeDeviceHandle;
+﻿namespace UsbDotNet.LibUsbNative.Tests.SafeHandles.SafeDeviceHandle;
 
 [Trait("Category", "UsbDevice")]
 public class Given_an_accessible_USB_device_Real(ITestOutputHelper output)

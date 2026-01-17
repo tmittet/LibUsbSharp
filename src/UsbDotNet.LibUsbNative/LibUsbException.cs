@@ -1,8 +1,8 @@
 ﻿using System.Diagnostics;
-using LibUsbSharp.Native.Enums;
-using LibUsbSharp.Native.Extensions;
+using UsbDotNet.LibUsbNative.Enums;
+using UsbDotNet.LibUsbNative.Extensions;
 
-namespace LibUsbSharp.Native;
+namespace UsbDotNet.LibUsbNative;
 
 public sealed class LibUsbException : Exception
 {

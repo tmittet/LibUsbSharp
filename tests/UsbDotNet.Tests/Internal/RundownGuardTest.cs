@@ -1,6 +1,6 @@
-﻿using LibUsbSharp.Internal;
+﻿using UsbDotNet.Internal;
 
-namespace LibUsbSharp.Tests.Internal;
+namespace UsbDotNet.Tests.Internal;
 
 public class RundownGuardTest
 {

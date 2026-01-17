@@ -1,24 +1,24 @@
-using LibUsbSharp.Descriptor;
-using LibUsbSharp.Native;
 using Microsoft.Extensions.Logging;
+using UsbDotNet.Descriptor;
+using UsbDotNet.LibUsbNative;
 
-namespace LibUsbSharp;
+namespace UsbDotNet;
 
-public interface ILibUsb : IDisposable
+public interface IUsb : IDisposable
 {
     /// <summary>
-    /// Initialized the LibUsb library, attaches log callback and starts the
-    /// background thread that handles LibUsb events and drives async transfers.
+    /// Initialized the USB library (libusb), attaches log callback and starts the
+    /// background thread that handles USB events and drives async transfers.
     /// </summary>
-    /// <param name="logLevel">The desired LibUsb library log level.</param>
-    /// <exception cref="ObjectDisposedException">Thrown when LibUsb is disposed.</exception>
+    /// <param name="logLevel">The desired USB library (libusb) log level.</param>
+    /// <exception cref="ObjectDisposedException">Thrown when the Usb type is disposed.</exception>
     void Initialize(LogLevel logLevel = LogLevel.Warning);
 
     /// <summary>
     /// Hotplug events are supported on macOS, Linux and Windows.
     /// https://libusb.sourceforge.io/api-1.0/libusb_hotplug.html
     /// </summary>
-    /// <exception cref="ObjectDisposedException">Thrown when LibUsb is disposed.</exception>
+    /// <exception cref="ObjectDisposedException">Thrown when the Usb type is disposed.</exception>
     bool RegisterHotplug(UsbClass? deviceClass = null, ushort? vendorId = null, ushort? productId = null);
 
     /// <summary>
@@ -28,8 +28,8 @@ public interface ILibUsb : IDisposable
     /// <param name="vendorId">Optional vendor ID filter.</param>
     /// <param name="productIds">Optional product ID filter.</param>
     /// <exception cref="LibUsbException">Thrown when the get device list operation fails.</exception>
-    /// <exception cref="ObjectDisposedException">Thrown when LibUsb is disposed.</exception>
-    /// <exception cref="InvalidOperationException">Thrown when LibUsb is not initialized.</exception>
+    /// <exception cref="ObjectDisposedException">Thrown when the Usb type is disposed.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when the Usb type is not initialized.</exception>
     List<IUsbDeviceDescriptor> GetDeviceList(ushort? vendorId = default, HashSet<ushort>? productIds = default);
 
     /// <summary>
@@ -40,10 +40,8 @@ public interface ILibUsb : IDisposable
     /// LibUsbException ErrorCode AccessDenied or IO is typically an indication that the device
     /// is inaccessible; because it's open in another process or because of lacking permissions.
     /// </exception>
-    /// <exception cref="InvalidOperationException">
-    /// Thrown when LibUsb is not initialized.
-    /// </exception>
-    /// <exception cref="ObjectDisposedException">Thrown when LibUsb is disposed.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when the Usb type is not initialized.</exception>
+    /// <exception cref="ObjectDisposedException">Thrown when the Usb type is disposed.</exception>
     string GetDeviceSerial(string deviceKey);
 
     /// <summary>
@@ -54,9 +52,7 @@ public interface ILibUsb : IDisposable
     /// LibUsbException ErrorCode AccessDenied or IO is typically an indication that the device
     /// is inaccessible; because it's open in another process or because of lacking permissions.
     /// </exception>
-    /// <exception cref="InvalidOperationException">
-    /// Thrown when LibUsb is not initialized.
-    /// </exception>
-    /// <exception cref="ObjectDisposedException">Thrown when LibUsb is disposed.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when the Usb type is not initialized.</exception>
+    /// <exception cref="ObjectDisposedException">Thrown when the Usb type is disposed.</exception>
     IUsbDevice OpenDevice(string deviceKey);
 }

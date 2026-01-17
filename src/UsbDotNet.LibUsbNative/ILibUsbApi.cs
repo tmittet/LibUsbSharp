@@ -1,8 +1,8 @@
-﻿using LibUsbSharp.Native.Enums;
-using LibUsbSharp.Native.Functions;
-using LibUsbSharp.Native.Structs;
+﻿using UsbDotNet.LibUsbNative.Enums;
+using UsbDotNet.LibUsbNative.Functions;
+using UsbDotNet.LibUsbNative.Structs;
 
-namespace LibUsbSharp.Native;
+namespace UsbDotNet.LibUsbNative;
 
 /// <summary>
 /// Swappable facade for libusb 1.x. Default impl: <see cref="PInvokeLibUsbApi"/>.

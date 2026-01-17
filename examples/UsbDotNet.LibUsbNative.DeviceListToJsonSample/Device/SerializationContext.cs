@@ -1,4 +1,4 @@
-﻿namespace LibUsbSharp.Native.DeviceListToJsonSample.Device;
+﻿namespace UsbDotNet.LibUsbNative.DeviceListToJsonSample.Device;
 
 [JsonSerializable(typeof(IEnumerable<DeviceInfo>))]
 [JsonSerializable(typeof(DeviceInfo[]))]

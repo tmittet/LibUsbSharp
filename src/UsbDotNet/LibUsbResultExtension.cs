@@ -1,7 +1,7 @@
-using LibUsbSharp.Native.Enums;
-using LibUsbSharp.Native.Extensions;
+using UsbDotNet.LibUsbNative.Enums;
+using UsbDotNet.LibUsbNative.Extensions;
 
-namespace LibUsbSharp;
+namespace UsbDotNet;
 
 public static class LibUsbResultExtension
 {

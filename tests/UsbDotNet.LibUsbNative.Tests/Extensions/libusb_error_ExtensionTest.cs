@@ -1,8 +1,8 @@
 ﻿using System.Runtime.InteropServices;
-using LibUsbSharp.Native.Enums;
-using LibUsbSharp.Native.Extensions;
+using UsbDotNet.LibUsbNative.Enums;
+using UsbDotNet.LibUsbNative.Extensions;
 
-namespace LibUsbSharp.Native.Tests.Extensions;
+namespace UsbDotNet.LibUsbNative.Tests.Extensions;
 
 public class libusb_error_ExtensionTest
 {

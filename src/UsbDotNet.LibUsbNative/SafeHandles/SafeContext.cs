@@ -1,8 +1,8 @@
 ﻿using System.Runtime.InteropServices;
-using LibUsbSharp.Native.Enums;
-using LibUsbSharp.Native.Functions;
+using UsbDotNet.LibUsbNative.Enums;
+using UsbDotNet.LibUsbNative.Functions;
 
-namespace LibUsbSharp.Native.SafeHandles;
+namespace UsbDotNet.LibUsbNative.SafeHandles;
 
 internal sealed class SafeContext : SafeHandle, ISafeContext
 {

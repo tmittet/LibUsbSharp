@@ -1,6 +1,6 @@
-﻿using LibUsbSharp.Native.Extensions;
+﻿using UsbDotNet.LibUsbNative.Extensions;
 
-namespace LibUsbSharp.Native.Tests.Extensions.DescriptorToStringExtension;
+namespace UsbDotNet.LibUsbNative.Tests.Extensions.DescriptorToStringExtension;
 
 public class Given_any_USB_device_Fake(ITestOutputHelper output) : Given_any_USB_device(output, new FakeLibusbApi());
 

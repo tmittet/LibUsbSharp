@@ -1,8 +1,8 @@
 ﻿using System.Text.Json;
-using LibUsbSharp.Native.Extensions;
-using LibUsbSharp.Native.Structs;
+using UsbDotNet.LibUsbNative.Extensions;
+using UsbDotNet.LibUsbNative.Structs;
 
-namespace LibUsbSharp.Native.Tests.Extensions.DescriptorToJsonExtension;
+namespace UsbDotNet.LibUsbNative.Tests.Extensions.DescriptorToJsonExtension;
 
 public class Given_any_USB_device_Fake(ITestOutputHelper output) : Given_any_USB_device(output, new FakeLibusbApi());
 

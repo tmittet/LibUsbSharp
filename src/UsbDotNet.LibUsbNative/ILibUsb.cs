@@ -1,10 +1,10 @@
-﻿using LibUsbSharp.Native.Enums;
-using LibUsbSharp.Native.SafeHandles;
-using LibUsbSharp.Native.Structs;
+using UsbDotNet.LibUsbNative.Enums;
+using UsbDotNet.LibUsbNative.SafeHandles;
+using UsbDotNet.LibUsbNative.Structs;
 
-namespace LibUsbSharp.Native;
+namespace UsbDotNet.LibUsbNative;
 
-public interface ILibUsbNative
+public interface ILibUsb
 {
     ISafeContext CreateContext();
 

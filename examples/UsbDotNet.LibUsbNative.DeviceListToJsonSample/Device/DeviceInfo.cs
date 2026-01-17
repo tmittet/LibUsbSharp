@@ -1,6 +1,6 @@
-﻿using LibUsbSharp.Native.Structs;
+﻿using UsbDotNet.LibUsbNative.Structs;
 
-namespace LibUsbSharp.Native.DeviceListToJsonSample.Device;
+namespace UsbDotNet.LibUsbNative.DeviceListToJsonSample.Device;
 
 internal sealed record DeviceInfo(
     libusb_device_descriptor Descriptor,

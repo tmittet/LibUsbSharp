@@ -1,19 +1,19 @@
 ﻿using System.Diagnostics;
 using System.Runtime.InteropServices;
-using LibUsbSharp.Native.Enums;
-using LibUsbSharp.Native.SafeHandles;
-using LibUsbSharp.Native.Structs;
+using UsbDotNet.LibUsbNative.Enums;
+using UsbDotNet.LibUsbNative.SafeHandles;
+using UsbDotNet.LibUsbNative.Structs;
 
-namespace LibUsbSharp.Native;
+namespace UsbDotNet.LibUsbNative;
 
 /// <summary>
 /// Singleton-style access to libusb API. Swap in tests if needed.
 /// </summary>
-public class LibUsbNative : ILibUsbNative
+public class LibUsb : ILibUsb
 {
     private readonly ILibUsbApi _api;
 
-    public LibUsbNative(ILibUsbApi? api = default)
+    public LibUsb(ILibUsbApi? api = default)
     {
         _api = api ?? new PInvokeLibUsbApi();
     }

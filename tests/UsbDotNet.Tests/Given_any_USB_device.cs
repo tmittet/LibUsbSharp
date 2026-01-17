@@ -1,31 +1,33 @@
-using LibUsbSharp.Descriptor;
-using LibUsbSharp.Native;
-using LibUsbSharp.Transfer;
+using UsbDotNet.Descriptor;
+using UsbDotNet.LibUsbNative;
+using UsbDotNet.Transfer;
 
-namespace LibUsbSharp.Tests;
+namespace UsbDotNet.Tests;
 
 [Trait("Category", "UsbDevice")]
 public sealed class Given_any_USB_device : IDisposable
 {
+    private readonly ILibUsb _libusb;
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger<Given_any_USB_device> _logger;
-    private readonly LibUsb _libUsb;
+    private readonly Usb _usb;
     private readonly TestDeviceSource _deviceSource;
 
     public Given_any_USB_device(ITestOutputHelper output)
     {
+        _libusb = new LibUsb();
         _loggerFactory = new TestLoggerFactory(output);
         _logger = _loggerFactory.CreateLogger<Given_any_USB_device>();
-        _libUsb = new LibUsb(_loggerFactory);
+        _usb = new Usb(_libusb, _loggerFactory);
         try
         {
-            _libUsb.Initialize(LogLevel.Information);
-            _deviceSource = new TestDeviceSource(_logger, _libUsb);
+            _usb.Initialize(LogLevel.Information);
+            _deviceSource = new TestDeviceSource(_logger, _usb);
             _deviceSource.SetPreferredVendorId(0x2BD9);
         }
         catch
         {
-            _libUsb.Dispose();
+            _usb.Dispose();
             throw;
         }
     }
@@ -33,7 +35,7 @@ public sealed class Given_any_USB_device : IDisposable
     [SkippableFact]
     public void GetDeviceList_returns_at_least_one_USB_device()
     {
-        var descriptors = _libUsb.GetDeviceList();
+        var descriptors = _usb.GetDeviceList();
         Skip.If(descriptors.Count == 0, "No USB device available.");
 
         descriptors.Should().HaveCountGreaterThanOrEqualTo(1);
@@ -56,7 +58,7 @@ public sealed class Given_any_USB_device : IDisposable
     public void OpenDevice_throws_LibUsbException_given_invalid_device_key()
     {
         var invalidDeviceKey = UsbDeviceDescriptor.GetKey(0xFFFF, 0xFFFF, 255, 255);
-        var act = () => _libUsb.OpenDevice(invalidDeviceKey);
+        var act = () => _usb.OpenDevice(invalidDeviceKey);
         act.Should()
             .Throw<LibUsbException>()
             .WithMessage("Failed to get device from list. LIBUSB_ERROR_NOT_FOUND: Entity not found.");
@@ -67,7 +69,7 @@ public sealed class Given_any_USB_device : IDisposable
     {
         using var device = _deviceSource.OpenUsbDeviceOrSkip();
         var deviceDescriptor = device.Descriptor;
-        var act = () => _libUsb.OpenDevice(deviceDescriptor);
+        var act = () => _usb.OpenDevice(deviceDescriptor);
         act.Should()
             .Throw<InvalidOperationException>()
             .WithMessage($"Device '{deviceDescriptor.DeviceKey}' already open.");
@@ -82,7 +84,7 @@ public sealed class Given_any_USB_device : IDisposable
         // This is expected to throw InvalidOperationException; since the device is already open.
         // The test proves OpenDevice finds the device; another exception type with a different
         // error message would be thrown if the device key was invalid or device was not found.
-        var act = () => _libUsb.OpenDevice(deviceDescriptor.DeviceKey);
+        var act = () => _usb.OpenDevice(deviceDescriptor.DeviceKey);
         act.Should()
             .Throw<InvalidOperationException>()
             .WithMessage($"Device '{deviceDescriptor.DeviceKey}' already open.");
@@ -103,7 +105,7 @@ public sealed class Given_any_USB_device : IDisposable
         // This is expected to throw InvalidOperationException; since the device is already open.
         // The test proves OpenDevice finds the device; another exception type with a different
         // error message would be thrown if the device key was invalid or device was not found.
-        var act = () => _libUsb.OpenDevice(validDeviceKey);
+        var act = () => _usb.OpenDevice(validDeviceKey);
         act.Should().Throw<InvalidOperationException>().WithMessage($"Device '{validDeviceKey}' already open.");
     }
 
@@ -115,7 +117,7 @@ public sealed class Given_any_USB_device : IDisposable
         {
             deviceDescriptor = device.Descriptor;
         }
-        var serial = _libUsb.GetDeviceSerial(deviceDescriptor);
+        var serial = _usb.GetDeviceSerial(deviceDescriptor);
         serial.Should().NotBeNullOrWhiteSpace();
     }
 
@@ -130,7 +132,7 @@ public sealed class Given_any_USB_device : IDisposable
             openDevice.GetSerialNumber()
         );
         // Get serial using the descriptor (not the open device)
-        var serial = _libUsb.GetDeviceSerial(openDevice.Descriptor);
+        var serial = _usb.GetDeviceSerial(openDevice.Descriptor);
         serial.Should().NotBeNullOrWhiteSpace();
     }
 
@@ -166,12 +168,12 @@ public sealed class Given_any_USB_device : IDisposable
     }
 
     [SkippableFact]
-    public void Open_devices_are_auto_disposed_when_LibUsb_is_disposed()
+    public void Open_devices_are_auto_disposed_when_the_Usb_type_is_disposed()
     {
         // Open device and leave it open
         var device = _deviceSource.OpenUsbDeviceOrSkip();
-        // Dispose LibUsb to trigger auto disposal of devices
-        _libUsb.Dispose();
+        // Dispose Usb to trigger auto disposal of devices
+        _usb.Dispose();
         // Attempt to get serial, the device should be auto disposed at this point
         var getSerialAct = () => device.GetSerialNumber();
         getSerialAct.Should().Throw<ObjectDisposedException>();
@@ -264,6 +266,6 @@ public sealed class Given_any_USB_device : IDisposable
 
     public void Dispose()
     {
-        _libUsb.Dispose();
+        _usb.Dispose();
     }
 }

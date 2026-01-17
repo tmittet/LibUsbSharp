@@ -1,6 +1,6 @@
-﻿using LibUsbSharp.Transfer;
+﻿using UsbDotNet.Transfer;
 
-namespace LibUsbSharp.Internal.Transfer;
+namespace UsbDotNet.Internal.Transfer;
 
 internal static class ControlRequestPacket
 {

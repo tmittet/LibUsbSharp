@@ -1,6 +1,6 @@
-﻿using LibUsbSharp.Native.Enums;
+﻿using UsbDotNet.LibUsbNative.Enums;
 
-namespace LibUsbSharp.Native.Tests.SafeHandles.SafeDevice;
+namespace UsbDotNet.LibUsbNative.Tests.SafeHandles.SafeDevice;
 
 [Trait("Category", "UsbDevice")]
 public class Given_any_USB_device_Real(ITestOutputHelper output) : Given_any_USB_device(output, new PInvokeLibUsbApi());

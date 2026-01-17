@@ -1,7 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
-using LibUsbSharp.Descriptor;
+using UsbDotNet.Descriptor;
 
-namespace LibUsbSharp;
+namespace UsbDotNet;
 
 public interface IUsbInterface : IDisposable
 {

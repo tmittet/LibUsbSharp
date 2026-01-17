@@ -1,4 +1,4 @@
-namespace LibUsbSharp.Descriptor;
+namespace UsbDotNet.Descriptor;
 
 public interface IUsbDeviceDescriptor
 {

@@ -1,7 +1,7 @@
 ﻿using System.Text.Json.Serialization;
-using LibUsbSharp.Native.Enums;
+using UsbDotNet.LibUsbNative.Enums;
 
-namespace LibUsbSharp.Native.Structs;
+namespace UsbDotNet.LibUsbNative.Structs;
 
 /// <summary>
 /// Strongly typed view of endpoint libusb_endpoint_descriptor.bmAttributes.

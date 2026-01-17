@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.14.36327.8
+# Visual Studio Version 18
+VisualStudioVersion = 18.1.11312.151 d18.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UsbDotNet", "src\UsbDotNet\UsbDotNet.csproj", "{2BFCEF75-FC95-20A3-297C-89F6360C570C}"
 EndProject
@@ -21,11 +21,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{1DB28707-040A-4547-9A9E-6CB90FC93AE0}"
-	ProjectSection(SolutionItems) = preProject
-		tests\.editorconfig = tests\.editorconfig
-	EndProjectSection
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{9D23C15C-5ADC-4D24-9206-198A26113684}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".config", ".config", "{9D9E1D3F-971F-4AD3-98E5-529A025D6332}"
@@ -41,6 +36,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{D5E2E026-05AB-49B8-A8DB-5DFEF339FDE4}"
+	ProjectSection(SolutionItems) = preProject
+		tests\.editorconfig = tests\.editorconfig
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UsbDotNet.TestInfrastructure", "tests\UsbDotNet.TestInfrastructure\UsbDotNet.TestInfrastructure.csproj", "{64E48420-0663-5A0B-B8B8-AE0BD7A86331}"
 EndProject
@@ -182,7 +180,6 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{561B847C-1A7E-43CF-CCB5-2867863219F9} = {D5E2E026-05AB-49B8-A8DB-5DFEF339FDE4}
-		{1DB28707-040A-4547-9A9E-6CB90FC93AE0} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{9D23C15C-5ADC-4D24-9206-198A26113684} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{9D9E1D3F-971F-4AD3-98E5-529A025D6332} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{FE4CADDB-7F7D-4F33-97C9-0A26FB877D18} = {9D23C15C-5ADC-4D24-9206-198A26113684}

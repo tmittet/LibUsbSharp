@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace LibUsbSharp.Native.Structs;
+namespace UsbDotNet.LibUsbNative.Structs;
 
 /// <summary>
 /// A collection of alternate settings for a particular USB interface.

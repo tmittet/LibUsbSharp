@@ -1,6 +1,6 @@
-using LibUsbSharp.Native.Enums;
+using UsbDotNet.LibUsbNative.Enums;
 
-namespace LibUsbSharp.Internal.Transfer;
+namespace UsbDotNet.Internal.Transfer;
 
 internal static class LibUsbTransferStatusExtension
 {

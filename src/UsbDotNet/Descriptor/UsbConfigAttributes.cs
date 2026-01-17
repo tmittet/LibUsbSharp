@@ -1,4 +1,4 @@
-namespace LibUsbSharp.Descriptor;
+namespace UsbDotNet.Descriptor;
 
 [Flags]
 public enum UsbConfigAttributes : byte

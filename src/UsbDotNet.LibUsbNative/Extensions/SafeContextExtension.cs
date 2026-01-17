@@ -1,7 +1,7 @@
-﻿using LibUsbSharp.Native.Enums;
-using LibUsbSharp.Native.SafeHandles;
+﻿using UsbDotNet.LibUsbNative.Enums;
+using UsbDotNet.LibUsbNative.SafeHandles;
 
-namespace LibUsbSharp.Native.Extensions;
+namespace UsbDotNet.LibUsbNative.Extensions;
 
 public static class SafeContextExtension
 {

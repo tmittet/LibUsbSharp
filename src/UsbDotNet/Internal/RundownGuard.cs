@@ -29,7 +29,7 @@
 
 using System.Diagnostics;
 
-namespace LibUsbSharp.Internal;
+namespace UsbDotNet.Internal;
 
 /// <summary>
 /// Coordinates shared and exclusive access and provides a cooperative rundown (shutdown) mechanism.

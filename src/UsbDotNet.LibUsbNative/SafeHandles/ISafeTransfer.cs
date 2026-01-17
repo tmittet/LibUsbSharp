@@ -1,6 +1,6 @@
-﻿using LibUsbSharp.Native.Enums;
+﻿using UsbDotNet.LibUsbNative.Enums;
 
-namespace LibUsbSharp.Native.SafeHandles;
+namespace UsbDotNet.LibUsbNative.SafeHandles;
 
 public interface ISafeTransfer : IDisposable
 {

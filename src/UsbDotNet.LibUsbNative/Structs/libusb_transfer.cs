@@ -1,10 +1,10 @@
 using System.Runtime.InteropServices;
 using System.Text.Json.Serialization;
-using LibUsbSharp.Native.Enums;
-using LibUsbSharp.Native.Functions;
-using LibUsbSharp.Native.SafeHandles;
+using UsbDotNet.LibUsbNative.Enums;
+using UsbDotNet.LibUsbNative.Functions;
+using UsbDotNet.LibUsbNative.SafeHandles;
 
-namespace LibUsbSharp.Native.Structs;
+namespace UsbDotNet.LibUsbNative.Structs;
 
 /// <summary>
 /// The generic USB transfer structure. The user populates this structure and then submits it in

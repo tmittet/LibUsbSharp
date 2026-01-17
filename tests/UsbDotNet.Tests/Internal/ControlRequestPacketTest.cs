@@ -1,7 +1,7 @@
-﻿using LibUsbSharp.Internal.Transfer;
-using LibUsbSharp.Transfer;
+﻿using UsbDotNet.Internal.Transfer;
+using UsbDotNet.Transfer;
 
-namespace LibUsbSharp.Tests.Internal;
+namespace UsbDotNet.Tests.Internal;
 
 public class ControlRequestPacketTest
 {

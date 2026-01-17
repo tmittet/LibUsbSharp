@@ -1,6 +1,6 @@
-﻿using LibUsbSharp.Native.Enums;
+﻿using UsbDotNet.LibUsbNative.Enums;
 
-namespace LibUsbSharp.Native.Extensions;
+namespace UsbDotNet.LibUsbNative.Extensions;
 
 public static class libusb_error_Extension
 {

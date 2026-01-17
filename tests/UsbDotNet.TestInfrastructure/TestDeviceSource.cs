@@ -1,11 +1,11 @@
 using System.Diagnostics.CodeAnalysis;
-using LibUsbSharp.Descriptor;
-using LibUsbSharp.Native;
-using LibUsbSharp.Native.Enums;
+using UsbDotNet.Descriptor;
+using UsbDotNet.LibUsbNative;
+using UsbDotNet.LibUsbNative.Enums;
 
-namespace LibUsbSharp.TestInfrastructure;
+namespace UsbDotNet.TestInfrastructure;
 
-public sealed class TestDeviceSource(ILogger _logger, ILibUsb _libUsb)
+public sealed class TestDeviceSource(ILogger _logger, IUsb _usb)
 {
     private ushort _preferredVendorId;
     private ushort? _requiredVendorId;
@@ -56,7 +56,7 @@ public sealed class TestDeviceSource(ILogger _logger, ILibUsb _libUsb)
 
     public bool TryOpenUsbDevice([NotNullWhen(true)] out IUsbDevice? openDevice)
     {
-        var devices = _libUsb.GetDeviceList(_requiredVendorId).OrderBy(d => d.VendorId == _preferredVendorId ? 0 : 1);
+        var devices = _usb.GetDeviceList(_requiredVendorId).OrderBy(d => d.VendorId == _preferredVendorId ? 0 : 1);
 
         foreach (var deviceDescriptor in devices)
         {
@@ -79,7 +79,7 @@ public sealed class TestDeviceSource(ILogger _logger, ILibUsb _libUsb)
         {
             try
             {
-                device = _libUsb.OpenDevice(deviceDescriptor);
+                device = _usb.OpenDevice(deviceDescriptor);
             }
             catch (LibUsbException ex)
                 when (ex.Error

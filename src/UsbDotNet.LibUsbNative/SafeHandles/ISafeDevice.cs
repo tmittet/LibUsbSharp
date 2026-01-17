@@ -1,6 +1,6 @@
-using LibUsbSharp.Native.Structs;
+using UsbDotNet.LibUsbNative.Structs;
 
-namespace LibUsbSharp.Native.SafeHandles;
+namespace UsbDotNet.LibUsbNative.SafeHandles;
 
 public interface ISafeDevice : IDisposable
 {

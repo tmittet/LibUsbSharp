@@ -1,4 +1,4 @@
-﻿namespace LibUsbSharp.Transfer;
+﻿namespace UsbDotNet.Transfer;
 
 public enum ControlRequestRecipient : byte
 {

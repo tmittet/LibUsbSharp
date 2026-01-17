@@ -1,13 +1,13 @@
 using System.Runtime.InteropServices;
-using LibUsbSharp.Native.Enums;
-using LibUsbSharp.Native.Extensions;
-using LibUsbSharp.Native.SafeHandles;
 using Microsoft.Extensions.Logging;
+using UsbDotNet.LibUsbNative.Enums;
+using UsbDotNet.LibUsbNative.Extensions;
+using UsbDotNet.LibUsbNative.SafeHandles;
 
-namespace LibUsbSharp.Internal;
+namespace UsbDotNet.Internal;
 
 /// <summary>
-/// LibUsb does not start any threads of its own. Async operations are driven by this event loop.
+/// libusb does not start any threads of its own. Async operations are driven by this event loop.
 /// See: https://libusb.sourceforge.io/api-1.0/group__libusb__asyncio.html#asyncevent for info.
 /// </summary>
 internal sealed class LibUsbEventLoop : IDisposable
@@ -32,8 +32,8 @@ internal sealed class LibUsbEventLoop : IDisposable
     }
 
     /// <summary>
-    /// Start the background thread that handles LibUsb events. All LibUsb event handling is
-    /// performed this thread. LibUsb does not invoke any callbacks outside of this context.
+    /// Start the background thread that handles libusb events. All libusb event handling is
+    /// performed this thread. libusb does not invoke any callbacks outside of this context.
     /// Consequently, all registered callbacks will be run on this thread.
     /// See: https://libusb.sourceforge.io/api-1.0/group__libusb__asyncio.html#eventthread
     /// </summary>
@@ -85,7 +85,7 @@ internal sealed class LibUsbEventLoop : IDisposable
     }
 
     /// <summary>
-    /// Throw ObjectDisposedException when LibUsb is disposed.
+    /// Throw ObjectDisposedException when LibUsbEventLoop is disposed.
     /// </summary>
     private void CheckDisposed()
     {

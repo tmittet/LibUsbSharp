@@ -1,26 +1,29 @@
 ﻿using System.Text;
-using LibUsbSharp.Descriptor;
+using UsbDotNet.Descriptor;
+using UsbDotNet.LibUsbNative;
 
-namespace LibUsbSharp.Tests;
+namespace UsbDotNet.Tests;
 
 [Trait("Category", "UsbHuddlyVendorClassDevice")]
 public sealed class Given_a_supported_Huddly_USB_device : IDisposable
 {
     private const ushort HuddlyVendorId = 0x2BD9;
+    private readonly ILibUsb _libusb;
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger<Given_a_supported_Huddly_USB_device> _logger;
-    private readonly LibUsb _libUsb;
+    private readonly Usb _usb;
     private readonly TestDeviceSource _deviceSource;
 
     public Given_a_supported_Huddly_USB_device(ITestOutputHelper output)
     {
+        _libusb = new LibUsb();
         _loggerFactory = new TestLoggerFactory(output);
         _logger = _loggerFactory.CreateLogger<Given_a_supported_Huddly_USB_device>();
-        _libUsb = new LibUsb(_loggerFactory);
+        _usb = new Usb(_libusb, _loggerFactory);
         try
         {
-            _libUsb.Initialize(LogLevel.Information);
-            _deviceSource = new TestDeviceSource(_logger, _libUsb);
+            _usb.Initialize(LogLevel.Information);
+            _deviceSource = new TestDeviceSource(_logger, _usb);
             _deviceSource.SetRequiredVendorId(HuddlyVendorId);
             _deviceSource.SetRequiredInterfaceClass(
                 UsbClass.VendorSpecific,
@@ -29,7 +32,7 @@ public sealed class Given_a_supported_Huddly_USB_device : IDisposable
         }
         catch
         {
-            _libUsb.Dispose();
+            _usb.Dispose();
             throw;
         }
     }
@@ -37,7 +40,7 @@ public sealed class Given_a_supported_Huddly_USB_device : IDisposable
     [SkippableFact]
     public void GetDeviceList_returns_at_least_one_Huddly_USB_device()
     {
-        var descriptors = _libUsb.GetDeviceList(vendorId: HuddlyVendorId);
+        var descriptors = _usb.GetDeviceList(vendorId: HuddlyVendorId);
         Skip.If(descriptors.Count == 0, "No USB device available.");
 
         descriptors.Should().HaveCountGreaterThanOrEqualTo(1);
@@ -64,7 +67,7 @@ public sealed class Given_a_supported_Huddly_USB_device : IDisposable
         {
             deviceDescriptor = device.Descriptor;
         }
-        var serial = _libUsb.GetDeviceSerial(deviceDescriptor);
+        var serial = _usb.GetDeviceSerial(deviceDescriptor);
         serial.Should().NotBeNullOrWhiteSpace();
     }
 
@@ -198,6 +201,6 @@ public sealed class Given_a_supported_Huddly_USB_device : IDisposable
 
     public void Dispose()
     {
-        _libUsb.Dispose();
+        _usb.Dispose();
     }
 }

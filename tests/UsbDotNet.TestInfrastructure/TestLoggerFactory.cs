@@ -1,4 +1,4 @@
-namespace LibUsbSharp.TestInfrastructure;
+namespace UsbDotNet.TestInfrastructure;
 
 public sealed class TestLoggerFactory(ITestOutputHelper _output) : ILoggerFactory
 {

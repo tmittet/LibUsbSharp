@@ -1,8 +1,8 @@
 using System.Collections.Immutable;
-using LibUsbSharp.Descriptor;
-using LibUsbSharp.Native.Structs;
+using UsbDotNet.Descriptor;
+using UsbDotNet.LibUsbNative.Structs;
 
-namespace LibUsbSharp.Internal;
+namespace UsbDotNet.Internal;
 
 internal static class LibUsbDescriptorExtension
 {

@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace LibUsbSharp.Native.SafeHandles;
+namespace UsbDotNet.LibUsbNative.SafeHandles;
 
 internal sealed class SafeHotplugCallbackHandle : SafeHandle, ISafeCallbackHandle
 {

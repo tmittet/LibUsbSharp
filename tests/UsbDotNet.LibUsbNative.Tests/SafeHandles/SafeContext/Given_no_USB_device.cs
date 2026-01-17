@@ -1,6 +1,6 @@
-﻿using LibUsbSharp.Native.Enums;
+﻿using UsbDotNet.LibUsbNative.Enums;
 
-namespace LibUsbSharp.Native.Tests.SafeHandles.SafeContext;
+namespace UsbDotNet.LibUsbNative.Tests.SafeHandles.SafeContext;
 
 public class Given_no_USB_device_Fake(ITestOutputHelper output) : Given_no_USB_device(output, new FakeLibusbApi());
 

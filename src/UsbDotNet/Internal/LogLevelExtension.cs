@@ -1,7 +1,7 @@
-using LibUsbSharp.Native.Enums;
 using Microsoft.Extensions.Logging;
+using UsbDotNet.LibUsbNative.Enums;
 
-namespace LibUsbSharp.Internal;
+namespace UsbDotNet.Internal;
 
 internal static class LogLevelExtension
 {

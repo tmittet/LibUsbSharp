@@ -1,10 +1,10 @@
 ﻿using System.Runtime.InteropServices;
 using System.Text;
-using LibUsbSharp.Native.Enums;
-using LibUsbSharp.Native.Functions;
-using LibUsbSharp.Native.Structs;
+using UsbDotNet.LibUsbNative.Enums;
+using UsbDotNet.LibUsbNative.Functions;
+using UsbDotNet.LibUsbNative.Structs;
 
-namespace LibUsbSharp.Native.Tests.TestInfrastructure;
+namespace UsbDotNet.LibUsbNative.Tests.TestInfrastructure;
 
 /// <summary>
 /// Enhanced in-memory fake of libusb for tests.
@@ -94,7 +94,7 @@ internal sealed class FakeLibusbApi : ILibUsbApi
     {
         // Allocate version structure + strings once.
         _versionRcPtr = AllocAnsi("mock");
-        _versionDescPtr = AllocAnsi("LibUsbSharp Test Fake");
+        _versionDescPtr = AllocAnsi("LibUsb Test Fake");
 
         var verNative = new native_libusb_version
         {

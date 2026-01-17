@@ -1,4 +1,4 @@
-namespace LibUsbSharp.Descriptor;
+namespace UsbDotNet.Descriptor;
 
 /// <inheritdoc/>
 public readonly struct UsbDeviceDescriptor : IUsbDeviceDescriptor
@@ -60,7 +60,7 @@ public readonly struct UsbDeviceDescriptor : IUsbDeviceDescriptor
     }
 
     internal UsbDeviceDescriptor(
-        LibUsbSharp.Native.Structs.libusb_device_descriptor partialDescriptor,
+        UsbDotNet.LibUsbNative.Structs.libusb_device_descriptor partialDescriptor,
         byte busNumber,
         byte address,
         byte portNumber

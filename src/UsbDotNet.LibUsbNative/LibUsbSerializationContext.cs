@@ -1,7 +1,7 @@
 ﻿using System.Text.Json.Serialization;
-using LibUsbSharp.Native.Structs;
+using UsbDotNet.LibUsbNative.Structs;
 
-namespace LibUsbSharp.Native;
+namespace UsbDotNet.LibUsbNative;
 
 [JsonSourceGenerationOptions(DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull, WriteIndented = true)]
 [JsonSerializable(typeof(libusb_config_descriptor))]
@@ -20,4 +20,4 @@ namespace LibUsbSharp.Native;
 [JsonSerializable(typeof(libusb_interface_descriptor[]))]
 [JsonSerializable(typeof(IReadOnlyList<libusb_interface_descriptor>))]
 [JsonSerializable(typeof(libusb_version))]
-public partial class LibUsbSharpNativeSerializationContext : JsonSerializerContext { }
+public partial class LibUsbSerializationContext : JsonSerializerContext { }

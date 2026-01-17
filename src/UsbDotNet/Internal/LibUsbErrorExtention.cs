@@ -1,6 +1,6 @@
-﻿using LibUsbSharp.Native.Enums;
+﻿using UsbDotNet.LibUsbNative.Enums;
 
-namespace LibUsbSharp.Internal;
+namespace UsbDotNet.Internal;
 
 internal static class LibUsbErrorExtention
 {

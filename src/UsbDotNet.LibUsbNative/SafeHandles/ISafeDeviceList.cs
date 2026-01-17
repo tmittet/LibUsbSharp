@@ -1,4 +1,4 @@
-﻿namespace LibUsbSharp.Native.SafeHandles;
+﻿namespace UsbDotNet.LibUsbNative.SafeHandles;
 
 public interface ISafeDeviceList : IReadOnlyList<ISafeDevice>, IDisposable
 {

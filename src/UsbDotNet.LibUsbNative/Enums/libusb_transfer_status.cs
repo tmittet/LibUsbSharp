@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace LibUsbSharp.Native.Enums;
+namespace UsbDotNet.LibUsbNative.Enums;
 
 #if NET8_0_OR_GREATER
 [JsonConverter(typeof(JsonStringEnumConverter<libusb_transfer_status>))]

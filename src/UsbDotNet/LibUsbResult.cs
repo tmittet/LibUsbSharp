@@ -1,11 +1,11 @@
-namespace LibUsbSharp;
+namespace UsbDotNet;
 
 public enum LibUsbResult : int
 {
     Success = 0,
 
     //
-    // Errors that originate from LibUsb
+    // Errors that originate from libusb
     //
 
     /// <summary>
@@ -72,13 +72,4 @@ public enum LibUsbResult : int
     /// Other error (LIBUSB_ERROR_OTHER)
     /// </summary>
     OtherError = -99,
-
-    //
-    // Errors that originate from managed code
-    //
-
-    // <summary>
-    // Generic error in the native USB library managed code wrapper
-    // </summary>
-    //ManagedError = OtherError << 16,
 }

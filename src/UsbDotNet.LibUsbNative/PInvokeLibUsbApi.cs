@@ -1,9 +1,9 @@
 ﻿using System.Runtime.InteropServices;
-using LibUsbSharp.Native.Enums;
-using LibUsbSharp.Native.Functions;
-using LibUsbSharp.Native.Structs;
+using UsbDotNet.LibUsbNative.Enums;
+using UsbDotNet.LibUsbNative.Functions;
+using UsbDotNet.LibUsbNative.Structs;
 
-namespace LibUsbSharp.Native;
+namespace UsbDotNet.LibUsbNative;
 
 // LibraryImportAttribute not available in .NET6, silence warning until removal of .NET6 support
 #pragma warning disable SYSLIB1054 // Use 'LibraryImportAttribute' instead of 'DllImportAttribute' to generate P/Invoke marshalling code at compile time

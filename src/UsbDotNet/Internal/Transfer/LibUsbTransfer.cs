@@ -1,13 +1,13 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using LibUsbSharp.Native.Enums;
-using LibUsbSharp.Native.Extensions;
-using LibUsbSharp.Native.Functions;
-using LibUsbSharp.Native.SafeHandles;
-using LibUsbSharp.Native.Structs;
 using Microsoft.Extensions.Logging;
+using UsbDotNet.LibUsbNative.Enums;
+using UsbDotNet.LibUsbNative.Extensions;
+using UsbDotNet.LibUsbNative.Functions;
+using UsbDotNet.LibUsbNative.SafeHandles;
+using UsbDotNet.LibUsbNative.Structs;
 
-namespace LibUsbSharp.Internal.Transfer;
+namespace UsbDotNet.Internal.Transfer;
 
 internal static class LibUsbTransfer
 {

@@ -1,9 +1,9 @@
-using LibUsbSharp.Native;
-using LibUsbSharp.Native.DeviceListToJsonSample.Device;
-using LibUsbSharp.Native.SafeHandles;
-using LibUsbSharp.Native.Structs;
+using UsbDotNet.LibUsbNative;
+using UsbDotNet.LibUsbNative.DeviceListToJsonSample.Device;
+using UsbDotNet.LibUsbNative.SafeHandles;
+using UsbDotNet.LibUsbNative.Structs;
 
-var libusb = new LibUsbNative();
+var libusb = new LibUsb();
 var context = libusb.CreateContext();
 Console.WriteLine($"LibUsb version: {libusb.GetVersion()}\n");
 context.RegisterLogCallback((level, message) => Console.WriteLine($"[LibUsb][{level}] {message}"));
@@ -60,6 +60,6 @@ static JsonSerializerOptions GetJsonSerializerOptions() =>
         WriteIndented = true,
         TypeInfoResolver = JsonTypeInfoResolver.Combine(
             SerializationContext.Default,
-            LibUsbSharpNativeSerializationContext.Default
+            LibUsbSerializationContext.Default
         ),
     };
