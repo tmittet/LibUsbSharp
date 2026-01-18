@@ -18,12 +18,17 @@ internal sealed class SafeDeviceList : SafeHandle, ISafeDeviceList
         if (listHandle == IntPtr.Zero)
             throw new ArgumentNullException(nameof(listHandle));
         if (count < 0)
-            throw new ArgumentOutOfRangeException(nameof(count), "Must be greater than or equal to zero.");
+            throw new ArgumentOutOfRangeException(
+                nameof(count),
+                "Must be greater than or equal to zero."
+            );
 
         _context = context;
         _count = count;
         handle = listHandle;
-        _lazyDevices = new Lazy<IReadOnlyList<SafeDevice>>(() => GetDevices(context, handle, count).ToArray());
+        _lazyDevices = new Lazy<IReadOnlyList<SafeDevice>>(() =>
+            GetDevices(context, handle, count).ToArray()
+        );
     }
 
     private static IEnumerable<SafeDevice> GetDevices(SafeContext context, nint handle, int count)
@@ -34,7 +39,10 @@ internal sealed class SafeDeviceList : SafeHandle, ISafeDeviceList
             context.DangerousAddRef(ref success);
             yield return success
                 ? new SafeDevice(context, Marshal.ReadIntPtr(handle, i * IntPtr.Size))
-                : throw LibUsbException.FromError(libusb_error.LIBUSB_ERROR_OTHER, "Failed to ref SafeHandle.");
+                : throw LibUsbException.FromError(
+                    libusb_error.LIBUSB_ERROR_OTHER,
+                    "Failed to ref SafeHandle."
+                );
         }
     }
 

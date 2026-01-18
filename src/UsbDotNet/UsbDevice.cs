@@ -121,7 +121,14 @@ public sealed class UsbDevice : IUsbDevice
         using var token = _rundownGuard.AcquireSharedToken();
 
         var length = (ushort)destination.Length;
-        var buffer = ControlRequestPacket.CreateRead(recipient, type, request, value, index, length);
+        var buffer = ControlRequestPacket.CreateRead(
+            recipient,
+            type,
+            request,
+            value,
+            index,
+            length
+        );
         var bufferHandle = GCHandle.Alloc(buffer, GCHandleType.Pinned);
         try
         {
@@ -175,7 +182,14 @@ public sealed class UsbDevice : IUsbDevice
         using var token = _rundownGuard.AcquireSharedToken();
 
         var length = (ushort)source.Length;
-        var buffer = ControlRequestPacket.CreateWrite(recipient, type, request, value, index, length);
+        var buffer = ControlRequestPacket.CreateWrite(
+            recipient,
+            type,
+            request,
+            value,
+            index,
+            length
+        );
         if (length > 0)
         {
             source.CopyTo(buffer.AsSpan(ControlRequestPacket.SetupSize, length));
@@ -311,7 +325,11 @@ public sealed class UsbDevice : IUsbDevice
         }
         catch (Exception ex)
         {
-            _logger.LogError("UsbDevice dispose failed. {ErrorType}: {ErrorMessage}", ex.GetType().Name, ex.Message);
+            _logger.LogError(
+                "UsbDevice dispose failed. {ErrorType}: {ErrorMessage}",
+                ex.GetType().Name,
+                ex.Message
+            );
         }
     }
 }

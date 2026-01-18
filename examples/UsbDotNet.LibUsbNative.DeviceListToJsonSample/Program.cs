@@ -24,10 +24,17 @@ DeviceInfo GetDeviceInfo(ISafeDevice device, libusb_device_descriptor descriptor
         device.GetDeviceAddress(),
         device.GetPortNumber(),
         [.. ReadStringDescriptors(device, descriptor)],
-        [.. Enumerable.Range(0, descriptor.bNumConfigurations).Select(i => device.GetConfigDescriptor((byte)i))]
+        [
+            .. Enumerable
+                .Range(0, descriptor.bNumConfigurations)
+                .Select(i => device.GetConfigDescriptor((byte)i)),
+        ]
     );
 
-IEnumerable<DeviceStringDescriptor> ReadStringDescriptors(ISafeDevice device, libusb_device_descriptor descriptor)
+IEnumerable<DeviceStringDescriptor> ReadStringDescriptors(
+    ISafeDevice device,
+    libusb_device_descriptor descriptor
+)
 {
     using var handle = TryOpenDevice(device);
     if (handle is null)

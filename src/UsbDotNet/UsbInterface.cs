@@ -68,12 +68,16 @@ public sealed class UsbInterface : IUsbInterface
         _bulkReadBuffer = new byte[ReadBufferSize];
         _bulkReadBufferHandle = GCHandle.Alloc(_bulkReadBuffer, GCHandleType.Pinned);
         _readEndpoint = readEndpoint is null
-            ? new Lazy<IUsbEndpointDescriptor>(() => GetEndpoint(descriptor, UsbEndpointDirection.Input))
+            ? new Lazy<IUsbEndpointDescriptor>(() =>
+                GetEndpoint(descriptor, UsbEndpointDirection.Input)
+            )
             : new Lazy<IUsbEndpointDescriptor>(readEndpoint);
         _bulkWriteBuffer = new byte[WriteBufferSize];
         _bulkWriteBufferHandle = GCHandle.Alloc(_bulkWriteBuffer, GCHandleType.Pinned);
         _writeEndpoint = writeEndpoint is null
-            ? new Lazy<IUsbEndpointDescriptor>(() => GetEndpoint(descriptor, UsbEndpointDirection.Output))
+            ? new Lazy<IUsbEndpointDescriptor>(() =>
+                GetEndpoint(descriptor, UsbEndpointDirection.Output)
+            )
             : new Lazy<IUsbEndpointDescriptor>(writeEndpoint);
         _disposeCts = new CancellationTokenSource();
     }
@@ -142,7 +146,11 @@ public sealed class UsbInterface : IUsbInterface
         }
         catch (ObjectDisposedException ex)
         {
-            _logger.LogWarning("BulkRead interrupted. {ErrorType}: {ErrorMessage}", ex.GetType().Name, ex.Message);
+            _logger.LogWarning(
+                "BulkRead interrupted. {ErrorType}: {ErrorMessage}",
+                ex.GetType().Name,
+                ex.Message
+            );
             bytesRead = 0;
             return LibUsbResult.Interrupted;
         }
@@ -184,7 +192,11 @@ public sealed class UsbInterface : IUsbInterface
         }
         catch (ObjectDisposedException ex)
         {
-            _logger.LogWarning("BulkWrite interrupted. {ErrorType}: {ErrorMessage}", ex.GetType().Name, ex.Message);
+            _logger.LogWarning(
+                "BulkWrite interrupted. {ErrorType}: {ErrorMessage}",
+                ex.GetType().Name,
+                ex.Message
+            );
             bytesWritten = 0;
             return LibUsbResult.Interrupted;
         }
@@ -194,9 +206,13 @@ public sealed class UsbInterface : IUsbInterface
         }
     }
 
-    public override string ToString() => $"{_descriptor.InterfaceClass} #{_descriptor.InterfaceNumber}";
+    public override string ToString() =>
+        $"{_descriptor.InterfaceClass} #{_descriptor.InterfaceNumber}";
 
-    private IUsbEndpointDescriptor GetEndpoint(IUsbInterfaceDescriptor descriptor, UsbEndpointDirection direction)
+    private IUsbEndpointDescriptor GetEndpoint(
+        IUsbInterfaceDescriptor descriptor,
+        UsbEndpointDirection direction
+    )
     {
         var endpoint = descriptor.GetEndpoint(direction, out var count);
         if (count > 1)

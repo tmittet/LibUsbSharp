@@ -96,7 +96,10 @@ internal static class LibUsbTransfer
                         and not libusb_error.LIBUSB_SUCCESS
                 )
                 {
-                    logger.LogError("Failed to cancel LibUsb transfer. {ErrorMessage}.", cancelResult.GetString());
+                    logger.LogError(
+                        "Failed to cancel LibUsb transfer. {ErrorMessage}.",
+                        cancelResult.GetString()
+                    );
                 }
                 // We should not free the transfer or handle if there is still a chance
                 // that the callback is triggered, doing so may result in use-after-free.

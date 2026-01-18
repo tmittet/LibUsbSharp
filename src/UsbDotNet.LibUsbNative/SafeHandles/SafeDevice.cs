@@ -51,7 +51,10 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
         SafeHelper.ThrowIfClosed(this);
 
         var result = _context.Api.libusb_get_active_config_descriptor(handle, out var descriptor);
-        LibUsbException.ThrowIfApiError(result, nameof(_context.Api.libusb_get_active_config_descriptor));
+        LibUsbException.ThrowIfApiError(
+            result,
+            nameof(_context.Api.libusb_get_active_config_descriptor)
+        );
         try
         {
             return FromPointer(descriptor);
@@ -67,7 +70,11 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
     {
         SafeHelper.ThrowIfClosed(this);
 
-        var result = _context.Api.libusb_get_config_descriptor(handle, config_index, out var descriptor);
+        var result = _context.Api.libusb_get_config_descriptor(
+            handle,
+            config_index,
+            out var descriptor
+        );
         LibUsbException.ThrowIfApiError(result, nameof(_context.Api.libusb_get_config_descriptor));
         try
         {
@@ -116,7 +123,10 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
         if (!success)
         {
             _context.Api.libusb_close(deviceHandle);
-            throw LibUsbException.FromError(libusb_error.LIBUSB_ERROR_OTHER, "Failed to ref SafeHandle.");
+            throw LibUsbException.FromError(
+                libusb_error.LIBUSB_ERROR_OTHER,
+                "Failed to ref SafeHandle."
+            );
         }
         return new SafeDeviceHandle(_context, deviceHandle, handle);
     }
@@ -124,5 +134,7 @@ internal sealed class SafeDevice : SafeHandle, ISafeDevice
     private static libusb_config_descriptor FromPointer(nint pConfigDescriptor) =>
         pConfigDescriptor == IntPtr.Zero
             ? throw new ArgumentNullException(nameof(pConfigDescriptor))
-            : Marshal.PtrToStructure<native_libusb_config_descriptor>(pConfigDescriptor).ToPublicConfigDescriptor();
+            : Marshal
+                .PtrToStructure<native_libusb_config_descriptor>(pConfigDescriptor)
+                .ToPublicConfigDescriptor();
 }

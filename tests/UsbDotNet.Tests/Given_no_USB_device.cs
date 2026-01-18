@@ -26,7 +26,9 @@ public sealed class Given_no_USB_device : IDisposable
     {
         using var usb1 = new Usb(_libusb, _loggerFactory);
         var act = () => new Usb(_libusb, _loggerFactory);
-        act.Should().Throw<InvalidOperationException>().WithMessage("Only one LibUsb instance allowed.");
+        act.Should()
+            .Throw<InvalidOperationException>()
+            .WithMessage("Only one LibUsb instance allowed.");
     }
 
     [Fact]
@@ -43,7 +45,9 @@ public sealed class Given_no_USB_device : IDisposable
         using var usb = new Usb(_libusb, _loggerFactory);
         usb.Initialize();
         var act = () => usb.Initialize();
-        act.Should().Throw<InvalidOperationException>().WithMessage("Usb type already initialized.");
+        act.Should()
+            .Throw<InvalidOperationException>()
+            .WithMessage("Usb type already initialized.");
     }
 
     [Fact]
@@ -67,7 +71,10 @@ public sealed class Given_no_USB_device : IDisposable
     [SkippableFact]
     public void RegisterHotplug_throws_when_called_without_Initialize_on_supported_platform()
     {
-        Skip.If(!OperatingSystem.IsLinux() && !OperatingSystem.IsMacOS(), "Hotplug only supported on linux and macOS.");
+        Skip.If(
+            !OperatingSystem.IsLinux() && !OperatingSystem.IsMacOS(),
+            "Hotplug only supported on linux and macOS."
+        );
 
         using var usb = new Usb(_libusb, _loggerFactory);
         var act = () => usb.RegisterHotplug(vendorId: 0x2BD9);
@@ -77,7 +84,10 @@ public sealed class Given_no_USB_device : IDisposable
     [SkippableFact]
     public void RegisterHotplug_returns_true_when_called_after_Initialize_on_supported_platform()
     {
-        Skip.If(!OperatingSystem.IsLinux() && !OperatingSystem.IsMacOS(), "Hotplug only supported on linux and macOS.");
+        Skip.If(
+            !OperatingSystem.IsLinux() && !OperatingSystem.IsMacOS(),
+            "Hotplug only supported on linux and macOS."
+        );
 
         using var usb = new Usb(_libusb, _loggerFactory);
         usb.Initialize(LogLevel.Information);

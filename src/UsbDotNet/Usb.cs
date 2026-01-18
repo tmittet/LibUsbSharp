@@ -99,7 +99,10 @@ public sealed class Usb : IUsb
         }
         catch (LibUsbException ex)
         {
-            _logger.LogWarning("Failed to register log callback. {ErrorMessage}.", ex.Error.GetString());
+            _logger.LogWarning(
+                "Failed to register log callback. {ErrorMessage}.",
+                ex.Error.GetString()
+            );
             return; // Only attempt to set log level if callback registration succeeded
         }
 
@@ -110,7 +113,10 @@ public sealed class Usb : IUsb
         }
         catch (LibUsbException ex)
         {
-            _logger.LogWarning("Failed to set LIBUSB_OPTION_LOG_LEVEL. {ErrorMessage}.", ex.Error.GetString());
+            _logger.LogWarning(
+                "Failed to set LIBUSB_OPTION_LOG_LEVEL. {ErrorMessage}.",
+                ex.Error.GetString()
+            );
         }
     }
 
@@ -174,7 +180,10 @@ public sealed class Usb : IUsb
         var result = UsbDeviceEnum.TryGetDeviceDescriptor(device, out var deviceDescriptor);
         if (result != libusb_error.LIBUSB_SUCCESS)
         {
-            _logger.LogWarning("Failed to get device descriptor. {ErrorMessage}.", result.GetString());
+            _logger.LogWarning(
+                "Failed to get device descriptor. {ErrorMessage}.",
+                result.GetString()
+            );
             return libusb_hotplug_return.REARM;
         }
         var descriptor = deviceDescriptor!.Value;
@@ -189,12 +198,20 @@ public sealed class Usb : IUsb
     }
 
     /// <inheritdoc />
-    public List<IUsbDeviceDescriptor> GetDeviceList(ushort? vendorId = default, HashSet<ushort>? productIds = default)
+    public List<IUsbDeviceDescriptor> GetDeviceList(
+        ushort? vendorId = default,
+        HashSet<ushort>? productIds = default
+    )
     {
         lock (_lock)
         {
             CheckDisposed();
-            return UsbDeviceEnum.GetDeviceList(_logger, GetInitializedContextOrThrow(), vendorId, productIds);
+            return UsbDeviceEnum.GetDeviceList(
+                _logger,
+                GetInitializedContextOrThrow(),
+                vendorId,
+                productIds
+            );
         }
     }
 
@@ -245,13 +262,20 @@ public sealed class Usb : IUsb
         return device;
     }
 
-    private UsbDevice OpenListDeviceUnlocked(ISafeContext context, ISafeDeviceList deviceList, string deviceKey)
+    private UsbDevice OpenListDeviceUnlocked(
+        ISafeContext context,
+        ISafeDeviceList deviceList,
+        string deviceKey
+    )
     {
         var (device, descriptor) = UsbDeviceEnum
             .GetDeviceDescriptors(_logger, deviceList)
             .FirstOrDefault(d => d.Descriptor.DeviceKey == deviceKey);
         return device is null
-            ? throw LibUsbException.FromError(libusb_error.LIBUSB_ERROR_NOT_FOUND, "Failed to get device from list.")
+            ? throw LibUsbException.FromError(
+                libusb_error.LIBUSB_ERROR_NOT_FOUND,
+                "Failed to get device from list."
+            )
             : new UsbDevice(
                 _loggerFactory,
                 this,
@@ -273,7 +297,9 @@ public sealed class Usb : IUsb
             _ = GetInitializedContextOrThrow();
             if (!_openDevices.TryRemove(key, out _))
             {
-                throw new InvalidOperationException($"Device not found in the list of open devices.");
+                throw new InvalidOperationException(
+                    $"Device not found in the list of open devices."
+                );
             }
             handle.Dispose();
         }
@@ -321,7 +347,10 @@ public sealed class Usb : IUsb
                 // Close any devices, interfaces and transfers that remain open or are ongoing
                 foreach (var device in _openDevices)
                 {
-                    _logger.LogDebug("Auto disposing device '{DeviceKey}' on LibUsb dispose.", device.Key);
+                    _logger.LogDebug(
+                        "Auto disposing device '{DeviceKey}' on LibUsb dispose.",
+                        device.Key
+                    );
                     // Device dispose calls Usb.CloseDevice, which removes it from the
                     // _openDevices dictionary. This works without deadlock or race conditions since
                     // the C# Monitor lock is re-entrant and the ConcurrentDictionary is designed to

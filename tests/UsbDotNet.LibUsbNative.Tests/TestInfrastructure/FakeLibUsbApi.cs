@@ -84,7 +84,9 @@ internal sealed class FakeLibusbApi : ILibUsbApi
     private readonly Dictionary<libusb_error, IntPtr> _strErrorPtrs;
 
     // Error injection (API name -> queue of factories)
-    private readonly Dictionary<string, Queue<Func<libusb_error>>> _errorInjectors = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, Queue<Func<libusb_error>>> _errorInjectors = new(
+        StringComparer.Ordinal
+    );
     private readonly object _lock = new();
 
     // Disposal
@@ -126,7 +128,8 @@ internal sealed class FakeLibusbApi : ILibUsbApi
     // ---------------------------
     // Error Injection API
     // ---------------------------
-    public void InjectError(string apiName, libusb_error error) => InjectError(apiName, () => error);
+    public void InjectError(string apiName, libusb_error error) =>
+        InjectError(apiName, () => error);
 
     public void InjectErrors(string apiName, IEnumerable<libusb_error> errors)
     {
@@ -210,7 +213,9 @@ internal sealed class FakeLibusbApi : ILibUsbApi
     public int libusb_has_capability(libusb_capability capability) => 1;
 
     public IntPtr libusb_strerror(libusb_error errorCode) =>
-        _strErrorPtrs.TryGetValue(errorCode, out var p) ? p : _strErrorPtrs[libusb_error.LIBUSB_ERROR_OTHER];
+        _strErrorPtrs.TryGetValue(errorCode, out var p)
+            ? p
+            : _strErrorPtrs[libusb_error.LIBUSB_ERROR_OTHER];
 
     // ------------- Device list -------------
     public libusb_error libusb_get_device_list(IntPtr ctx, out IntPtr list)
@@ -245,7 +250,10 @@ internal sealed class FakeLibusbApi : ILibUsbApi
     public libusb_error libusb_get_device_descriptor(IntPtr dev, out libusb_device_descriptor desc)
     {
         desc = default;
-        if (MaybeFail(nameof(libusb_get_device_descriptor), out var err) != libusb_error.LIBUSB_SUCCESS)
+        if (
+            MaybeFail(nameof(libusb_get_device_descriptor), out var err)
+            != libusb_error.LIBUSB_SUCCESS
+        )
             return err;
         desc = Device;
         return libusb_error.LIBUSB_SUCCESS;
@@ -257,7 +265,10 @@ internal sealed class FakeLibusbApi : ILibUsbApi
     public libusb_error libusb_get_config_descriptor(IntPtr dev, ushort index, out IntPtr config)
     {
         config = IntPtr.Zero;
-        if (MaybeFail(nameof(libusb_get_config_descriptor), out var err) != libusb_error.LIBUSB_SUCCESS)
+        if (
+            MaybeFail(nameof(libusb_get_config_descriptor), out var err)
+            != libusb_error.LIBUSB_SUCCESS
+        )
             return err;
         if (index != 0)
             return libusb_error.LIBUSB_ERROR_NOT_FOUND;
@@ -306,7 +317,11 @@ internal sealed class FakeLibusbApi : ILibUsbApi
         var ifDescPtr = Marshal.AllocHGlobal(Marshal.SizeOf<native_libusb_interface_descriptor>());
         Marshal.StructureToPtr(ifDesc, ifDescPtr, false);
 
-        var nativeInterface = new native_libusb_interface { altsetting = ifDescPtr, num_altsetting = 1 };
+        var nativeInterface = new native_libusb_interface
+        {
+            altsetting = ifDescPtr,
+            num_altsetting = 1,
+        };
         var interfaceArrayPtr = Marshal.AllocHGlobal(Marshal.SizeOf<native_libusb_interface>());
         Marshal.StructureToPtr(nativeInterface, interfaceArrayPtr, false);
 
@@ -326,7 +341,8 @@ internal sealed class FakeLibusbApi : ILibUsbApi
             bConfigurationValue = 1,
             iConfiguration = 0,
             bmAttributes = (byte)(
-                libusb_config_desc_attributes.RESERVED_MUST_BE_SET | libusb_config_desc_attributes.SELF_POWERED
+                libusb_config_desc_attributes.RESERVED_MUST_BE_SET
+                | libusb_config_desc_attributes.SELF_POWERED
             ),
             MaxPower = 50,
             interfacePtr = interfaceArrayPtr,
@@ -400,9 +416,17 @@ internal sealed class FakeLibusbApi : ILibUsbApi
     }
 
     // ------------- Strings -------------
-    public libusb_error libusb_get_string_descriptor_ascii(IntPtr h, byte idx, byte[] data, int length)
+    public libusb_error libusb_get_string_descriptor_ascii(
+        IntPtr h,
+        byte idx,
+        byte[] data,
+        int length
+    )
     {
-        if (MaybeFail(nameof(libusb_get_string_descriptor_ascii), out var err) != libusb_error.LIBUSB_SUCCESS)
+        if (
+            MaybeFail(nameof(libusb_get_string_descriptor_ascii), out var err)
+            != libusb_error.LIBUSB_SUCCESS
+        )
             return err;
 
         if (idx == 3)
@@ -415,16 +439,19 @@ internal sealed class FakeLibusbApi : ILibUsbApi
     }
 
     // ------------- Halt / Reset -------------
-    public libusb_error libusb_reset_device(IntPtr handle) => MaybeFail(nameof(libusb_reset_device));
+    public libusb_error libusb_reset_device(IntPtr handle) =>
+        MaybeFail(nameof(libusb_reset_device));
 
     // ------------- Transfers -------------
     public IntPtr libusb_alloc_transfer(int iso_packets) => new(_nextTransfer++);
 
     public void libusb_free_transfer(IntPtr transfer) { }
 
-    public libusb_error libusb_submit_transfer(IntPtr transfer) => MaybeFail(nameof(libusb_submit_transfer));
+    public libusb_error libusb_submit_transfer(IntPtr transfer) =>
+        MaybeFail(nameof(libusb_submit_transfer));
 
-    public libusb_error libusb_cancel_transfer(IntPtr transfer) => MaybeFail(nameof(libusb_cancel_transfer));
+    public libusb_error libusb_cancel_transfer(IntPtr transfer) =>
+        MaybeFail(nameof(libusb_cancel_transfer));
 
     // ------------- Hotplug -------------
     public libusb_error libusb_hotplug_register_callback(
@@ -440,7 +467,10 @@ internal sealed class FakeLibusbApi : ILibUsbApi
     )
     {
         callbackHandle = 0;
-        if (MaybeFail(nameof(libusb_hotplug_register_callback), out var err) != libusb_error.LIBUSB_SUCCESS)
+        if (
+            MaybeFail(nameof(libusb_hotplug_register_callback), out var err)
+            != libusb_error.LIBUSB_SUCCESS
+        )
             return err;
 
         LastCb = cb;

@@ -27,7 +27,9 @@ internal struct native_libusb_interface
         for (var i = 0; i < num_altsetting; i++)
         {
             var interfaceHandle = IntPtr.Add(altsetting, i * interfaceByteSize);
-            yield return Marshal.PtrToStructure<native_libusb_interface_descriptor>(interfaceHandle);
+            yield return Marshal.PtrToStructure<native_libusb_interface_descriptor>(
+                interfaceHandle
+            );
         }
     }
 }

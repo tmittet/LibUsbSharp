@@ -46,7 +46,11 @@ public interface IUsbInterface : IDisposable
     /// Interrupted = The read operation was canceled.<br />
     /// NotSupported = The transfer flags are not supported by the operating system.<br />
     /// </returns>
-    LibUsbResult BulkRead(Span<byte> destination, out int bytesRead, int timeout = Timeout.Infinite);
+    LibUsbResult BulkRead(
+        Span<byte> destination,
+        out int bytesRead,
+        int timeout = Timeout.Infinite
+    );
 
     /// <summary>
     /// Bulk write data to the USB device interface. This method blocks until a chunk of data has
@@ -74,5 +78,9 @@ public interface IUsbInterface : IDisposable
     /// Interrupted = The write operation was canceled.<br />
     /// NotSupported = The transfer flags are not supported by the operating system.<br />
     /// </returns>
-    LibUsbResult BulkWrite(ReadOnlySpan<byte> source, out int bytesWritten, int timeout = Timeout.Infinite);
+    LibUsbResult BulkWrite(
+        ReadOnlySpan<byte> source,
+        out int bytesWritten,
+        int timeout = Timeout.Infinite
+    );
 }

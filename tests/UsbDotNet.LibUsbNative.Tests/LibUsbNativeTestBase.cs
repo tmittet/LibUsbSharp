@@ -13,7 +13,9 @@ public class LibUsbNativeTestBase(ITestOutputHelper _output, ILibUsbApi _api)
     protected ITestOutputHelper Output { get; } = _output;
     protected List<string> LibUsbOutput { get; } = [];
 
-    protected ISafeContext GetContext(libusb_log_level logLevel = libusb_log_level.LIBUSB_LOG_LEVEL_INFO)
+    protected ISafeContext GetContext(
+        libusb_log_level logLevel = libusb_log_level.LIBUSB_LOG_LEVEL_INFO
+    )
     {
         var version = _libUsb.GetVersion();
         Output.WriteLine(version.ToString());

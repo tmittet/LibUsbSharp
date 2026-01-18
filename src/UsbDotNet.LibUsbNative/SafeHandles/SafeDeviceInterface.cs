@@ -27,7 +27,10 @@ internal sealed class SafeDeviceInterface : SafeHandle, ISafeDeviceInterface
 
     protected override bool ReleaseHandle()
     {
-        var result = _deviceHandle.Api.libusb_release_interface(_deviceHandle.DangerousGetHandle(), _interfaceNumber);
+        var result = _deviceHandle.Api.libusb_release_interface(
+            _deviceHandle.DangerousGetHandle(),
+            _interfaceNumber
+        );
         LibUsbException.ThrowIfApiError(
             result,
             nameof(_deviceHandle.Api.libusb_release_interface),

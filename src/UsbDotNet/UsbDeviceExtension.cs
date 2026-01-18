@@ -42,7 +42,9 @@ public static class UsbDeviceExtension
             .ThenBy(i => i.AlternateSetting)
             .FirstOrDefault();
         return usbInterface is null
-            ? throw new InvalidOperationException($"Device '{device}' {withClass} interface not found.")
+            ? throw new InvalidOperationException(
+                $"Device '{device}' {withClass} interface not found."
+            )
             : device.ClaimInterface(usbInterface);
     }
 
@@ -84,7 +86,10 @@ public static class UsbDeviceExtension
     /// setting number. Per the USB spec, alternate setting 0 always exists and is the default
     /// alternate setting for each device configuration.
     /// </returns>
-    public static IDictionary<byte, IDictionary<byte, IUsbInterfaceDescriptor>> GetInterfaceDescriptors(
+    public static IDictionary<
+        byte,
+        IDictionary<byte, IUsbInterfaceDescriptor>
+    > GetInterfaceDescriptors(
         this IUsbDevice device,
         UsbClass withClass,
         byte? withSubClass = null,

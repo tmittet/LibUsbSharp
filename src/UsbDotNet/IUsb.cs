@@ -19,7 +19,11 @@ public interface IUsb : IDisposable
     /// https://libusb.sourceforge.io/api-1.0/libusb_hotplug.html
     /// </summary>
     /// <exception cref="ObjectDisposedException">Thrown when the Usb type is disposed.</exception>
-    bool RegisterHotplug(UsbClass? deviceClass = null, ushort? vendorId = null, ushort? productId = null);
+    bool RegisterHotplug(
+        UsbClass? deviceClass = null,
+        ushort? vendorId = null,
+        ushort? productId = null
+    );
 
     /// <summary>
     /// Returns a list of device descriptors for connected USB devices.
@@ -30,7 +34,10 @@ public interface IUsb : IDisposable
     /// <exception cref="LibUsbException">Thrown when the get device list operation fails.</exception>
     /// <exception cref="ObjectDisposedException">Thrown when the Usb type is disposed.</exception>
     /// <exception cref="InvalidOperationException">Thrown when the Usb type is not initialized.</exception>
-    List<IUsbDeviceDescriptor> GetDeviceList(ushort? vendorId = default, HashSet<ushort>? productIds = default);
+    List<IUsbDeviceDescriptor> GetDeviceList(
+        ushort? vendorId = default,
+        HashSet<ushort>? productIds = default
+    );
 
     /// <summary>
     /// Get the device serial number. To read the serial the device must be opened for a brief

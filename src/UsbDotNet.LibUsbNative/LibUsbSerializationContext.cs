@@ -3,7 +3,10 @@ using UsbDotNet.LibUsbNative.Structs;
 
 namespace UsbDotNet.LibUsbNative;
 
-[JsonSourceGenerationOptions(DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull, WriteIndented = true)]
+[JsonSourceGenerationOptions(
+    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+    WriteIndented = true
+)]
 [JsonSerializable(typeof(libusb_config_descriptor))]
 [JsonSerializable(typeof(libusb_config_descriptor[]))]
 [JsonSerializable(typeof(IReadOnlyList<libusb_config_descriptor>))]

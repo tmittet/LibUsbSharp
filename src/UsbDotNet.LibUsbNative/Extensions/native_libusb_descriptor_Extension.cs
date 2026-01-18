@@ -18,12 +18,16 @@ internal static class native_libusb_descriptor_Extension
             iConfiguration: descriptor.iConfiguration,
             bmAttributes: (libusb_config_desc_attributes)descriptor.bmAttributes,
             bMaxPower: descriptor.MaxPower,
-            interfaces: descriptor.ReadInterfaces().Select(a => a.ToPublicInterfaceDescriptor()).ToList(),
+            interfaces: descriptor
+                .ReadInterfaces()
+                .Select(a => a.ToPublicInterfaceDescriptor())
+                .ToList(),
             extra: ReadBytes(descriptor.extra, descriptor.extra_length)
         );
 
-    internal static libusb_interface ToPublicInterfaceDescriptor(this native_libusb_interface descriptor) =>
-        new(descriptor.ReadAltSettings().Select(a => a.ToPublicInterfaceDescriptor()).ToList());
+    internal static libusb_interface ToPublicInterfaceDescriptor(
+        this native_libusb_interface descriptor
+    ) => new(descriptor.ReadAltSettings().Select(a => a.ToPublicInterfaceDescriptor()).ToList());
 
     internal static libusb_interface_descriptor ToPublicInterfaceDescriptor(
         this native_libusb_interface_descriptor descriptor
@@ -38,7 +42,10 @@ internal static class native_libusb_descriptor_Extension
             bInterfaceSubClass: descriptor.bInterfaceSubClass,
             bInterfaceProtocol: descriptor.bInterfaceProtocol,
             iInterface: descriptor.iInterface,
-            endpoints: descriptor.ReadEndpoints().Select(e => e.ToPublicEndpointDescriptor()).ToList(),
+            endpoints: descriptor
+                .ReadEndpoints()
+                .Select(e => e.ToPublicEndpointDescriptor())
+                .ToList(),
             extra: ReadBytes(descriptor.extra, descriptor.extra_length)
         );
 

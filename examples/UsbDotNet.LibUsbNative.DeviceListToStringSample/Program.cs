@@ -114,7 +114,9 @@ static class SamplePrinter
         }
         catch (Exception ex)
         {
-            Console.WriteLine(Indent(1) + $"[WARN] Failed to read string descriptors: {ex.Message}");
+            Console.WriteLine(
+                Indent(1) + $"[WARN] Failed to read string descriptors: {ex.Message}"
+            );
         }
     }
 

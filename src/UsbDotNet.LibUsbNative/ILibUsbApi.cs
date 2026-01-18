@@ -186,7 +186,12 @@ public interface ILibUsbApi
     /// device. The function formulates the appropriate control message to retrieve the descriptor,
     /// and converts the Unicode string returned by the device to ASCII.
     /// </summary>
-    libusb_error libusb_get_string_descriptor_ascii(IntPtr handle, byte desc_index, byte[] data, int length);
+    libusb_error libusb_get_string_descriptor_ascii(
+        IntPtr handle,
+        byte desc_index,
+        byte[] data,
+        int length
+    );
 
     /// <summary>
     /// Perform a USB port reset to reinitialize a device. The system will attempt to restore the

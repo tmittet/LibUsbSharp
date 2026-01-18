@@ -114,7 +114,10 @@ public sealed class Given_a_vendor_class_USB_device : IDisposable
             .Select(i => i.InterfaceSubClass)
             .FirstOrDefault();
         // Get interfaces with specific class and sub-class
-        var vendorInterfaces = device.GetInterfaceDescriptors(UsbClass.VendorSpecific, withSubClass: interfaceSubClass);
+        var vendorInterfaces = device.GetInterfaceDescriptors(
+            UsbClass.VendorSpecific,
+            withSubClass: interfaceSubClass
+        );
         vendorInterfaces.Should().NotBeEmpty();
     }
 

@@ -65,7 +65,11 @@ public abstract class Given_an_accessible_USB_device(ITestOutputHelper output, I
             using var deviceHandle = device.Open();
 
             var snIndex = device.GetDeviceDescriptor().iSerialNumber;
-            var result = deviceHandle.TryGetStringDescriptorAscii(snIndex, out var value, out var error);
+            var result = deviceHandle.TryGetStringDescriptorAscii(
+                snIndex,
+                out var value,
+                out var error
+            );
             result.Should().BeTrue();
             value.Should().NotBeNullOrEmpty();
             error.Should().BeNull();

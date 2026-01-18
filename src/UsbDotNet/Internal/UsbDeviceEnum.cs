@@ -31,7 +31,8 @@ internal static class UsbDeviceEnum
         return GetDeviceDescriptors(logger, deviceList)
             .Select(d => d.Descriptor)
             .Where(d =>
-                (vendorId is null || vendorId == d.VendorId) && (productIds is null || productIds.Contains(d.ProductId))
+                (vendorId is null || vendorId == d.VendorId)
+                && (productIds is null || productIds.Contains(d.ProductId))
             )
             .Cast<IUsbDeviceDescriptor>()
             .ToList();
@@ -43,10 +44,10 @@ internal static class UsbDeviceEnum
     /// <param name="logger">A logger.</param>
     /// <param name="devices">Pointer to device list returned by libusb_get_device_list.</param>
     /// <exception cref="ObjectDisposedException">Thrown when device is disposed.</exception>
-    internal static IEnumerable<(ISafeDevice device, UsbDeviceDescriptor Descriptor)> GetDeviceDescriptors(
-        ILogger logger,
-        IReadOnlyList<ISafeDevice> devices
-    )
+    internal static IEnumerable<(
+        ISafeDevice device,
+        UsbDeviceDescriptor Descriptor
+    )> GetDeviceDescriptors(ILogger logger, IReadOnlyList<ISafeDevice> devices)
     {
         foreach (var device in devices)
         {
@@ -54,7 +55,10 @@ internal static class UsbDeviceEnum
             // NOTE: Should always be LIBUSB_SUCCESS; since libusb-1.0.16 libusb_get_device_descriptor always succeeds.
             if (result != libusb_error.LIBUSB_SUCCESS)
             {
-                logger.LogWarning("Get device descriptor failed. {ErrorMessage}.", result.GetString());
+                logger.LogWarning(
+                    "Get device descriptor failed. {ErrorMessage}.",
+                    result.GetString()
+                );
             }
             else if (descriptor!.Value.BcdUsb > 0)
             {
@@ -68,7 +72,10 @@ internal static class UsbDeviceEnum
     /// NOTE: since libusb-1.0.16, LIBUSBX_API_VERSION >= 0x01000102, this function always succeeds.
     /// </summary>
     /// <exception cref="ObjectDisposedException">Thrown when device is disposed.</exception>
-    internal static libusb_error TryGetDeviceDescriptor(ISafeDevice device, out UsbDeviceDescriptor? descriptor)
+    internal static libusb_error TryGetDeviceDescriptor(
+        ISafeDevice device,
+        out UsbDeviceDescriptor? descriptor
+    )
     {
         libusb_device_descriptor partialDescriptor;
         try

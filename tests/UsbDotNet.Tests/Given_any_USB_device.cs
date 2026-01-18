@@ -61,7 +61,9 @@ public sealed class Given_any_USB_device : IDisposable
         var act = () => _usb.OpenDevice(invalidDeviceKey);
         act.Should()
             .Throw<LibUsbException>()
-            .WithMessage("Failed to get device from list. LIBUSB_ERROR_NOT_FOUND: Entity not found.");
+            .WithMessage(
+                "Failed to get device from list. LIBUSB_ERROR_NOT_FOUND: Entity not found."
+            );
     }
 
     [SkippableFact]
@@ -106,7 +108,9 @@ public sealed class Given_any_USB_device : IDisposable
         // The test proves OpenDevice finds the device; another exception type with a different
         // error message would be thrown if the device key was invalid or device was not found.
         var act = () => _usb.OpenDevice(validDeviceKey);
-        act.Should().Throw<InvalidOperationException>().WithMessage($"Device '{validDeviceKey}' already open.");
+        act.Should()
+            .Throw<InvalidOperationException>()
+            .WithMessage($"Device '{validDeviceKey}' already open.");
     }
 
     [SkippableFact]
@@ -222,7 +226,10 @@ public sealed class Given_any_USB_device : IDisposable
         // Byte 8-9 is vendor ID
         BitConverter.ToUInt16(descriptorBuffer[8..10], 0).Should().Be(device.Descriptor.VendorId);
         // Byte 10-11 is product ID
-        BitConverter.ToUInt16(descriptorBuffer[10..12], 0).Should().Be(device.Descriptor.ProductId);
+        BitConverter
+            .ToUInt16(descriptorBuffer[10..12], 0)
+            .Should()
+            .Be(device.Descriptor.ProductId);
     }
 
     [SkippableFact]
@@ -244,8 +251,12 @@ public sealed class Given_any_USB_device : IDisposable
             0, // Always zero for Device, GetConfigurationRequest
             0 // Always zero for Device, GetConfigurationRequest
         );
-        readResult.Should().Be(LibUsbResult.Success, "The write test can't continue when read is unsuccessful.");
-        bytesRead.Should().Be(1, "The write test can't continue when an invalid number of bytes are read.");
+        readResult
+            .Should()
+            .Be(LibUsbResult.Success, "The write test can't continue when read is unsuccessful.");
+        bytesRead
+            .Should()
+            .Be(1, "The write test can't continue when an invalid number of bytes are read.");
 
         // When configuration read is successful, write the same config value back to the device
         var writeResult = device.ControlWrite(

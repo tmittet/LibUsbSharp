@@ -25,7 +25,10 @@ public class ControlRequestPacketTest
     [InlineData(0, 8)]
     [InlineData(3, 11)]
     [InlineData(7, 15)]
-    public void CreateRead_returns_expected_setup_packet_length(ushort payloadLength, int expectedLength)
+    public void CreateRead_returns_expected_setup_packet_length(
+        ushort payloadLength,
+        int expectedLength
+    )
     {
         var buffer = ControlRequestPacket.CreateRead(
             ControlRequestRecipient.Device,
@@ -58,7 +61,10 @@ public class ControlRequestPacketTest
     [InlineData(0, 8)]
     [InlineData(4, 12)]
     [InlineData(9, 17)]
-    public void CreateWrite_returns_expected_setup_packet_length(ushort payloadLength, int expectedLength)
+    public void CreateWrite_returns_expected_setup_packet_length(
+        ushort payloadLength,
+        int expectedLength
+    )
     {
         var buffer = ControlRequestPacket.CreateWrite(
             ControlRequestRecipient.Device,

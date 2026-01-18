@@ -23,7 +23,14 @@ public readonly record struct libusb_version
     public string describe { get; }
 
     [JsonConstructor]
-    public libusb_version(ushort major, ushort minor, ushort micro, ushort nano, string rc, string describe)
+    public libusb_version(
+        ushort major,
+        ushort minor,
+        ushort micro,
+        ushort nano,
+        string rc,
+        string describe
+    )
     {
         this.major = major;
         this.minor = minor;

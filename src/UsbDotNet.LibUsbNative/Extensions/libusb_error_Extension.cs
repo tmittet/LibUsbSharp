@@ -23,9 +23,11 @@ public static class libusb_error_Extension
             libusb_error.LIBUSB_ERROR_TIMEOUT => "Operation timed out",
             libusb_error.LIBUSB_ERROR_OVERFLOW => "Overflow",
             libusb_error.LIBUSB_ERROR_PIPE => "Pipe error",
-            libusb_error.LIBUSB_ERROR_INTERRUPTED => "System call interrupted (perhaps due to signal)",
+            libusb_error.LIBUSB_ERROR_INTERRUPTED =>
+                "System call interrupted (perhaps due to signal)",
             libusb_error.LIBUSB_ERROR_NO_MEM => "Insufficient memory",
-            libusb_error.LIBUSB_ERROR_NOT_SUPPORTED => "Operation not supported or unimplemented on this platform",
+            libusb_error.LIBUSB_ERROR_NOT_SUPPORTED =>
+                "Operation not supported or unimplemented on this platform",
             libusb_error.LIBUSB_ERROR_OTHER => "Other error",
             _ => $"{UnknownLibUsbErrorMessagePrefix} {error}",
         };

@@ -34,7 +34,10 @@ public static class libusb_descriptor_ToStringExtension
         return sb.ToString().TrimEnd();
     }
 
-    public static string ToTreeString(this libusb_device_descriptor d, IReadOnlyList<libusb_config_descriptor> configs)
+    public static string ToTreeString(
+        this libusb_device_descriptor d,
+        IReadOnlyList<libusb_config_descriptor> configs
+    )
     {
         var sb = new StringBuilder().AppendLine(d.ToTreeString());
         for (var i = 0; i < configs.Count; i++)

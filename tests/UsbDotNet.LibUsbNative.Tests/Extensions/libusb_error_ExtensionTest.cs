@@ -14,7 +14,10 @@ public class libusb_error_ExtensionTest
             foreach (var value in Enum.GetValues<libusb_error>())
             {
                 value.GetString().Should().NotBeNullOrEmpty();
-                value.GetString().Should().NotContain(libusb_error_Extension.UnknownLibUsbErrorMessagePrefix);
+                value
+                    .GetString()
+                    .Should()
+                    .NotContain(libusb_error_Extension.UnknownLibUsbErrorMessagePrefix);
             }
         }
     }

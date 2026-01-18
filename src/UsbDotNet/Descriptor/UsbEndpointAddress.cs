@@ -20,7 +20,8 @@ public class UsbEndpointAddress
     public UsbEndpointAddress(byte rawValue)
     {
         RawValue = rawValue;
-        Direction = (rawValue & 0x80) != 0 ? UsbEndpointDirection.Input : UsbEndpointDirection.Output;
+        Direction =
+            (rawValue & 0x80) != 0 ? UsbEndpointDirection.Input : UsbEndpointDirection.Output;
         Number = (UsbEndpointNumber)(rawValue & 0x0F);
     }
 

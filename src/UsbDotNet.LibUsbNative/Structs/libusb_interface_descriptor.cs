@@ -56,7 +56,8 @@ public readonly record struct libusb_interface_descriptor
     /// <summary>
     /// Array of endpoint descriptors.
     /// </summary>
-    public IReadOnlyList<libusb_endpoint_descriptor> endpoints { get; } = Array.Empty<libusb_endpoint_descriptor>();
+    public IReadOnlyList<libusb_endpoint_descriptor> endpoints { get; } =
+        Array.Empty<libusb_endpoint_descriptor>();
 
     /// <summary>
     /// Extra descriptors.

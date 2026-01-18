@@ -4,12 +4,15 @@ using UsbDotNet.LibUsbNative.Structs;
 
 namespace UsbDotNet.LibUsbNative.Tests.Extensions.DescriptorToJsonExtension;
 
-public class Given_any_USB_device_Fake(ITestOutputHelper output) : Given_any_USB_device(output, new FakeLibusbApi());
+public class Given_any_USB_device_Fake(ITestOutputHelper output)
+    : Given_any_USB_device(output, new FakeLibusbApi());
 
 [Trait("Category", "UsbDevice")]
-public class Given_any_USB_device_Real(ITestOutputHelper output) : Given_any_USB_device(output, new PInvokeLibUsbApi());
+public class Given_any_USB_device_Real(ITestOutputHelper output)
+    : Given_any_USB_device(output, new PInvokeLibUsbApi());
 
-public abstract class Given_any_USB_device(ITestOutputHelper output, ILibUsbApi api) : LibUsbNativeTestBase(output, api)
+public abstract class Given_any_USB_device(ITestOutputHelper output, ILibUsbApi api)
+    : LibUsbNativeTestBase(output, api)
 {
     [SkippableFact]
     public void UsbConfigDescriptor_serializes_and_deserializes_successfully()

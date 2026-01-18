@@ -2,11 +2,14 @@
 
 namespace UsbDotNet.LibUsbNative.Tests.SafeHandles.SafeContext;
 
-public class Given_no_USB_device_Fake(ITestOutputHelper output) : Given_no_USB_device(output, new FakeLibusbApi());
+public class Given_no_USB_device_Fake(ITestOutputHelper output)
+    : Given_no_USB_device(output, new FakeLibusbApi());
 
-public class Given_no_USB_device_Real(ITestOutputHelper output) : Given_no_USB_device(output, new PInvokeLibUsbApi());
+public class Given_no_USB_device_Real(ITestOutputHelper output)
+    : Given_no_USB_device(output, new PInvokeLibUsbApi());
 
-public abstract class Given_no_USB_device(ITestOutputHelper output, ILibUsbApi api) : LibUsbNativeTestBase(output, api)
+public abstract class Given_no_USB_device(ITestOutputHelper output, ILibUsbApi api)
+    : LibUsbNativeTestBase(output, api)
 {
     [Fact]
     public void Disposing_SafeContext_with_open_SafeDeviceList_blocks_context_ReleaseHandle()
@@ -98,12 +101,21 @@ public abstract class Given_no_USB_device(ITestOutputHelper output, ILibUsbApi a
     [InlineData(5)]
     public void RegisterHotplugCallback_can_have_many_active_callbacks(int callbackCount)
     {
-        Skip.If(!OperatingSystem.IsLinux() && !OperatingSystem.IsMacOS(), "Hotplug only supported on linux and macOS.");
+        Skip.If(
+            !OperatingSystem.IsLinux() && !OperatingSystem.IsMacOS(),
+            "Hotplug only supported on linux and macOS."
+        );
 
         using var context = GetContext();
         var callbacks = Enumerable
             .Range(0, callbackCount)
-            .Select(_ => context.RegisterHotplugCallback(HpEvents, HpFlags, (c, d, e) => libusb_hotplug_return.REARM));
+            .Select(_ =>
+                context.RegisterHotplugCallback(
+                    HpEvents,
+                    HpFlags,
+                    (c, d, e) => libusb_hotplug_return.REARM
+                )
+            );
 
         foreach (var callback in callbacks)
         {
@@ -118,10 +130,17 @@ public abstract class Given_no_USB_device(ITestOutputHelper output, ILibUsbApi a
     [SkippableFact]
     public void Not_disposing_RegisterHotplugCallback_handle_blocks_SafeContext_handle_close()
     {
-        Skip.If(!OperatingSystem.IsLinux() && !OperatingSystem.IsMacOS(), "Hotplug only supported on linux and macOS.");
+        Skip.If(
+            !OperatingSystem.IsLinux() && !OperatingSystem.IsMacOS(),
+            "Hotplug only supported on linux and macOS."
+        );
 
         using var context = GetContext();
-        var cbHandle = context.RegisterHotplugCallback(HpEvents, HpFlags, (c, d, e) => libusb_hotplug_return.REARM);
+        var cbHandle = context.RegisterHotplugCallback(
+            HpEvents,
+            HpFlags,
+            (c, d, e) => libusb_hotplug_return.REARM
+        );
         context.Dispose();
 
         // SafeContext handle will not be closed until after SafeHotplugCallbackHandle is disposed
@@ -135,7 +154,8 @@ public abstract class Given_no_USB_device(ITestOutputHelper output, ILibUsbApi a
     {
         var context = GetContext();
         context.Dispose();
-        var act = () => context.RegisterHotplugCallback(0, 0, (c, d, e) => libusb_hotplug_return.REARM);
+        var act = () =>
+            context.RegisterHotplugCallback(0, 0, (c, d, e) => libusb_hotplug_return.REARM);
         act.Should().Throw<ObjectDisposedException>();
 
         // Verify context is closed after dispose

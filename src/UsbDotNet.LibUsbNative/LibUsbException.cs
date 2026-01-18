@@ -24,13 +24,21 @@ public sealed class LibUsbException : Exception
         Error = error;
     }
 
-    public static LibUsbException FromError(libusb_error result, string? message = null) => new(result, message);
+    public static LibUsbException FromError(libusb_error result, string? message = null) =>
+        new(result, message);
 
-    public static LibUsbException FromApiError(libusb_error result, string methodName, string? message = null) =>
-        new(result, $"LibUsbApi '{methodName}' failed. {message}".TrimEnd());
+    public static LibUsbException FromApiError(
+        libusb_error result,
+        string methodName,
+        string? message = null
+    ) => new(result, $"LibUsbApi '{methodName}' failed. {message}".TrimEnd());
 
     [StackTraceHidden]
-    internal static void ThrowIfApiError(libusb_error result, string methodName, string? message = null)
+    internal static void ThrowIfApiError(
+        libusb_error result,
+        string methodName,
+        string? message = null
+    )
     {
         if (result >= 0)
         {

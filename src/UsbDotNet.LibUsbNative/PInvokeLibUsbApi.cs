@@ -63,13 +63,23 @@ public sealed class PInvokeLibUsbApi : ILibUsbApi
     #region Device metadata
 
     [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
-    private static extern libusb_error libusb_get_device_descriptor(IntPtr dev, out libusb_device_descriptor d);
+    private static extern libusb_error libusb_get_device_descriptor(
+        IntPtr dev,
+        out libusb_device_descriptor d
+    );
 
     [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
-    private static extern libusb_error libusb_get_active_config_descriptor(IntPtr dev, out IntPtr cfg);
+    private static extern libusb_error libusb_get_active_config_descriptor(
+        IntPtr dev,
+        out IntPtr cfg
+    );
 
     [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
-    private static extern libusb_error libusb_get_config_descriptor(IntPtr dev, ushort index, out IntPtr cfg);
+    private static extern libusb_error libusb_get_config_descriptor(
+        IntPtr dev,
+        ushort index,
+        out IntPtr cfg
+    );
 
     [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
     private static extern void libusb_free_config_descriptor(IntPtr cfg);
@@ -109,7 +119,12 @@ public sealed class PInvokeLibUsbApi : ILibUsbApi
     #region Strings
 
     [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
-    private static extern libusb_error libusb_get_string_descriptor_ascii(IntPtr h, byte idx, byte[] data, int len);
+    private static extern libusb_error libusb_get_string_descriptor_ascii(
+        IntPtr h,
+        byte idx,
+        byte[] data,
+        int len
+    );
 
     #endregion
 
@@ -152,7 +167,10 @@ public sealed class PInvokeLibUsbApi : ILibUsbApi
     );
 
     [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
-    private static extern void libusb_hotplug_deregister_callback(IntPtr ctx, IntPtr callbackHandle);
+    private static extern void libusb_hotplug_deregister_callback(
+        IntPtr ctx,
+        IntPtr callbackHandle
+    );
 
     #endregion
 
@@ -177,13 +195,15 @@ public sealed class PInvokeLibUsbApi : ILibUsbApi
         (libusb_error)libusb_handle_events_completed(ctx, completed);
 
     /// <inheritdoc />
-    void ILibUsbApi.libusb_interrupt_event_handler(IntPtr ctx) => libusb_interrupt_event_handler(ctx);
+    void ILibUsbApi.libusb_interrupt_event_handler(IntPtr ctx) =>
+        libusb_interrupt_event_handler(ctx);
 
     /// <inheritdoc />
     IntPtr ILibUsbApi.libusb_get_version() => libusb_get_version();
 
     /// <inheritdoc />
-    int ILibUsbApi.libusb_has_capability(libusb_capability capability) => libusb_has_capability(capability);
+    int ILibUsbApi.libusb_has_capability(libusb_capability capability) =>
+        libusb_has_capability(capability);
 
     /// <inheritdoc />
     IntPtr ILibUsbApi.libusb_strerror(libusb_error errorCode) => libusb_strerror(errorCode);
@@ -203,16 +223,21 @@ public sealed class PInvokeLibUsbApi : ILibUsbApi
     void ILibUsbApi.libusb_unref_device(IntPtr dev) => libusb_unref_device(dev);
 
     /// <inheritdoc />
-    libusb_error ILibUsbApi.libusb_get_device_descriptor(IntPtr dev, out libusb_device_descriptor d) =>
-        libusb_get_device_descriptor(dev, out d);
+    libusb_error ILibUsbApi.libusb_get_device_descriptor(
+        IntPtr dev,
+        out libusb_device_descriptor d
+    ) => libusb_get_device_descriptor(dev, out d);
 
     /// <inheritdoc />
     libusb_error ILibUsbApi.libusb_get_active_config_descriptor(IntPtr dev, out IntPtr cfg) =>
         libusb_get_active_config_descriptor(dev, out cfg);
 
     /// <inheritdoc />
-    libusb_error ILibUsbApi.libusb_get_config_descriptor(IntPtr dev, ushort index, out IntPtr cfg) =>
-        libusb_get_config_descriptor(dev, index, out cfg);
+    libusb_error ILibUsbApi.libusb_get_config_descriptor(
+        IntPtr dev,
+        ushort index,
+        out IntPtr cfg
+    ) => libusb_get_config_descriptor(dev, index, out cfg);
 
     /// <inheritdoc />
     void ILibUsbApi.libusb_free_config_descriptor(IntPtr cfg) => libusb_free_config_descriptor(cfg);
@@ -233,14 +258,20 @@ public sealed class PInvokeLibUsbApi : ILibUsbApi
     void ILibUsbApi.libusb_close(IntPtr h) => libusb_close(h);
 
     /// <inheritdoc />
-    libusb_error ILibUsbApi.libusb_claim_interface(IntPtr h, byte i) => libusb_claim_interface(h, i);
+    libusb_error ILibUsbApi.libusb_claim_interface(IntPtr h, byte i) =>
+        libusb_claim_interface(h, i);
 
     /// <inheritdoc />
-    libusb_error ILibUsbApi.libusb_release_interface(IntPtr h, byte i) => libusb_release_interface(h, i);
+    libusb_error ILibUsbApi.libusb_release_interface(IntPtr h, byte i) =>
+        libusb_release_interface(h, i);
 
     /// <inheritdoc />
-    libusb_error ILibUsbApi.libusb_get_string_descriptor_ascii(IntPtr h, byte idx, byte[] data, int len) =>
-        libusb_get_string_descriptor_ascii(h, idx, data, len);
+    libusb_error ILibUsbApi.libusb_get_string_descriptor_ascii(
+        IntPtr h,
+        byte idx,
+        byte[] data,
+        int len
+    ) => libusb_get_string_descriptor_ascii(h, idx, data, len);
 
     /// <inheritdoc />
     libusb_error ILibUsbApi.libusb_reset_device(IntPtr h) => libusb_reset_device(h);
@@ -268,7 +299,18 @@ public sealed class PInvokeLibUsbApi : ILibUsbApi
         libusb_hotplug_callback_fn cb,
         IntPtr user_data,
         out IntPtr handle
-    ) => libusb_hotplug_register_callback(ctx, events, flags, vendorId, productId, devClass, cb, user_data, out handle);
+    ) =>
+        libusb_hotplug_register_callback(
+            ctx,
+            events,
+            flags,
+            vendorId,
+            productId,
+            devClass,
+            cb,
+            user_data,
+            out handle
+        );
 
     /// <inheritdoc />
     void ILibUsbApi.libusb_hotplug_deregister_callback(IntPtr ctx, IntPtr handle) =>

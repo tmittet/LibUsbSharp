@@ -56,7 +56,8 @@ public sealed class TestDeviceSource(ILogger _logger, IUsb _usb)
 
     public bool TryOpenUsbDevice([NotNullWhen(true)] out IUsbDevice? openDevice)
     {
-        var devices = _usb.GetDeviceList(_requiredVendorId).OrderBy(d => d.VendorId == _preferredVendorId ? 0 : 1);
+        var devices = _usb.GetDeviceList(_requiredVendorId)
+            .OrderBy(d => d.VendorId == _preferredVendorId ? 0 : 1);
 
         foreach (var deviceDescriptor in devices)
         {
@@ -102,7 +103,10 @@ public sealed class TestDeviceSource(ILogger _logger, IUsb _usb)
         if (
             device is not null
             && DeviceSerialIsReadable(device)
-            && (_interfaceClass is null || DeviceInterfaceIsAccessible(device, _interfaceClass.Value, _interfaceAccess))
+            && (
+                _interfaceClass is null
+                || DeviceInterfaceIsAccessible(device, _interfaceClass.Value, _interfaceAccess)
+            )
             && (
                 _interfaceClass is null
                 || _interfaceSubClass is null

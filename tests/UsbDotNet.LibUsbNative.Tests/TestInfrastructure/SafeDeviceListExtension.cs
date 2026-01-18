@@ -11,7 +11,9 @@ internal static class SafeDeviceListExtension
     /// <exception cref="SkipException">Thrown when no device is found.</exception>
     public static ISafeDevice GetAnyDeviceOrSkipTest(this ISafeDeviceList deviceList)
     {
-        return deviceList.Count > 0 ? deviceList[0] : throw new SkipException("No USB device found.");
+        return deviceList.Count > 0
+            ? deviceList[0]
+            : throw new SkipException("No USB device found.");
     }
 
     /// <summary>
@@ -47,7 +49,9 @@ internal static class SafeDeviceListExtension
     {
         try
         {
-            var serialNumber = handle.GetStringDescriptorAscii(handle.Device.GetDeviceDescriptor().iSerialNumber);
+            var serialNumber = handle.GetStringDescriptorAscii(
+                handle.Device.GetDeviceDescriptor().iSerialNumber
+            );
             return !string.IsNullOrEmpty(serialNumber);
         }
         catch (LibUsbException ex) when (ex.Error is libusb_error.LIBUSB_ERROR_INVALID_PARAM)
