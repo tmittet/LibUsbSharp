@@ -42,7 +42,7 @@ public sealed class UsbInterface : IUsbInterface
     /// <param name="loggerFactory">An optional logger factory.</param>
     /// <param name="device">The parent USB device.</param>
     /// <param name="descriptor">The USB interface descriptor.</param>
-    /// <param name="claimedInterface"></param>
+    /// <param name="claimedInterface">A claimed USB device interface.</param>
     /// <param name="readEndpoint">
     /// Optional read endpoint. When nothing is specified and a read operation is attempted,
     /// an attempt is made to pick the first available "input" endpoint for this interface.
@@ -218,7 +218,7 @@ public sealed class UsbInterface : IUsbInterface
         if (count > 1)
         {
             _logger.LogWarning(
-                "Interface #{InterfaceNumber} has {EndpointCount} {EndpointDirection} endpoints."
+                "Interface #{InterfaceNumber} has {EndpointCount} {EndpointDirection} endpoints. "
                     + "The first endpoint was selected.",
                 descriptor.InterfaceNumber,
                 count,
@@ -229,7 +229,7 @@ public sealed class UsbInterface : IUsbInterface
     }
 
     /// <summary>
-    /// Throw ArgumentException when timeout is 0 or less than -1.
+    /// Throw ArgumentOutOfRangeException when timeout is 0 or less than -1.
     /// </summary>
     private static void CheckTransferTimeout(int timeout)
     {
@@ -238,7 +238,7 @@ public sealed class UsbInterface : IUsbInterface
             throw new ArgumentOutOfRangeException(
                 nameof(timeout),
                 timeout,
-                "Invalid timeout; must be greater than zero or -1 (infinite)."
+                "Invalid timeout; must be greater than 0 or -1 (infinite)."
             );
         }
     }

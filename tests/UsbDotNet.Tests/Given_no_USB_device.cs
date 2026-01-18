@@ -28,7 +28,7 @@ public sealed class Given_no_USB_device : IDisposable
         var act = () => new Usb(_libusb, _loggerFactory);
         act.Should()
             .Throw<InvalidOperationException>()
-            .WithMessage("Only one LibUsb instance allowed.");
+            .WithMessage("Only one instance of the Usb type allowed.");
     }
 
     [Fact]
@@ -73,7 +73,7 @@ public sealed class Given_no_USB_device : IDisposable
     {
         Skip.If(
             !OperatingSystem.IsLinux() && !OperatingSystem.IsMacOS(),
-            "Hotplug only supported on linux and macOS."
+            "Hotplug only supported on Linux and macOS."
         );
 
         using var usb = new Usb(_libusb, _loggerFactory);
@@ -86,7 +86,7 @@ public sealed class Given_no_USB_device : IDisposable
     {
         Skip.If(
             !OperatingSystem.IsLinux() && !OperatingSystem.IsMacOS(),
-            "Hotplug only supported on linux and macOS."
+            "Hotplug only supported on Linux and macOS."
         );
 
         using var usb = new Usb(_libusb, _loggerFactory);

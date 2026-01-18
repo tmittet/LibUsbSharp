@@ -103,7 +103,7 @@ public abstract class Given_no_USB_device(ITestOutputHelper output, ILibUsbApi a
     {
         Skip.If(
             !OperatingSystem.IsLinux() && !OperatingSystem.IsMacOS(),
-            "Hotplug only supported on linux and macOS."
+            "Hotplug only supported on Linux and macOS."
         );
 
         using var context = GetContext();
@@ -132,7 +132,7 @@ public abstract class Given_no_USB_device(ITestOutputHelper output, ILibUsbApi a
     {
         Skip.If(
             !OperatingSystem.IsLinux() && !OperatingSystem.IsMacOS(),
-            "Hotplug only supported on linux and macOS."
+            "Hotplug only supported on Linux and macOS."
         );
 
         using var context = GetContext();

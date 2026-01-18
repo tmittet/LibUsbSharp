@@ -136,7 +136,7 @@ internal class RundownGuard : IDisposable
     /// // Do work under shared protection
     /// ]]></code>
     /// </example>
-    public IDisposable? AcquireSharedToken(TimeSpan? timeout = null)
+    public IDisposable AcquireSharedToken(TimeSpan? timeout = null)
     {
         AcquireShared(timeout);
         return new ProtectionToken(this);
@@ -195,7 +195,7 @@ internal class RundownGuard : IDisposable
     /// // Perform critical operation under exclusive protection
     /// ]]></code>
     /// </example>
-    public IDisposable? AcquireExclusiveToken(TimeSpan? timeout = null)
+    public IDisposable AcquireExclusiveToken(TimeSpan? timeout = null)
     {
         AcquireExclusive(timeout);
         return new ExclusiveToken(this);

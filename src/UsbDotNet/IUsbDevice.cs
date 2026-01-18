@@ -83,7 +83,7 @@ public interface IUsbDevice : IDisposable
     /// <summary>
     /// Send a ControlWrite request. Data is written Host -> Device.
     /// </summary>
-    /// <param name="source">The payload to send to the device (max. 65.535 bytes)</param>
+    /// <param name="source">The payload to send to the device (max. 65_535 bytes)</param>
     /// <param name="bytesWritten">The actual number of bytes written to the device</param>
     /// <param name="recipient">The recipient of the control request</param>
     /// <param name="type">The control request type; standard, class or vendor</param>

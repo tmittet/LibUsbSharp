@@ -11,7 +11,7 @@ namespace UsbDotNet.Internal;
 internal static class UsbDeviceEnum
 {
     /// <summary>
-    /// Get a list of USB devices. This does not involve any requests being sent to the devices.
+    /// Gets a list of USB devices. This does not involve any requests being sent to the devices.
     /// </summary>
     /// <param name="logger">A logger.</param>
     /// <param name="libusbContext">Pointer to the initialized libusb_init context.</param>
@@ -39,7 +39,7 @@ internal static class UsbDeviceEnum
     }
 
     /// <summary>
-    /// Get cached USB device descriptors for a given, alrady in memory, device descriptor list.
+    /// Get cached USB device descriptors for a given, already in memory, device descriptor list.
     /// </summary>
     /// <param name="logger">A logger.</param>
     /// <param name="devices">Pointer to device list returned by libusb_get_device_list.</param>
@@ -56,7 +56,7 @@ internal static class UsbDeviceEnum
             if (result != libusb_error.LIBUSB_SUCCESS)
             {
                 logger.LogWarning(
-                    "Get device descriptor failed. {ErrorMessage}.",
+                    "Get device descriptor failed: {ErrorMessage}.",
                     result.GetString()
                 );
             }
@@ -68,7 +68,7 @@ internal static class UsbDeviceEnum
     }
 
     /// <summary>
-    /// Get the cached USB device descriptor for a given, alrady in memory, device descriptor.
+    /// Get the cached USB device descriptor for a given, already in memory, device descriptor.
     /// NOTE: since libusb-1.0.16, LIBUSBX_API_VERSION >= 0x01000102, this function always succeeds.
     /// </summary>
     /// <exception cref="ObjectDisposedException">Thrown when device is disposed.</exception>

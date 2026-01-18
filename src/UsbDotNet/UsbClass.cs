@@ -26,8 +26,8 @@ public enum UsbClass : byte
     Communications = 0x02,
 
     /// <summary>
-    /// This base class is defined for devices that conform to the Human Interface Device Device
-    /// Class Specification found on the USB-IF website. SubClass: 0x00-0xFF. Protocol: 0x00-0xFF.
+    /// This base class is defined for devices that conform to the Human Interface Device Class
+    /// Specification found on the USB-IF website. SubClass: 0x00-0xFF. Protocol: 0x00-0xFF.
     /// </summary>
     HID = 0x03,
 
@@ -125,24 +125,24 @@ public enum UsbClass : byte
 
     /// <summary>
     /// This base class is defined for devices that conform to the USB I3C Device Class
-    /// Specification found on this USB-IF website. SubClass: 0x00. Protocol: 0x00.
+    /// Specification found on the USB-IF website. SubClass: 0x00. Protocol: 0x00.
     /// </summary>
     I3CDevice = 0x3C,
 
     /// <summary>
-    /// This base class is defined for devices that diagnostic devices. This class code can be used
-    /// in Device or Interface Descriptors.
-    /// Trace is a form of debugging where processor or system activity is made externally visible
-    /// in real-time or stored and later retrieved for viewing by an applications developer,
-    /// applications program, or, external equipment specializing observing system activity.
-    /// Design for Debug or Test (Dfx). This refers to a logic block that provides debug or test
-    /// support (E.g. via Test Access Port (TAP)). DvC: Debug Capability on the USB device.
+    /// This base class is defined for devices that provide diagnostic functionality. This class
+    /// code can be used in Device or Interface descriptors. Trace is a form of debugging where
+    /// processor or system activity is made externally visible in real-time or stored and later
+    /// retrieved for viewing by an application developer, program or external equipment for
+    /// observing system activity. Design for Debug or Test (DfX). This refers to a logic block that
+    /// provides debug or test support (E.g. via Test Access Port (TAP)). DvC: Debug Capability on
+    /// the USB device.
     /// SubClass: 0x01-0x08. Protocol: 0x00, 0x01.
     /// </summary>
     Diagnostic = 0xDC,
 
     /// <summary>
-    /// This base class is defined for devices that are Wireless controllers.
+    /// This base class is defined for devices that are wireless controllers.
     /// SubClass: 0x01, 0x02. Protocol: 0x01, 0x02, 0x03, 0x04.
     /// </summary>
     WirelessController = 0xE0,

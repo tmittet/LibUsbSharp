@@ -21,7 +21,7 @@ public static class UsbDeviceExtension
     /// Thrown when the USB interface is already claimed.
     /// </exception>
     /// <exception cref="InvalidOperationException">
-    /// Thrown when a USB interface of provided class is not found.
+    /// Thrown when a USB interface of the provided class or optional protocol is not found.
     /// </exception>
     /// <exception cref="LibUsbException">
     /// Thrown when the USB interface claim operation fails.

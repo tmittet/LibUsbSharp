@@ -33,7 +33,7 @@ internal sealed class LibUsbEventLoop : IDisposable
 
     /// <summary>
     /// Start the background thread that handles libusb events. All libusb event handling is
-    /// performed this thread. libusb does not invoke any callbacks outside of this context.
+    /// performed on this thread. libusb does not invoke any callbacks outside of this context.
     /// Consequently, all registered callbacks will be run on this thread.
     /// See: https://libusb.sourceforge.io/api-1.0/group__libusb__asyncio.html#eventthread
     /// </summary>
@@ -44,7 +44,7 @@ internal sealed class LibUsbEventLoop : IDisposable
             CheckDisposed();
             if (_thread is not null)
             {
-                throw new InvalidOperationException($"LibUsbEventLoop already started.");
+                throw new InvalidOperationException("LibUsbEventLoop already started.");
             }
             _thread = new Thread(() => HandleEventsLoop(_cts.Token)) { IsBackground = true };
             _thread.Start();
@@ -66,7 +66,7 @@ internal sealed class LibUsbEventLoop : IDisposable
                 if (result != 0 && result != libusb_error.LIBUSB_ERROR_INTERRUPTED)
                 {
                     _logger.LogWarning(
-                        "LibUsb HandleEvents failed; exiting event loop. {ErrorMessage}.",
+                        "LibUsb HandleEvents failed; exiting event loop: {ErrorMessage}.",
                         result.GetString()
                     );
                     break;
@@ -114,8 +114,9 @@ internal sealed class LibUsbEventLoop : IDisposable
                 // This is required since we don't follow the exact pattern recommended by libusb.
                 // See: https://libusb.sourceforge.io/api-1.0/group__libusb__asyncio.html#eventthread
                 // and: https://libusb.sourceforge.io/api-1.0/group__libusb__poll.html#ga188b6c50944b49f122ccfd45b93fa9f2
-                // We deregister hotplug events, which wakes up libusb_handle_events, first then
-                // stop the event loop; hence the event handler would block forever.
+                // We deregister hotplug events first, which wakes up libusb_handle_events, then
+                // stop the event loop; hence the event handler would block forever. Calling
+                // libusb_interrupt_event_handler ensures it wakes up.
                 _context.InterruptEventHandler();
                 // Wait for libusb_handle_events_completed and the HandleEventsLoop to stop
                 _thread.Join();

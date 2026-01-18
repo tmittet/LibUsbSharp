@@ -50,7 +50,9 @@ public sealed class Usb : IUsb
     {
         if (Interlocked.CompareExchange(ref _instances, 1, 0) != 0)
         {
-            throw new InvalidOperationException("Only one LibUsb instance allowed.");
+            throw new InvalidOperationException(
+                $"Only one instance of the {nameof(Usb)} type allowed."
+            );
         }
         try
         {
@@ -114,7 +116,7 @@ public sealed class Usb : IUsb
         catch (LibUsbException ex)
         {
             _logger.LogWarning(
-                "Failed to set LIBUSB_OPTION_LOG_LEVEL. {ErrorMessage}.",
+                "Failed to set LIBUSB_OPTION_LOG_LEVEL: {ErrorMessage}",
                 ex.Error.GetString()
             );
         }
@@ -159,7 +161,7 @@ public sealed class Usb : IUsb
     /// <summary>
     /// NOTE:
     /// This callback will run on the LibUsbEventLoop thread. When handling a DeviceArrived event
-    /// it's considered safe to call any libusb function that takes a libusb_device. It also safe
+    /// it's considered safe to call any libusb function that takes a libusb_device. It is also safe
     /// to open a device and submit asynchronous transfers. However, most other functions that take
     /// a libusb_device_handle are not safe to call. Examples of such functions are any of the
     /// synchronous API functions or the blocking functions that retrieve various USB descriptors.
@@ -176,7 +178,7 @@ public sealed class Usb : IUsb
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(device);
 
-        // TODO: Test on macOS and linux; "most functions that take a device handle are not safe"
+        // TODO: Test on macOS and Linux; "most functions that take a device handle are not safe"
         var result = UsbDeviceEnum.TryGetDeviceDescriptor(device, out var deviceDescriptor);
         if (result != libusb_error.LIBUSB_SUCCESS)
         {
@@ -282,7 +284,7 @@ public sealed class Usb : IUsb
                 context,
                 device.Open(),
                 descriptor,
-                device.GetActiveConfigDescriptor().ToUsbInterfaceDescriptor()
+                device.GetActiveConfigDescriptor().ToUsbConfigDescriptor()
             );
     }
 
@@ -321,7 +323,7 @@ public sealed class Usb : IUsb
     /// </summary>
     private ISafeContext GetInitializedContextOrThrow()
     {
-        return _context is null ? throw new InvalidOperationException($"No context.") : _context;
+        return _context is null ? throw new InvalidOperationException("No context.") : _context;
     }
 
     /// <summary>
@@ -348,7 +350,7 @@ public sealed class Usb : IUsb
                 foreach (var device in _openDevices)
                 {
                     _logger.LogDebug(
-                        "Auto disposing device '{DeviceKey}' on LibUsb dispose.",
+                        "Auto disposing device '{DeviceKey}' on Usb type dispose.",
                         device.Key
                     );
                     // Device dispose calls Usb.CloseDevice, which removes it from the
@@ -368,7 +370,7 @@ public sealed class Usb : IUsb
                 }
             }
             _staticLogger = null;
-            _logger.LogDebug("LibUsb disposed.");
+            _logger.LogDebug("Usb type disposed.");
             _ = Interlocked.Exchange(ref _instances, 0);
             _disposed = true;
         }
@@ -396,7 +398,7 @@ public sealed class Usb : IUsb
             // Catch the unlikely case that libusb adds another log level in a future version
             default:
                 _staticLogger?.LogError(
-                    "Unexpected libusb log level {LibUsbLogLevel}. {LibUsbMessage}",
+                    "Unexpected libusb_log_level '{LibUsbLogLevel}'. {LibUsbMessage}",
                     level,
                     message.TrimEnd()
                 );

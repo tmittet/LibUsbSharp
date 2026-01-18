@@ -25,13 +25,13 @@ public interface IUsbInterface : IDisposable
     /// <summary>
     /// Bulk read data from the USB device interface. This method blocks until a chunk of data is
     /// received or the optional timeout is reached. Under the hood it submits a libusb transfer,
-    /// then waits for the transfer completed, timeout or error callback to be received.
+    /// then waits for a transfer completion, timeout or an error callback to be received.
     /// </summary>
     /// <param name="destination">A destination data span for read bytes</param>
     /// <param name="bytesRead">The number of bytes read</param>
     /// <param name="timeout">An optional timeout for the read operation</param>
-    /// <exception cref="ArgumentException">Thrown when timeout is invalid</exception>
-    /// <exception cref="ObjectDisposedException">Thrown when UsbInterface is disposed</exception>
+    /// <exception cref="ArgumentException">Thrown when timeout is invalid.</exception>
+    /// <exception cref="ObjectDisposedException">Thrown when UsbInterface is disposed.</exception>
     /// <exception cref="InvalidOperationException">
     /// Thrown when no input endpoint is found for this interface.
     /// </exception>
@@ -60,10 +60,8 @@ public interface IUsbInterface : IDisposable
     /// <param name="source">A source span of data to write</param>
     /// <param name="bytesWritten">The number of bytes written</param>
     /// <param name="timeout">A timeout for the write operation</param>
-    /// <exception cref="ArgumentException">
-    /// Thrown when count is larger than buffer or timeout is invalid
-    /// </exception>
-    /// <exception cref="ObjectDisposedException">Thrown when UsbInterface is disposed</exception>
+    /// <exception cref="ArgumentException">Thrown when the timeout is invalid.</exception>
+    /// <exception cref="ObjectDisposedException">Thrown when the UsbInterface is disposed</exception>
     /// <exception cref="InvalidOperationException">
     /// Thrown when no output endpoint is found for this interface.
     /// </exception>

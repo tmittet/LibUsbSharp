@@ -13,7 +13,7 @@ namespace UsbDotNet;
 
 public sealed class UsbDevice : IUsbDevice
 {
-    private const byte ControlRequestEndpoint = 0x00;
+    private const byte ControlRequestEndpointAddress = 0x00;
 
     private readonly Usb _usb;
     private readonly ISafeContext _context;
@@ -91,9 +91,6 @@ public sealed class UsbDevice : IUsbDevice
     public string ReadStringDescriptor(byte descriptorIndex)
     {
         using var token = _rundownGuard.AcquireSharedToken();
-
-        var buffer = new byte[256];
-
         return Handle.GetStringDescriptorAscii(descriptorIndex);
     }
 
@@ -114,7 +111,7 @@ public sealed class UsbDevice : IUsbDevice
             throw new ArgumentOutOfRangeException(
                 nameof(destination),
                 destination.Length,
-                $"Destination buffer must be less than {ushort.MaxValue} bytes."
+                $"Destination buffer must be at most {ushort.MaxValue} bytes."
             );
         }
 
@@ -136,7 +133,7 @@ public sealed class UsbDevice : IUsbDevice
                 _logger,
                 Handle,
                 libusb_endpoint_transfer_type.LIBUSB_ENDPOINT_TRANSFER_TYPE_CONTROL,
-                ControlRequestEndpoint,
+                ControlRequestEndpointAddress,
                 bufferHandle,
                 buffer.Length,
                 timeout > 0 ? (uint)timeout : 0,
@@ -146,7 +143,6 @@ public sealed class UsbDevice : IUsbDevice
             bytesRead = (ushort)bytesReadInt;
             if (result != libusb_error.LIBUSB_SUCCESS || bytesRead <= 0)
             {
-                destination = Array.Empty<byte>();
                 return result.ToLibUsbResult();
             }
             buffer.AsSpan(ControlRequestPacket.SetupSize, bytesRead).CopyTo(destination);
@@ -202,7 +198,7 @@ public sealed class UsbDevice : IUsbDevice
                     _logger,
                     Handle,
                     libusb_endpoint_transfer_type.LIBUSB_ENDPOINT_TRANSFER_TYPE_CONTROL,
-                    ControlRequestEndpoint,
+                    ControlRequestEndpointAddress,
                     bufferHandle,
                     buffer.Length,
                     timeout > 0 ? (uint)timeout : 0,

@@ -6,7 +6,7 @@ namespace UsbDotNet.Internal;
 
 internal static class LibUsbDescriptorExtension
 {
-    internal static IUsbConfigDescriptor ToUsbInterfaceDescriptor(
+    internal static IUsbConfigDescriptor ToUsbConfigDescriptor(
         this libusb_config_descriptor descriptor
     ) =>
         new UsbConfigDescriptor(
@@ -16,7 +16,7 @@ internal static class LibUsbDescriptorExtension
             MaxPowerRawValue: descriptor.bMaxPower,
             ExtraBytes: descriptor.extra,
             Interfaces: descriptor
-                // Flatten the altsettings, since the index is not useful here
+                // Flatten the alternate settings, since the index is not useful here
                 .interfaces.SelectMany(i => i.altsetting)
                 // Group by bInterfaceNumber (not index, which is just the order in the array)
                 .GroupBy(a => a.bInterfaceNumber)

@@ -3,17 +3,17 @@
 public enum ControlRequestType : byte
 {
     /// <summary>
-    /// Request value per the standard control requests defined in the USB spec.
+    /// Value per the standard control requests defined in the USB specification.
     /// </summary>
     Standard = 0,
 
     /// <summary>
-    /// Request values defined in the individual USB class spec.
+    /// Values defined in the individual USB class specification.
     /// </summary>
     Class = 1,
 
     /// <summary>
-    /// Request values defined by device vendor.
+    /// Values defined by device vendor.
     /// </summary>
     Vendor = 2,
 }

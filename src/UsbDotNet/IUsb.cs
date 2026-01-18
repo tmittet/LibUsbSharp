@@ -7,7 +7,7 @@ namespace UsbDotNet;
 public interface IUsb : IDisposable
 {
     /// <summary>
-    /// Initialized the USB library (libusb), attaches log callback and starts the
+    /// Initializes the USB library (libusb), attaches a log callback and starts the
     /// background thread that handles USB events and drives async transfers.
     /// </summary>
     /// <param name="logLevel">The desired USB library (libusb) log level.</param>
@@ -45,7 +45,7 @@ public interface IUsb : IDisposable
     /// </summary>
     /// <exception cref="LibUsbException">
     /// LibUsbException ErrorCode AccessDenied or IO is typically an indication that the device
-    /// is inaccessible; because it's open in another process or because of lacking permissions.
+    /// is inaccessible because it's open in another process or due to lacking permissions.
     /// </exception>
     /// <exception cref="InvalidOperationException">Thrown when the Usb type is not initialized.</exception>
     /// <exception cref="ObjectDisposedException">Thrown when the Usb type is disposed.</exception>
